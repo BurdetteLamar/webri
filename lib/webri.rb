@@ -22,13 +22,13 @@ class WebRI
                       when filepath.match(/-c\.html/) # Class method.
                         dirname = File.dirname(filepath)
                         method_name = CGI.unescape(File.basename(filepath).sub('-c.html', ''))
-                        target_url = dirname + '.html#method-c-' + CGI.escape(method_name).gsub('%', '-')
+                        target_url = dirname + '.html#method-c-' + escape_fragment(method_name)
                         name = dirname.gsub('/', '::') + '::' + method_name
                         [name, target_url]
                       when filepath.match(/-i\.html/) # Instance method.
                         dirname = File.dirname(filepath)
                         method_name = CGI.unescape(File.basename(filepath).sub('-i.html', ''))
-                        target_url = dirname + '.html#method-i-' + CGI.escape(method_name).gsub('%', '-')
+                        target_url = dirname + '.html#method-i-' + escape_fragment(method_name)
                         name = dirname.gsub('/', '::') + '#' + method_name
                         [name, target_url]
                       when filepath.match(/\/cdesc-/) # Class.
@@ -109,6 +109,9 @@ def get_ri_filepaths(ruby_installation_dirpath)
     url = File.join(DocSite, DocRelease, target_url)
     command = "#{executable_name} #{url}"
     system(command)
-    end
+  end
 
+  def escape_fragment(fragment)
+    CGI.escape(fragment).gsub('%', '-')
+  end
 end
