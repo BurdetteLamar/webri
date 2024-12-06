@@ -24,25 +24,24 @@ class WebRI
                         method_name = CGI.unescape(File.basename(filepath).sub('-c.html', ''))
                         target_url = dirname + '.html#method-c-' + escape_fragment(method_name)
                         name = dirname.gsub('/', '::') + '::' + method_name
-                        [name, target_url]
+                        target_urls[name] = target_url
                       when filepath.match(/-i\.html/) # Instance method.
                         dirname = File.dirname(filepath)
                         method_name = CGI.unescape(File.basename(filepath).sub('-i.html', ''))
                         target_url = dirname + '.html#method-i-' + escape_fragment(method_name)
                         name = dirname.gsub('/', '::') + '#' + method_name
-                        [name, target_url]
+                        target_urls[name] = target_url
                       when filepath.match(/\/cdesc-/) # Class.
                         target_url = File.dirname(filepath) + '.html'
                         name = target_url.gsub('/', '::').sub('.html', '')
-                        [name, target_url]
+                        target_urls[name] = target_url
                       when File.basename(filepath).match(/^page-/)
                         target_url = filepath.sub('page-', '') # File.
                         name = target_url.sub('.html', '').sub(/_rdoc$/, '.rdoc').sub(/_md$/, '.md')
-                        [name, target_url]
+                        target_urls[name] = target_url
                       else
                         raise filepath
                       end
-      target_urls[name] = target_url
     end
     selected_urls = {}
     target_urls.select do |name, value|
