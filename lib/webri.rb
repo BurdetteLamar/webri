@@ -22,13 +22,13 @@ class WebRI
                       when filepath.match(/-c\.html/) # Class method.
                         dirname = File.dirname(filepath)
                         method_name = CGI.unescape(File.basename(filepath).sub('-c.html', ''))
-                        target_url = dirname + '.html#method-c-' + method_name
+                        target_url = dirname + '.html#method-c-' + CGI.escape(method_name).gsub('%', '-')
                         name = dirname.gsub('/', '::') + '::' + method_name
                         [name, target_url]
                       when filepath.match(/-i\.html/) # Instance method.
                         dirname = File.dirname(filepath)
                         method_name = CGI.unescape(File.basename(filepath).sub('-i.html', ''))
-                        target_url = dirname + '.html#method-i-' + method_name
+                        target_url = dirname + '.html#method-i-' + CGI.escape(method_name).gsub('%', '-')
                         name = dirname.gsub('/', '::') + '#' + method_name
                         [name, target_url]
                       when filepath.match(/\/cdesc-/) # Class.
@@ -57,7 +57,9 @@ class WebRI
       url = selected_urls.first[1]
       open_url(url)
     else
-      p get_choice(selected_urls.keys)
+      key = get_choice(selected_urls.keys)
+      url = selected_urls[key]
+      open_url(url)
     end
   end
 
