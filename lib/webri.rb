@@ -6,6 +6,10 @@ require 'cgi'
 # A class to display Ruby HTML documentation.
 class WebRI
 
+  RiDirpath = `ri --list-doc-dirs`.split.first
+  DocRelease = RiDirpath.split('/')[-2][0..2]
+  DocSite = 'https://docs.ruby-lang.org/en'
+
   def initialize(target_name, options)
     ruby_exe_filepath = RbConfig.ruby
     ruby_installation_dirpath = File.dirname(File.dirname(ruby_exe_filepath))
@@ -58,12 +62,10 @@ class WebRI
   end
 
 def get_ri_filepaths(ruby_installation_dirpath)
-  # Directory containing filetree of .ri files installed by RI.
-  ri_dirpath = File.join(ruby_installation_dirpath, 'share', 'ri', RUBY_ENGINE_VERSION, 'system')
   ri_filepaths = []
-  Find.find(ri_dirpath).each do |path|
+  Find.find(RiDirpath).each do |path|
     next unless path.end_with?('.ri')
-    path.sub!(ri_dirpath + '/', '')
+    path.sub!(RiDirpath + '/', '')
     ri_filepaths.push(path)
   end
   ri_filepaths
@@ -102,8 +104,8 @@ def get_ri_filepaths(ruby_installation_dirpath)
                         message = "Unrecognized host OS: '#{host_os}'."
                         raise RuntimeError.new(message)
                       end
-    site = 'https://docs.ruby-lang.org/en/3.3/'
-    command = "#{executable_name} #{site}#{target_url}"
+    url = File.join(DocSite, DocRelease, target_url)
+    command = "#{executable_name} #{url}"
     system(command)
     end
 
