@@ -1,0 +1,56 @@
+#!/usr/bin/env ruby
+
+# A console application to display Ruby HTML documentation.
+
+require 'optparse'
+require_relative '../lib/webri/version'
+require_relative '../lib/webri'
+
+options = {}
+
+parser = OptionParser.new
+
+parser.version = WebRI::VERSION
+parser.banner = <<-BANNER
+webri is a console application for accessing Ruby online HTML documentation.
+
+Usage: #{parser.program_name} [options] name
+
+Argument name selects the documentation to be accessed.
+
+o If name specifies a single item, that item is selected.
+o If name specifies multiple items, those items are displayed,
+  and a single item may be chosen.
+
+The given name is converted to a Regexp, which is used to select documentation.
+
+Note that your command window may require you to escape certain characters;
+in particular, you may need to escape circumflex (^), dollar sign ($),
+and pound sign (#).
+
+BANNER
+
+parser.separator('Options:')
+parser.on('-h', '--help', 'Prints this help.') do
+  puts parser
+  exit
+end
+parser.on('-v', '--version', 'Prints the version of webri.') do
+  puts WebRI::VERSION
+  exit
+end
+parser.parse!
+
+error_message = case ARGV.size
+when 0
+  'No name given.'
+when 1
+  nil
+else
+  'Multiple names given.'
+end
+raise ArgumentError.new(error_message) if error_message
+
+target_name = ARGV.shift
+
+web_ri = WebRI.new(target_name, options)
