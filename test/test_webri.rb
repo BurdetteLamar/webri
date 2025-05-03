@@ -2,9 +2,13 @@
 
 require "test_helper"
 
-class TestWebri < Minitest::Test
+class TestWebRI < Minitest::Test
   def test_that_it_has_a_version_number
-    refute_nil ::Webri::VERSION
+    refute_nil WebRI::VERSION
+  end
+
+  def test_web_pages_available
+    p WebRI::RiDirpath
   end
 
 end

@@ -4,7 +4,7 @@ require_relative "lib/webri/version"
 
 Gem::Specification.new do |spec|
   spec.name = "webri"
-  spec.version = Webri::VERSION
+  spec.version = WebRI::VERSION
   spec.authors = ["BurdetteLamar"]
   spec.email = ["burdettelamar@yahoo.com"]
 

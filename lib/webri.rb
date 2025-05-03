@@ -11,9 +11,7 @@ class WebRI
   DocSite = 'https://docs.ruby-lang.org/en'
 
   def initialize(target_name, options)
-    ruby_exe_filepath = RbConfig.ruby
-    ruby_installation_dirpath = File.dirname(File.dirname(ruby_exe_filepath))
-    ri_filepaths = get_ri_filepaths(ruby_installation_dirpath)
+    ri_filepaths = get_ri_filepaths
     target_urls = {}
     ri_filepaths.each do |ri_filepath|
       next if ri_filepath == 'cache.ri'
@@ -62,7 +60,9 @@ class WebRI
     end
   end
 
-def get_ri_filepaths(ruby_installation_dirpath)
+def get_ri_filepaths
+  ruby_exe_filepath = RbConfig.ruby
+  ruby_installation_dirpath = File.dirname(File.dirname(ruby_exe_filepath))
   ri_filepaths = []
   Find.find(RiDirpath).each do |path|
     next unless path.end_with?('.ri')
