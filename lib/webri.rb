@@ -14,35 +14,7 @@ class WebRI
 
   def initialize(target_name, options)
     set_ri_filepaths
-    self.target_urls = {}
-    ri_filepaths.each do |ri_filepath|
-      next if ri_filepath == 'cache.ri'
-      filepath = ri_filepath.sub('.ri', '.html')
-      name, target_url = case
-                      when filepath.match(/-c\.html/) # Class method.
-                        dirname = File.dirname(filepath)
-                        method_name = CGI.unescape(File.basename(filepath).sub('-c.html', ''))
-                        target_url = dirname + '.html#method-c-' + escape_fragment(method_name)
-                        name = dirname.gsub('/', '::') + '::' + method_name
-                        target_urls[name] = target_url
-                      when filepath.match(/-i\.html/) # Instance method.
-                        dirname = File.dirname(filepath)
-                        method_name = CGI.unescape(File.basename(filepath).sub('-i.html', ''))
-                        target_url = dirname + '.html#method-i-' + escape_fragment(method_name)
-                        name = dirname.gsub('/', '::') + '#' + method_name
-                        target_urls[name] = target_url
-                      when filepath.match(/\/cdesc-/) # Class.
-                        target_url = File.dirname(filepath) + '.html'
-                        name = target_url.gsub('/', '::').sub('.html', '')
-                        target_urls[name] = target_url
-                      when File.basename(filepath).match(/^page-/)
-                        target_url = filepath.sub('page-', '') # File.
-                        name = target_url.sub('.html', '').sub(/_rdoc$/, '.rdoc').sub(/_md$/, '.md')
-                        target_urls[name] = target_url
-                      else
-                        raise filepath
-                      end
-    end
+    set_target_urls
     selected_urls = {}
     target_urls.select do |name, value|
       if name.match(Regexp.new(target_name))
@@ -68,6 +40,38 @@ class WebRI
       next unless path.end_with?('.ri')
       path.sub!(RiDirpath + '/', '')
       ri_filepaths.push(path)
+    end
+  end
+
+  def set_target_urls
+    self.target_urls = {}
+    ri_filepaths.each do |ri_filepath|
+      next if ri_filepath == 'cache.ri'
+      filepath = ri_filepath.sub('.ri', '.html')
+      name, target_url = case
+                         when filepath.match(/-c\.html/) # Class method.
+                           dirname = File.dirname(filepath)
+                           method_name = CGI.unescape(File.basename(filepath).sub('-c.html', ''))
+                           target_url = dirname + '.html#method-c-' + escape_fragment(method_name)
+                           name = dirname.gsub('/', '::') + '::' + method_name
+                           target_urls[name] = target_url
+                         when filepath.match(/-i\.html/) # Instance method.
+                           dirname = File.dirname(filepath)
+                           method_name = CGI.unescape(File.basename(filepath).sub('-i.html', ''))
+                           target_url = dirname + '.html#method-i-' + escape_fragment(method_name)
+                           name = dirname.gsub('/', '::') + '#' + method_name
+                           target_urls[name] = target_url
+                         when filepath.match(/\/cdesc-/) # Class.
+                           target_url = File.dirname(filepath) + '.html'
+                           name = target_url.gsub('/', '::').sub('.html', '')
+                           target_urls[name] = target_url
+                         when File.basename(filepath).match(/^page-/)
+                           target_url = filepath.sub('page-', '') # File.
+                           name = target_url.sub('.html', '').sub(/_rdoc$/, '.rdoc').sub(/_md$/, '.md')
+                           target_urls[name] = target_url
+                         else
+                           raise filepath
+                         end
     end
   end
 
