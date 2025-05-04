@@ -12,9 +12,12 @@ class WebRI
 
   attr_accessor :target_urls, :ri_filepaths
 
-  def initialize(target_name, options)
+  def initialize(soptions)
     set_ri_filepaths
     set_target_urls
+  end
+
+  def show(target_name)
     selected_urls = {}
     target_urls.select do |name, value|
       if name.match(Regexp.new(target_name))
