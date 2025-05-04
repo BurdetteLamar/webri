@@ -53,4 +53,5 @@ raise ArgumentError.new(error_message) if error_message
 
 target_name = ARGV.shift
 
-web_ri = WebRI.new(target_name, options)
+web_ri = WebRI.new(options)
+web_ri.show(target_name)
