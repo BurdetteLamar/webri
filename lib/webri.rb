@@ -10,9 +10,11 @@ class WebRI
   DocRelease = RiDirpath.split('/')[-2][0..2]
   DocSite = 'https://docs.ruby-lang.org/en'
 
+  attr_accessor :target_urls, :ri_filepaths
+
   def initialize(target_name, options)
-    ri_filepaths = get_ri_filepaths
-    target_urls = {}
+    set_ri_filepaths
+    self.target_urls = {}
     ri_filepaths.each do |ri_filepath|
       next if ri_filepath == 'cache.ri'
       filepath = ri_filepath.sub('.ri', '.html')
@@ -60,14 +62,13 @@ class WebRI
     end
   end
 
-  def get_ri_filepaths
-    ri_filepaths = []
+  def set_ri_filepaths
+    self.ri_filepaths = []
     Find.find(RiDirpath).each do |path|
       next unless path.end_with?('.ri')
       path.sub!(RiDirpath + '/', '')
       ri_filepaths.push(path)
     end
-    ri_filepaths
   end
 
   def get_choice(choices)
