@@ -60,16 +60,14 @@ class WebRI
     end
   end
 
-def get_ri_filepaths
-  ruby_exe_filepath = RbConfig.ruby
-  ruby_installation_dirpath = File.dirname(File.dirname(ruby_exe_filepath))
-  ri_filepaths = []
-  Find.find(RiDirpath).each do |path|
-    next unless path.end_with?('.ri')
-    path.sub!(RiDirpath + '/', '')
-    ri_filepaths.push(path)
-  end
-  ri_filepaths
+  def get_ri_filepaths
+    ri_filepaths = []
+    Find.find(RiDirpath).each do |path|
+      next unless path.end_with?('.ri')
+      path.sub!(RiDirpath + '/', '')
+      ri_filepaths.push(path)
+    end
+    ri_filepaths
   end
 
   def get_choice(choices)
