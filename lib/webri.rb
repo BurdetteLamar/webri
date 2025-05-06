@@ -8,18 +8,18 @@ class WebRI
 
   RiDirpath = `ri --list-doc-dirs`.split.first
   DocRelease = RiDirpath.split('/')[-2][0..2]
-  DocSite = 'https://docs.ruby-lang.org/en'
+  DocSite = 'https://docs.ruby-lang.org/en/' + DocRelease
 
-  attr_accessor :target_urls, :ri_filepaths
+  attr_accessor :names, :ri_filepaths
 
-  def initialize(soptions)
+  def initialize(options = {})
     set_ri_filepaths
-    set_target_urls
+    set_names
   end
 
   def show(target_name)
     selected_urls = {}
-    target_urls.select do |name, value|
+    names.select do |name, value|
       if name.match(Regexp.new(target_name))
         selected_urls[name] = value
       end
@@ -46,35 +46,35 @@ class WebRI
     end
   end
 
-  def set_target_urls
-    self.target_urls = {}
+  def set_names
+    self.names = {}
     ri_filepaths.each do |ri_filepath|
       next if ri_filepath == 'cache.ri'
       filepath = ri_filepath.sub('.ri', '.html')
-      name, target_url = case
-                         when filepath.match(/-c\.html/) # Class method.
-                           dirname = File.dirname(filepath)
-                           method_name = CGI.unescape(File.basename(filepath).sub('-c.html', ''))
-                           target_url = dirname + '.html#method-c-' + escape_fragment(method_name)
-                           name = dirname.gsub('/', '::') + '::' + method_name
-                           target_urls[name] = target_url
-                         when filepath.match(/-i\.html/) # Instance method.
-                           dirname = File.dirname(filepath)
-                           method_name = CGI.unescape(File.basename(filepath).sub('-i.html', ''))
-                           target_url = dirname + '.html#method-i-' + escape_fragment(method_name)
-                           name = dirname.gsub('/', '::') + '#' + method_name
-                           target_urls[name] = target_url
-                         when filepath.match(/\/cdesc-/) # Class.
-                           target_url = File.dirname(filepath) + '.html'
-                           name = target_url.gsub('/', '::').sub('.html', '')
-                           target_urls[name] = target_url
-                         when File.basename(filepath).match(/^page-/)
-                           target_url = filepath.sub('page-', '') # File.
-                           name = target_url.sub('.html', '').sub(/_rdoc$/, '.rdoc').sub(/_md$/, '.md')
-                           target_urls[name] = target_url
-                         else
-                           raise filepath
-                         end
+      case
+      when filepath.match(/-c\.html/) # Class method.
+        dirname = File.dirname(filepath)
+        method_name = CGI.unescape(File.basename(filepath).sub('-c.html', ''))
+        target_url = dirname + '.html#method-c-' + escape_fragment(method_name)
+        name = dirname.gsub('/', '::') + '::' + method_name
+        names[name] = target_url
+      when filepath.match(/-i\.html/) # Instance method.
+        dirname = File.dirname(filepath)
+        method_name = CGI.unescape(File.basename(filepath).sub('-i.html', ''))
+        target_url = dirname + '.html#method-i-' + escape_fragment(method_name)
+        name = dirname.gsub('/', '::') + '#' + method_name
+        names[name] = target_url
+      when filepath.match(/\/cdesc-/) # Class.
+        target_url = File.dirname(filepath) + '.html'
+        name = target_url.gsub('/', '::').sub('.html', '')
+        names[name] = target_url
+      when File.basename(filepath).match(/^page-/)
+        target_url = filepath.sub('page-', '') # File.
+        name = target_url.sub('.html', '').sub(/_rdoc$/, '.rdoc').sub(/_md$/, '.md')
+        names[name] = target_url
+      else
+        raise filepath
+      end
     end
   end
 
@@ -83,6 +83,12 @@ class WebRI
   end
 
   def get_choice_index(choices)
+    if choices.size > 10
+      puts "  #{choices.size} choices: Show (y or n)?"
+      $stdout.flush
+      response = gets
+      exit unless response =~ /y/i
+    end
     index = nil
     range = (0..choices.size - 1)
     until range.include?(index)
@@ -93,7 +99,8 @@ class WebRI
       print "Choose (#{range}):  "
       $stdout.flush
       response = gets
-      index = response.match(/\d+/) ? response.to_i : -1
+      index = response.match(/^\d+$/) ? response.to_i : -1
+      exit if index == -1
     end
     index
   end
