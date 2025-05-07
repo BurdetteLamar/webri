@@ -13,6 +13,7 @@ class TestWebRI < Minitest::Test
     found_page_name = ''
     html = nil
     pages_not_found = {}
+    fragments_not_found = []
     web_ri.names.each_pair do |ri_filepath, name|
       page_name, fragment = name.split('#')
       url = File.join(WebRI::DocSite, page_name)
@@ -23,13 +24,28 @@ class TestWebRI < Minitest::Test
         rescue => x
           pages_not_found[url] = x.message
           html = nil
+          p [url, x.message]
         end
       end
-      if fragment
+      if html && fragment
+        if fragment.end_with?('--')
+          fragment = fragment.sub('--', '-2D')
+        else
+          fragment = fragment.sub('-i--', '-i-')
+          fragment = fragment.sub('-c--', '-c-')
+        end
+        href = 'href="' + '#' + CGI.escape(fragment) + '"'
+        unless html.match(href)
+          fragments_not_found.push(page_name + '#' + fragment)
+          p [page_name, fragment, href]
+        end
       end
     end
     pages_not_found.each_pair do |k, v|
       p [k, v]
+    end
+    fragments_not_found.each do |fragment|
+      p fragment
     end
   end
 
