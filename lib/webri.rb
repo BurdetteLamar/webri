@@ -1,80 +1,63 @@
 # frozen_string_literal: true
 require 'rbconfig'
-require 'find'
-require 'cgi'
+require 'open-uri'
+require 'rexml'
 
 # A class to display Ruby HTML documentation.
 class WebRI
 
-  RiDirpath = `ri --list-doc-dirs`.split.first
-  DocRelease = RiDirpath.split('/')[-2][0..2]
-  DocSite = 'https://docs.ruby-lang.org/en/' + DocRelease
+  DocSite = 'https://docs.ruby-lang.org/en/'
 
-  attr_accessor :names, :ri_filepaths
+  attr_accessor :links_for_name, :doc_release
 
   def initialize(options = {})
-    set_ri_filepaths
-    set_names
+    _ = RbConfig.ruby.split('Ruby').last[0..1]
+    self.doc_release = _[0] + '.' + _[1]
+    toc_url = DocSite + self.doc_release + '/table_of_contents.html'
+    toc_html = URI.open(toc_url)
+    indexes = {
+      class: [],
+      file: [],
+      method: [],
+      module: []
+    }
+    lines = toc_html.readlines
+    lines.each_with_index do |line, i|
+      next unless line.match('<li class="(\w+)"')
+      type = $1.to_sym
+      fail unless indexes.include?(type)
+      indexes[type].push(i)
+    end
+    self.links_for_name = {}
+    indexes.each_pair do |type, _indexes|
+      _indexes.each do|i|
+        link_text = lines[i + 1]
+        doc = REXML::Document.new(link_text)
+        href = doc.root['href']
+        text = doc.root.texts.first.to_s
+        unless self.links_for_name.include?(text)
+          self.links_for_name[text] = []
+        end
+        self.links_for_name[text].push href
+      end
+    end
+    # self.links_for_name.each_pair do |name, links|
+    #   p [name, links]
+    # end
   end
 
   def show(target_name)
-    selected_urls = {}
-    names.select do |name, value|
-      if name.match(Regexp.new(target_name))
-        selected_urls[name] = value
-      end
-    end
-    case selected_urls.size
+    links = links_for_name[target_name]
+    case links.size
     when 0
       puts "No documentation found for #{target_name}."
     when 1
-      url = selected_urls.first[1]
+      url = links.first
       open_url(url)
     else
-      key = get_choice(selected_urls.keys)
-      url = selected_urls[key]
+      key = get_choice(links)
+      url = links[key]
       open_url(url)
-    end
-  end
-
-  def set_ri_filepaths
-    self.ri_filepaths = []
-    Find.find(RiDirpath).each do |path|
-      next unless path.end_with?('.ri')
-      path.sub!(RiDirpath + '/', '')
-      ri_filepaths.push(path)
-    end
-  end
-
-  def set_names
-    self.names = {}
-    ri_filepaths.each do |ri_filepath|
-      next if ri_filepath == 'cache.ri'
-      filepath = ri_filepath.sub('.ri', '.html')
-      case
-      when filepath.match(/-c\.html/) # Class method.
-        dirname = File.dirname(filepath)
-        method_name = CGI.unescape(File.basename(filepath).sub('-c.html', ''))
-        target_url = dirname + '.html#method-c-' + escape_fragment(method_name)
-        name = dirname.gsub('/', '::') + '::' + method_name
-        names[name] = target_url
-      when filepath.match(/-i\.html/) # Instance method.
-        dirname = File.dirname(filepath)
-        method_name = CGI.unescape(File.basename(filepath).sub('-i.html', ''))
-        target_url = dirname + '.html#method-i-' + escape_fragment(method_name)
-        name = dirname.gsub('/', '::') + '#' + method_name
-        names[name] = target_url
-      when filepath.match(/\/cdesc-/) # Class.
-        target_url = File.dirname(filepath) + '.html'
-        name = target_url.gsub('/', '::').sub('.html', '')
-        names[name] = target_url
-      when File.basename(filepath).match(/^page-/)
-        target_url = filepath.sub('page-', '') # File.
-        name = target_url.sub('.html', '').sub(/_rdoc$/, '.rdoc').sub(/_md$/, '.md')
-        names[name] = target_url
-      else
-        raise filepath
-      end
     end
   end
 
@@ -118,12 +101,9 @@ class WebRI
                         message = "Unrecognized host OS: '#{host_os}'."
                         raise RuntimeError.new(message)
                       end
-    url = File.join(DocSite, DocRelease, target_url)
+    url = File.join(DocSite, doc_release, target_url)
     command = "#{executable_name} #{url}"
     system(command)
   end
 
-  def escape_fragment(fragment)
-    CGI.escape(fragment).gsub('%', '-')
-  end
 end
