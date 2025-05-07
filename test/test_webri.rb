@@ -12,6 +12,7 @@ class TestWebRI < Minitest::Test
     web_ri = WebRI.new
     found_page_name = ''
     html = nil
+    pages_not_found = {}
     web_ri.names.each_pair do |ri_filepath, name|
       page_name, fragment = name.split('#')
       url = File.join(WebRI::DocSite, page_name)
@@ -19,16 +20,16 @@ class TestWebRI < Minitest::Test
         found_page_name = page_name
         begin
           html = URI.open(url).read
-          p page_name
         rescue => x
-          p url
-          p x.message
+          pages_not_found[url] = x.message
           html = nil
         end
       end
       if fragment
-        p '  ' + fragment
       end
+    end
+    pages_not_found.each_pair do |k, v|
+      p [k, v]
     end
   end
 
