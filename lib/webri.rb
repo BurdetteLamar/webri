@@ -6,44 +6,55 @@ require 'rexml'
 # A class to display Ruby HTML documentation.
 class WebRI
 
+  # Where the official web pages are.
   DocSite = 'https://docs.ruby-lang.org/en/'
 
   attr_accessor :links_for_name, :doc_release
 
   def initialize(options = {})
+    # Construct the doc release; e.g., '3.4'.
     _ = RbConfig.ruby.split('Ruby').last[0..1]
     self.doc_release = _[0] + '.' + _[1]
+    # Get its table of contents.
     toc_url = DocSite + self.doc_release + '/table_of_contents.html'
     toc_html = URI.open(toc_url)
+    # Construct indexes for the types.
+    # Each index is the line number (0-based)
+    # of the first line of a triplet such as:
+    #     <li class="file">
+    #       <a href="COPYING.html">COPYING</a>
+    #     </li>
+    # We capture variables thus:
+    # - +type+ is the value of attribute 'class'.
+    # - +href+ is the value of attribute 'href'
+    # Following RI usage, we classify thus:
     indexes = {
       class: [],
-      file: [],
-      method: [],
-      module: []
+      ruby: [],
+      method: []
+    }
+    # In the TOC, we find these four; change them.
+    types = {
+      'class' => :class,
+      'file' => :ruby,
+      'method' => :method,
+      'module' => :class
     }
     lines = toc_html.readlines
     lines.each_with_index do |line, i|
       next unless line.match('<li class="(\w+)"')
-      type = $1.to_sym
-      fail unless indexes.include?(type)
+      type = types[$1]
+      fail $1 if type.nil?
       indexes[type].push(i)
     end
     self.links_for_name = {}
     indexes.each_pair do |type, _indexes|
       _indexes.each do|i|
         link_text = lines[i + 1]
-        doc = REXML::Document.new(link_text)
-        href = doc.root['href']
-        text = doc.root.texts.first.to_s
-        unless self.links_for_name.include?(text)
-          self.links_for_name[text] = []
-        end
-        self.links_for_name[text].push href
+        _, href, _ = link_text.split('"')
+        p [type, href]
       end
     end
-    # self.links_for_name.each_pair do |name, links|
-    #   p [name, links]
-    # end
   end
 
   def show(target_name)
