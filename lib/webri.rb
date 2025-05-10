@@ -9,15 +9,15 @@ class WebRI
   # Where the official web pages are.
   DocSite = 'https://docs.ruby-lang.org/en/'
 
-  attr_accessor :links_for_name, :doc_release
+  attr_accessor :doc_release
 
   def initialize(options = {})
     # Construct the doc release; e.g., '3.4'.
     _ = RbConfig.ruby.split('Ruby').last[0..1]
     self.doc_release = _[0] + '.' + _[1]
-    # Get its table of contents.
+    # Get its table of contents as a temp file.
     toc_url = DocSite + self.doc_release + '/table_of_contents.html'
-    toc_html = URI.open(toc_url)
+    toc_file = URI.open(toc_url)
     # Construct indexes for the types.
     # Each index is the line number (0-based)
     # of the first line of a triplet such as:
@@ -40,20 +40,21 @@ class WebRI
       'method' => :method,
       'module' => :class
     }
-    lines = toc_html.readlines
-    lines.each_with_index do |line, i|
+    lines = toc_file.readlines
+    i = 0
+    while i < lines.count
+      line = lines[i]
+      i += 1
       next unless line.match('<li class="(\w+)"')
       type = types[$1]
-      fail $1 if type.nil?
-      indexes[type].push(i)
+      link_text = lines[i]
+      _, href, _ = link_text.split('"')
+      indexes[type].push(href)
+      i += 2
     end
-    self.links_for_name = {}
-    indexes.each_pair do |type, _indexes|
-      _indexes.each do|i|
-        link_text = lines[i + 1]
-        _, href, _ = link_text.split('"')
-        p [type, href]
-      end
+    indexes.each_pair do |type, hrefs|
+      hrefs.uniq!
+      hrefs.sort!
     end
   end
 
