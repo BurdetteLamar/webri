@@ -9,7 +9,7 @@ class WebRI
   # Where the official web pages are.
   DocSite = 'https://docs.ruby-lang.org/en/'
 
-  attr_accessor :doc_release
+  attr_accessor :doc_release, :indexes
 
   def initialize(options = {})
     # Construct the doc release; e.g., '3.4'.
@@ -26,12 +26,13 @@ class WebRI
     #     </li>
     # We capture variables thus:
     # - +type+ is the value of attribute 'class'.
-    # - +href+ is the value of attribute 'href'
+    # - +href+ is the value of attribute 'href'.
+    # - +name+ is the HTML text.
     # Following RI usage, we classify thus:
-    indexes = {
-      class: [],
-      ruby: [],
-      method: []
+    self.indexes = {
+      class: {},
+      ruby: {},
+      method: {}
     }
     # In the TOC, we find these four; change them.
     types = {
@@ -48,28 +49,53 @@ class WebRI
       next unless line.match('<li class="(\w+)"')
       type = types[$1]
       link_text = lines[i]
-      _, href, _ = link_text.split('"')
-      indexes[type].push(href)
+      _, href, rest = link_text.split('"')
+      name = rest.split(/<|>/)[1]
+      index = self.indexes[type]
+      if type == :method
+        index[name] = [] unless index.include?(name)
+        index[name].push(href)
+      else
+        index[name] = href
+      end
       i += 2
     end
-    indexes.each_pair do |type, hrefs|
-      hrefs.uniq!
-      hrefs.sort!
-    end
+    # self.indexes.each_pair do |type, names|
+    #   puts type
+    #   names.each_pair do |name, hrefs|
+    #     puts '  ' + name
+    #     hrefs.each do |href|
+    #       puts '    ' + href
+    #     end
+    #   end
+    # end
   end
 
-  def show(target_name)
-    links = links_for_name[target_name]
-    case links.size
-    when 0
-      puts "No documentation found for #{target_name}."
-    when 1
-      url = links.first
-      open_url(url)
+  def show(name)
+    case
+    when name.match(/^[A-Z]/)
+      hrefs = indexes[:class].select do |class_name|
+        class_name.start_with?(name)
+      end
+      case hrefs.size
+      when 1
+        href = hrefs.first.last
+        open_url(href)
+      else
+        puts "Nothing known about #{name}"
+      end
+    when name.start_with?('::')
+      name = name[2..]
+      hrefs = indexes[:method].select do |href|
+        href.include?("method-c-#{name}")
+      end
+      puts get_choice(hrefs)
+    when name.match(/^#/)
+      puts 'instance methods'
+    when name.match(/^./)
+      puts 'instance and singleton methods'
     else
-      key = get_choice(links)
-      url = links[key]
-      open_url(url)
+      puts 'http://yahoo.com'
     end
   end
 
