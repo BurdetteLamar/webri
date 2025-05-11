@@ -90,11 +90,32 @@ class WebRI
         open_url(href)
       end
     when name.start_with?('::')
-      name = name[2..]
-      hrefs = indexes[:method].select do |href|
-        href.include?("method-c-#{name}")
+      hrefs = indexes[:method].select do |method_name|
+        method_name.start_with?(name)
       end
-      puts get_choice(hrefs)
+      case hrefs.size
+      when 0
+        puts "Nothing known about #{name}"
+      when 1
+        href = hrefs.first.last
+        open_url(href)
+      else
+        names = hrefs.map {|href| href[0] }
+        choice_index = get_choice_index(names)
+        method_name = names[choice_index]
+        hrefs = hrefs[method_name].sort
+        methods = hrefs.map do|href|
+          href.split('.html').first + method_name
+        end
+        if methods.size == 1
+          href = hrefs.first
+          open_url(href)
+        else
+          method_index = get_choice_index(methods)
+          href = hrefs[method_index]
+          open_url(href)
+        end
+      end
     when name.match(/^#/)
       puts 'instance methods'
     when name.match(/^./)
