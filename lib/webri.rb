@@ -78,11 +78,16 @@ class WebRI
         class_name.start_with?(name)
       end
       case hrefs.size
+      when 0
+        puts "Nothing known about #{name}"
       when 1
         href = hrefs.first.last
         open_url(href)
       else
-        puts "Nothing known about #{name}"
+        names = hrefs.map {|href| href[0] }
+        choice_index = get_choice_index(names)
+        href = hrefs[names[choice_index]]
+        open_url(href)
       end
     when name.start_with?('::')
       name = name[2..]
@@ -99,9 +104,9 @@ class WebRI
     end
   end
 
-  def get_choice(choices)
-    choices[get_choice_index(choices)]
-  end
+  # def get_choice(choices)
+  #   choices[get_choice_index(choices)]
+  # end
 
   def get_choice_index(choices)
     if choices.size > 10
