@@ -52,34 +52,52 @@ class WebRI
       _, href, rest = link_text.split('"')
       name = rest.split(/<|>/)[1]
       index = self.indexes[type]
-      if type == :method
-        index[name] = [] unless index.include?(name)
-        index[name].push(href)
-      else
-        index[name] = href
-      end
+      index[name] = [] unless index.include?(name)
+      index[name].push(href)
       i += 2
     end
-    # self.indexes.each_pair do |type, names|
-    #   puts type
-    #   names.each_pair do |name, hrefs|
-    #     puts '  ' + name
-    #     hrefs.each do |href|
-    #       puts '    ' + href
-    #     end
-    #   end
-    # end
   end
 
   def show(name)
     case
+    when name.start_with?('ruby:')
+      hrefs = indexes[:ruby].sort
+      _, name = name.split(':', 2)
+      hrefs = hrefs.select do |key, value|
+        key.start_with?(name)
+      end
+      case hrefs.size
+      when 0
+        puts "Nothing known about ruby:#{name}."
+      when 1
+        href = hrefs.first.last
+        open_url(href)
+      else
+        names = []
+        hrefs.map do |href|
+          _name, _hrefs = *href
+          _hrefs.each do |_href|
+            # Build the real dir.
+            dirs = _href.split('/')
+            dirs.pop             # Removes trailing page name (*.html).
+            dirs.push(nil)       # Forces a slash at the end.
+            dirs.unshift('.')    # Forces a dot at the beginning.
+            dir = dirs.join('/')
+            s = "#{_name} (#{dir})"
+            names.push(s)
+          end
+        end
+        choice_index = get_choice_index(names)
+        href = hrefs[choice_index].last
+        open_url(href)
+      end
     when name.match(/^[A-Z]/)
       hrefs = indexes[:class].select do |class_name|
         class_name.start_with?(name)
       end
       case hrefs.size
       when 0
-        puts "Nothing known about #{name}"
+        puts "Nothing known about #{name}."
       when 1
         href = hrefs.first.last
         open_url(href)
@@ -95,7 +113,7 @@ class WebRI
       end
       case hrefs.size
       when 0
-        puts "Nothing known about #{name}"
+        puts "Nothing known about #{name}."
       when 1
         href = hrefs.first.last
         open_url(href)
@@ -122,7 +140,7 @@ class WebRI
       end
       case hrefs.size
       when 0
-        puts "Nothing known about #{name}"
+        puts "Nothing known about #{name}."
       when 1
         href = hrefs.first.last
         open_url(href)
@@ -152,7 +170,7 @@ class WebRI
       end
       case hrefs.size
       when 0
-        puts "Nothing known about #{name}"
+        puts "Nothing known about #{name}."
       when 1
         href = hrefs.first.last
         open_url(href)
@@ -178,13 +196,10 @@ class WebRI
     end
   end
 
-  # def get_choice(choices)
-  #   choices[get_choice_index(choices)]
-  # end
-
   def get_choice_index(choices)
+    puts "Found #{choices.size} possibilities:"
     if choices.size > 10
-      puts "  #{choices.size} choices: Show (y or n)?"
+      puts "Show all? (y or n):?"
       $stdout.flush
       response = gets
       exit unless response =~ /y/i
