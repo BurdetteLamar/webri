@@ -76,7 +76,7 @@ class WebRI
       case hrefs.size
       when 0
         puts "No class or module name starts with '#{name}'."
-        puts "Getting names of classes and modules...."
+        puts "Getting names of all classes and modules...."
         hrefs = indexes[:class]
         names = hrefs.map {|href| href[0] }
         choice_index = get_choice_index(names)
@@ -103,9 +103,15 @@ class WebRI
       # Respond.
       case hrefs.size
       when 0
-        puts "Nothing known about ruby:#{name}."
+        puts "No Ruby page name begins with '#{name}'."
+        puts "Getting names of all pages...."
+        hrefs = indexes[:ruby].sort
+        names = hrefs.map {|href| href[0] }
+        choice_index = get_choice_index(names)
+        href = hrefs[choice_index].first
+        open_url(href)
       when 1
-        href = hrefs.first.last
+        href = hrefs.first.last.first
         open_url(href)
       else
         names = []
@@ -123,7 +129,7 @@ class WebRI
           end
         end
         choice_index = get_choice_index(names)
-        href = hrefs[choice_index].last
+        href = hrefs[choice_index].last.first
         open_url(href)
       end
     when name.start_with?('::')
