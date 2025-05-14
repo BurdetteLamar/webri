@@ -11,7 +11,8 @@ class WebRI
 
   attr_accessor :doc_release, :indexes
 
-  # Get the info from the Ruby doc site's table of contents.
+  # Get the info from the Ruby doc site's table of contents
+  # and build our indexes.
   def initialize(options = {})
     # Construct the doc release; e.g., '3.4'.
     _ = RbConfig.ruby.split('Ruby').last[0..1]
@@ -61,14 +62,45 @@ class WebRI
     end
   end
 
+  # Show a page of Ruby documentation.
   def show(name)
+    # Figure out what's asked for.
     case
+    when name.match(/^[A-Z]/)
+      # It's a class name.
+      # Find those that start with that name.
+      hrefs = indexes[:class].select do |class_name|
+        class_name.start_with?(name)
+      end
+      # Respond.
+      case hrefs.size
+      when 0
+        puts "No class or module name starts with '#{name}'."
+        puts "Getting names of classes and modules...."
+        hrefs = indexes[:class]
+        names = hrefs.map {|href| href[0] }
+        choice_index = get_choice_index(names)
+        href = names[choice_index]
+        open_url(href)
+      when 1
+        href = hrefs.first.last.first
+        open_url(href)
+      else
+        puts "Getting names of classes and modules that start with '#{name}'..."
+        names = hrefs.map {|href| href[0] }
+        choice_index = get_choice_index(names)
+        href = hrefs[names[choice_index]].first
+        open_url(href)
+      end
     when name.start_with?('ruby:')
+      # Target page is a free-standing page such as 'ruby:CONTRIBUTING'.
       hrefs = indexes[:ruby].sort
       _, name = name.split(':', 2)
+      # Find the pages that start with the name.
       hrefs = hrefs.select do |key, value|
         key.start_with?(name)
       end
+      # Respond.
       case hrefs.size
       when 0
         puts "Nothing known about ruby:#{name}."
@@ -92,22 +124,6 @@ class WebRI
         end
         choice_index = get_choice_index(names)
         href = hrefs[choice_index].last
-        open_url(href)
-      end
-    when name.match(/^[A-Z]/)
-      hrefs = indexes[:class].select do |class_name|
-        class_name.start_with?(name)
-      end
-      case hrefs.size
-      when 0
-        puts "Nothing known about #{name}."
-      when 1
-        href = hrefs.first.last
-        open_url(href)
-      else
-        names = hrefs.map {|href| href[0] }
-        choice_index = get_choice_index(names)
-        href = hrefs[names[choice_index]]
         open_url(href)
       end
     when name.start_with?('::')
@@ -200,7 +216,7 @@ class WebRI
   end
 
   def get_choice_index(choices)
-    puts "Found #{choices.size} possibilities:"
+    puts "Found #{choices.size}:"
     if choices.size > 10
       puts "Show all? (y or n):?"
       $stdout.flush
@@ -224,6 +240,9 @@ class WebRI
   end
 
   def open_url(target_url)
+    target_url = target_url.gsub('::', '/')
+    target_url += '.html' unless target_url.end_with?('.html')
+    puts "Opening page #{target_url}...."
     host_os = RbConfig::CONFIG['host_os']
     executable_name = case host_os
                       when /linux|bsd/
