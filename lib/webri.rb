@@ -11,49 +11,52 @@ class WebRI
 
   attr_accessor :doc_release, :indexes
 
+  # Get the info from the Ruby doc site's table of contents.
   def initialize(options = {})
     # Construct the doc release; e.g., '3.4'.
     _ = RbConfig.ruby.split('Ruby').last[0..1]
     self.doc_release = _[0] + '.' + _[1]
-    # Get its table of contents as a temp file.
+    # Get the doc table of contents as a temp file.
     toc_url = DocSite + self.doc_release + '/table_of_contents.html'
     toc_file = URI.open(toc_url)
-    # Construct indexes for the types.
-    # Each index is the line number (0-based)
-    # of the first line of a triplet such as:
-    #     <li class="file">
-    #       <a href="COPYING.html">COPYING</a>
-    #     </li>
-    # We capture variables thus:
-    # - +type+ is the value of attribute 'class'.
-    # - +href+ is the value of attribute 'href'.
-    # - +name+ is the HTML text.
     # Following RI usage, we classify thus:
     self.indexes = {
       class: {},
       ruby: {},
       method: {}
     }
-    # In the TOC, we find these four; change them.
+    # In the TOC, we will find these four values for attribute 'class'; map them to the three values.
     types = {
       'class' => :class,
+      'module' => :class,
       'file' => :ruby,
       'method' => :method,
-      'module' => :class
     }
+    # Iterate over the lines of the TOC page.
     lines = toc_file.readlines
     i = 0
     while i < lines.count
       line = lines[i]
       i += 1
+      # We're looking for each triplet of lines such as:
+      #     <li class="file">
+      #       <a href="COPYING.html">COPYING</a>
+      #     </li>
       next unless line.match('<li class="(\w+)"')
+      # We capture variables thus:
+      # - +type+ is the value of attribute 'class'.
+      # - +href+ is the value of attribute 'href'.
+      # - +name+ is the HTML text.
       type = types[$1]
+      # Link is on the next line.
       link_text = lines[i]
       _, href, rest = link_text.split('"')
       name = rest.split(/<|>/)[1]
+      # Add to our index.
       index = self.indexes[type]
       index[name] = [] unless index.include?(name)
       index[name].push(href)
+      # Dismiss the rest of the triplet of lines.
       i += 2
     end
   end
