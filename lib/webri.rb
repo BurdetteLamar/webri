@@ -20,45 +20,56 @@ class WebRI
     # Get the doc table of contents as a temp file.
     toc_url = DocSite + self.doc_release + '/table_of_contents.html'
     toc_file = URI.open(toc_url)
-    # Following RI usage, we classify thus:
+    # Index for each type of entry.
+    # Each index has a hash; key is name, value is array of hrefs.
     self.indexes = {
-      class: {},
-      ruby: {},
-      method: {}
-    }
-    # In the TOC, we will find these four values for attribute 'class'; map them to the three values.
-    types = {
-      'class' => :class,
-      'module' => :class,
-      'file' => :ruby,
-      'method' => :method,
+      class: {}, # Has both classes and modules.
+      file: {},
+      singleton_method: {},
+      instance_method: {},
     }
     # Iterate over the lines of the TOC page.
     lines = toc_file.readlines
     i = 0
     while i < lines.count
-      line = lines[i]
+      item_line = lines[i]
       i += 1
-      # We're looking for each triplet of lines such as:
+      next unless item_line.match('<li class="(\w+)"')
+      # We have a triplet of lines such as:
       #     <li class="file">
       #       <a href="COPYING.html">COPYING</a>
       #     </li>
-      next unless line.match('<li class="(\w+)"')
+      class_attr_val = $1
+      href_line = lines[i] # Second line of triplet.
+      # Consume href_line and third (unused) line.
+      i += 2
       # We capture variables thus:
       # - +type+ is the value of attribute 'class'.
       # - +href+ is the value of attribute 'href'.
       # - +name+ is the HTML text.
-      type = types[$1]
-      # Link is on the next line.
-      link_text = lines[i]
-      _, href, rest = link_text.split('"')
+      type = case class_attr_val
+             when 'class', 'module'
+               :class
+             when 'file'
+               :file
+             when 'method'
+               case href_line
+               when /method-c-/
+                 :singleton_method
+               when /method-i-/
+                 :instance_method
+               else
+                 fail href_line
+               end
+             else
+               fail class_attr_val
+             end
+      _, href, rest = href_line.split('"')
       name = rest.split(/<|>/)[1]
       # Add to our index.
       index = self.indexes[type]
       index[name] = [] unless index.include?(name)
       index[name].push(href)
-      # Dismiss the rest of the triplet of lines.
-      i += 2
     end
   end
 
@@ -94,7 +105,7 @@ class WebRI
       end
     when name.start_with?('ruby:')
       # Target page is a free-standing page such as 'ruby:CONTRIBUTING'.
-      hrefs = indexes[:ruby].sort
+      hrefs = indexes[:file].sort
       _, name = name.split(':', 2)
       # Find the pages that start with the name.
       hrefs = hrefs.select do |key, value|
@@ -133,7 +144,7 @@ class WebRI
         open_url(href)
       end
     when name.start_with?('::')
-      hrefs = indexes[:method].select do |method_name|
+      hrefs = indexes[:singleton_method].select do |method_name|
         method_name.start_with?(name)
       end
       case hrefs.size
@@ -160,7 +171,7 @@ class WebRI
         end
       end
     when name.start_with?('#')
-      hrefs = indexes[:method].select do |method_name|
+      hrefs = indexes[:instance_method].select do |method_name|
         method_name.start_with?(name)
       end
       case hrefs.size
