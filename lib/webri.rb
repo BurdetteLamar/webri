@@ -71,6 +71,16 @@ class WebRI
       index[name] = [] unless index.include?(name)
       index[name].push(href)
     end
+    # indexes.each_pair do |type, index|
+    #   puts type
+    #   index.each_pair do |name, hrefs|
+    #     puts '  ' + name
+    #     hrefs.each do |href|
+    #       puts '    ' + href
+    #     end
+    #   end
+    # end
+    # exit
   end
 
   # Show a page of Ruby documentation.
@@ -78,31 +88,7 @@ class WebRI
     # Figure out what's asked for.
     case
     when name.match(/^[A-Z]/)
-      # It's a class name.
-      # Find those that start with that name.
-      hrefs = indexes[:class].select do |class_name|
-        class_name.start_with?(name)
-      end
-      # Respond.
-      case hrefs.size
-      when 0
-        puts "No class or module name starts with '#{name}'."
-        puts "Getting names of all classes and modules...."
-        hrefs = indexes[:class]
-        names = hrefs.map {|href| href[0] }
-        choice_index = get_choice_index(names)
-        href = names[choice_index]
-        open_url(href)
-      when 1
-        href = hrefs.first.last.first
-        open_url(href)
-      else
-        puts "Getting names of classes and modules that start with '#{name}'..."
-        names = hrefs.map {|href| href[0] }
-        choice_index = get_choice_index(names)
-        href = hrefs[names[choice_index]].first
-        open_url(href)
-      end
+      show_class(name, indexes[:class])
     when name.start_with?('ruby:')
       # Target page is a free-standing page such as 'ruby:CONTRIBUTING'.
       hrefs = indexes[:file].sort
@@ -232,14 +218,40 @@ class WebRI
     end
   end
 
-  def get_choice_index(choices)
-    puts "Found #{choices.size}:"
-    if choices.size > 10
-      puts "Show all? (y or n):?"
-      $stdout.flush
-      response = gets
-      exit unless response =~ /y/i
+  # Show class.
+  def show_class(name, index)
+    # Find class names that start with +name+.
+    hrefs = index.select do |class_name|
+      class_name.start_with?(name)
     end
+    case hrefs.size
+    when 0
+      puts "No class or module name starts with '#{name}'."
+      hrefs = indexes[:class]
+      names = hrefs.map {|href| href[0] }
+      message = "Show names of all #{names.size} classes and modules?"
+      return unless get_boolean_answer(message)
+      choice_index = get_choice_index(names)
+      href = names[choice_index]
+      open_url(href)
+    when 1
+      href = hrefs.first.last.first
+      puts "Found page #{href}."
+      message = 'Open page in browser?'
+      open_url(href) if get_boolean_answer(message)
+    else
+      names = hrefs.map {|href| href[0].start_with?(name) ? href[0] : nil }
+      message = "Show names of #{names.size} classes and modules that start with ''#{name}?'"
+      return unless get_boolean_answer(message)
+      choice_index = get_choice_index(names)
+      return if choice_index.nil?
+      href = hrefs[names[choice_index]].first
+      open_url(href)
+    end
+
+  end
+
+  def get_choice_index(choices)
     index = nil
     range = (0..choices.size - 1)
     until range.include?(index)
@@ -251,9 +263,15 @@ class WebRI
       $stdout.flush
       response = gets
       index = response.match(/^\d+$/) ? response.to_i : -1
-      exit if index == -1
+      return if index == -1
     end
     index
+  end
+
+  def get_boolean_answer(question)
+    print "#{question} (y or n):  "
+    $stdout.flush
+    gets.match(/y/i) ? true : false
   end
 
   def open_url(target_url)
