@@ -106,7 +106,8 @@ class WebRI
 
   # Show class for name.
   def show_class(name, class_index)
-    # Find class names that start with name.
+    # Target is a class or module.
+    # Find class and module names that start with name.
     hrefs = class_index.select do |class_name|
       class_name.start_with?(name)
     end
@@ -136,27 +137,40 @@ class WebRI
   end
 
   def show_file(name, file_index)
-    # Target page is a free-standing page such as 'ruby:CONTRIBUTING'.
-    hrefs = indexes[:file].sort
+    # Target page is a free-standing page such as 'CONTRIBUTING'.
     _, name = name.split(':', 2)
-    # Find the pages that start with the name.
-    hrefs = hrefs.select do |key, value|
-      key.start_with?(name)
+    hrefs = []
+    file_index.each_pair do |key, value|
+      next unless key.start_with?(name)
+      value.each {|value| hrefs.push(value)}
     end
-    # Respond.
     case hrefs.size
     when 0
-      puts "No Ruby page name begins with '#{name}'."
-      puts "Getting names of all pages...."
-      hrefs = indexes[:ruby].sort
-      names = hrefs.map {|href| href[0] }
-      choice_index = get_choice_index(names)
-      href = hrefs[choice_index].first
-      open_url(href)
+      puts "Found no file name starting with '#{name}'."
+      hrefs = indexes[:file]
+      message = "Show names of all #{hrefs.size} files?"
+      return unless get_boolean_answer(message)
+      paths = []
+      hrefs.each_pair do |key, value|
+        value.each {|path| paths.push(path)}
+      end
+      paths.sort!
+      choice_index = get_choice_index(paths)
+      return if choice_index.nil?
+      href = paths[choice_index]
     when 1
       href = hrefs.first.last.first
-      open_url(href)
+      puts "Found one file name starting with '#{name}': #{href.sub('.html', '')}."
     else
+      names = hrefs.map {|href| href[0].start_with?(name) ? href[0] : nil }
+      puts "Found #{names.size} class and module names starting with '#{name}'."
+      message = "Show names?'"
+      return unless get_boolean_answer(message)
+      choice_index = get_choice_index(names)
+      return if choice_index.nil?
+      href = names[choice_index] + '.html'
+      puts "Found #{hrefs.size} file names starting with '#{name}'."
+      return
       names = []
       hrefs.map do |href|
         _name, _hrefs = *href
@@ -173,11 +187,11 @@ class WebRI
       end
       choice_index = get_choice_index(names)
       href = hrefs[choice_index].last.first
-      open_url(href)
     end
+    open_url(href)
   end
 
-  def show_singleton_method(name singleton_method_index)
+  def show_singleton_method(name, singleton_method_index)
     hrefs = singleton_method_index.select do |method_name|
       method_name.start_with?(name)
     end
