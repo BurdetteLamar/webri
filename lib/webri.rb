@@ -226,28 +226,27 @@ class WebRI
     end
     case hrefs.size
     when 0
-      puts "No class or module name starts with '#{name}'."
+      puts "Found no class or module name starting with '#{name}'."
       hrefs = indexes[:class]
       names = hrefs.map {|href| href[0] }
       message = "Show names of all #{names.size} classes and modules?"
       return unless get_boolean_answer(message)
       choice_index = get_choice_index(names)
-      href = names[choice_index]
-      open_url(href)
+      return if choice_index.nil?
+      href = names[choice_index] + '.html'
     when 1
       href = hrefs.first.last.first
-      puts "Found page #{href}."
-      message = 'Open page in browser?'
-      open_url(href) if get_boolean_answer(message)
+      puts "Found one class or module name starting with '#{name}': #{href.sub('.html', '')}."
     else
       names = hrefs.map {|href| href[0].start_with?(name) ? href[0] : nil }
-      message = "Show names of #{names.size} classes and modules that start with ''#{name}?'"
+      puts "Found #{names.size} class and module names starting with '#{name}'."
+      message = "Show names?'"
       return unless get_boolean_answer(message)
       choice_index = get_choice_index(names)
       return if choice_index.nil?
-      href = hrefs[names[choice_index]].first
-      open_url(href)
+      href = names[choice_index] + '.html'
     end
+    open_url(href.gsub('::', '/'))
 
   end
 
@@ -275,9 +274,6 @@ class WebRI
   end
 
   def open_url(target_url)
-    target_url = target_url.gsub('::', '/')
-    target_url += '.html' unless target_url.end_with?('.html')
-    puts "Opening page #{target_url}...."
     host_os = RbConfig::CONFIG['host_os']
     executable_name = case host_os
                       when /linux|bsd/
@@ -291,6 +287,7 @@ class WebRI
                         raise RuntimeError.new(message)
                       end
     url = File.join(DocSite, doc_release, target_url)
+    puts "Opening #{url}."
     command = "#{executable_name} #{url}"
     system(command)
   end
