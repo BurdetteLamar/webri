@@ -174,12 +174,43 @@ class WebRI
   end
 
   def show_singleton_method(name, singleton_method_index)
+    # Target is a singleton method.
     hrefs = singleton_method_index.select do |method_name|
       method_name.start_with?(name)
     end
     case hrefs.size
     when 0
-      puts "Nothing known about #{name}."
+      puts "Found no singleton method name starting with '#{name}'."
+      hrefs = indexes[:singleton_method]
+      message = "Show names of all #{hrefs.size} singleton methods?"
+      return unless get_boolean_answer(message)
+      choices = []
+      hrefs.each_pair do |name, value|
+        choice = "#{name}: "
+        if value.size == 1
+          class_name = value.first.split('#').first.sub('.html', '').gsub('/', '::')
+          choice += "(implemented only in #{class_name})"
+        else
+          choice += "(implemented in #{value.size} classes/modules)"
+        end
+        choices.push(choice)
+      end
+      choice_index = get_choice_index(choices)
+      return if choice_index.nil?
+      name = choices[choice_index].split(': ').first
+      hrefs = hrefs[name]
+      if hrefs.size == 1
+        href = hrefs.first
+      else
+        choices = []
+        hrefs.each do |href|
+          class_name = href.split('.', 2).first
+          choices.push(class_name + name)
+        end
+        choice_index = get_choice_index(choices)
+        return if choice_index.nil?
+        href = hrefs[choice_index]
+      end
     when 1
       href = hrefs.first.last
       open_url(href)
@@ -200,6 +231,7 @@ class WebRI
         open_url(href)
       end
     end
+    open_url(href)
   end
 
   def show_instance_method(name, instance_method_index)
