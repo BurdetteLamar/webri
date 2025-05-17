@@ -218,10 +218,10 @@ class WebRI
     end
   end
 
-  # Show class.
-  def show_class(name, index)
-    # Find class names that start with +name+.
-    hrefs = index.select do |class_name|
+  # Show class for name.
+  def show_class(name, class_index)
+    # Find class names that start with name.
+    hrefs = class_index.select do |class_name|
       class_name.start_with?(name)
     end
     case hrefs.size
@@ -247,7 +247,6 @@ class WebRI
       href = names[choice_index] + '.html'
     end
     open_url(href.gsub('::', '/'))
-
   end
 
   def get_choice_index(choices)
