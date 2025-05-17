@@ -90,131 +90,17 @@ class WebRI
     when name.match(/^[A-Z]/)
       show_class(name, indexes[:class])
     when name.start_with?('ruby:')
-      # Target page is a free-standing page such as 'ruby:CONTRIBUTING'.
-      hrefs = indexes[:file].sort
-      _, name = name.split(':', 2)
-      # Find the pages that start with the name.
-      hrefs = hrefs.select do |key, value|
-        key.start_with?(name)
-      end
-      # Respond.
-      case hrefs.size
-      when 0
-        puts "No Ruby page name begins with '#{name}'."
-        puts "Getting names of all pages...."
-        hrefs = indexes[:ruby].sort
-        names = hrefs.map {|href| href[0] }
-        choice_index = get_choice_index(names)
-        href = hrefs[choice_index].first
-        open_url(href)
-      when 1
-        href = hrefs.first.last.first
-        open_url(href)
-      else
-        names = []
-        hrefs.map do |href|
-          _name, _hrefs = *href
-          _hrefs.each do |_href|
-            # Build the real dir.
-            dirs = _href.split('/')
-            dirs.pop             # Removes trailing page name (*.html).
-            dirs.push(nil)       # Forces a slash at the end.
-            dirs.unshift('.')    # Forces a dot at the beginning.
-            dir = dirs.join('/')
-            s = "#{_name} (#{dir})"
-            names.push(s)
-          end
-        end
-        choice_index = get_choice_index(names)
-        href = hrefs[choice_index].last.first
-        open_url(href)
-      end
+      show_file(name, indexes[:file])
     when name.start_with?('::')
-      hrefs = indexes[:singleton_method].select do |method_name|
-        method_name.start_with?(name)
-      end
-      case hrefs.size
-      when 0
-        puts "Nothing known about #{name}."
-      when 1
-        href = hrefs.first.last
-        open_url(href)
-      else
-        names = hrefs.map {|href| href[0] }
-        choice_index = get_choice_index(names)
-        method_name = names[choice_index]
-        hrefs = hrefs[method_name].sort
-        methods = hrefs.map do|href|
-          href.split('.html').first + method_name
-        end
-        if methods.size == 1
-          href = hrefs.first
-          open_url(href)
-        else
-          method_index = get_choice_index(methods)
-          href = hrefs[method_index]
-          open_url(href)
-        end
-      end
+      show_singleton_method(name, indexes[:singleton_method])
     when name.start_with?('#')
-      hrefs = indexes[:instance_method].select do |method_name|
-        method_name.start_with?(name)
-      end
-      case hrefs.size
-      when 0
-        puts "Nothing known about #{name}."
-      when 1
-        href = hrefs.first.last
-        open_url(href)
-      else
-        names = hrefs.map {|href| href[0] }
-        choice_index = get_choice_index(names)
-        method_name = names[choice_index]
-        hrefs = hrefs[method_name].sort
-        methods = hrefs.map do|href|
-          href.split('.html').first + method_name
-        end
-        if methods.size == 1
-          href = hrefs.first
-          open_url(href)
-        else
-          method_index = get_choice_index(methods)
-          href = hrefs[method_index]
-          open_url(href)
-        end
-      end
+      show_instance_method(name, indexes[:instance_method])
     when name.start_with?('.')
-      singleton_name = name.sub('.', '::')
-      instance_name = name.sub('.', '#')
-      hrefs = indexes[:method].select do |method_name|
-        method_name.start_with?(singleton_name) ||
-          method_name.start_with?(instance_name)
-      end
-      case hrefs.size
-      when 0
-        puts "Nothing known about #{name}."
-      when 1
-        href = hrefs.first.last
-        open_url(href)
-      else
-        names = hrefs.map {|href| href[0] }
-        choice_index = get_choice_index(names)
-        method_name = names[choice_index]
-        hrefs = hrefs[method_name].sort
-        methods = hrefs.map do|href|
-          href.split('.html').first + method_name
-        end
-        if methods.size == 1
-          href = hrefs.first
-          open_url(href)
-        else
-          method_index = get_choice_index(methods)
-          href = hrefs[method_index]
-          open_url(href)
-        end
-      end
+      show_method(name, indexes[:singleton_method], indexes[:instance_method])
+    when name.match(/^[a-z]/)
+      show_method(name, indexes[:singleton_method], indexes[:instance_method])
     else
-      puts 'http://yahoo.com'
+      fail name
     end
   end
 
@@ -247,6 +133,138 @@ class WebRI
       href = names[choice_index] + '.html'
     end
     open_url(href.gsub('::', '/'))
+  end
+
+  def show_file(name, file_index)
+    # Target page is a free-standing page such as 'ruby:CONTRIBUTING'.
+    hrefs = indexes[:file].sort
+    _, name = name.split(':', 2)
+    # Find the pages that start with the name.
+    hrefs = hrefs.select do |key, value|
+      key.start_with?(name)
+    end
+    # Respond.
+    case hrefs.size
+    when 0
+      puts "No Ruby page name begins with '#{name}'."
+      puts "Getting names of all pages...."
+      hrefs = indexes[:ruby].sort
+      names = hrefs.map {|href| href[0] }
+      choice_index = get_choice_index(names)
+      href = hrefs[choice_index].first
+      open_url(href)
+    when 1
+      href = hrefs.first.last.first
+      open_url(href)
+    else
+      names = []
+      hrefs.map do |href|
+        _name, _hrefs = *href
+        _hrefs.each do |_href|
+          # Build the real dir.
+          dirs = _href.split('/')
+          dirs.pop             # Removes trailing page name (*.html).
+          dirs.push(nil)       # Forces a slash at the end.
+          dirs.unshift('.')    # Forces a dot at the beginning.
+          dir = dirs.join('/')
+          s = "#{_name} (#{dir})"
+          names.push(s)
+        end
+      end
+      choice_index = get_choice_index(names)
+      href = hrefs[choice_index].last.first
+      open_url(href)
+    end
+  end
+
+  def show_singleton_method(name singleton_method_index)
+    hrefs = singleton_method_index.select do |method_name|
+      method_name.start_with?(name)
+    end
+    case hrefs.size
+    when 0
+      puts "Nothing known about #{name}."
+    when 1
+      href = hrefs.first.last
+      open_url(href)
+    else
+      names = hrefs.map {|href| href[0] }
+      choice_index = get_choice_index(names)
+      method_name = names[choice_index]
+      hrefs = hrefs[method_name].sort
+      methods = hrefs.map do|href|
+        href.split('.html').first + method_name
+      end
+      if methods.size == 1
+        href = hrefs.first
+        open_url(href)
+      else
+        method_index = get_choice_index(methods)
+        href = hrefs[method_index]
+        open_url(href)
+      end
+    end
+  end
+
+  def show_instance_method(name, instance_method_index)
+    hrefs = instance_method_index.select do |method_name|
+      method_name.start_with?(name)
+    end
+    case hrefs.size
+    when 0
+      puts "Nothing known about #{name}."
+    when 1
+      href = hrefs.first.last
+      open_url(href)
+    else
+      names = hrefs.map {|href| href[0] }
+      choice_index = get_choice_index(names)
+      method_name = names[choice_index]
+      hrefs = hrefs[method_name].sort
+      methods = hrefs.map do|href|
+        href.split('.html').first + method_name
+      end
+      if methods.size == 1
+        href = hrefs.first
+        open_url(href)
+      else
+        method_index = get_choice_index(methods)
+        href = hrefs[method_index]
+        open_url(href)
+      end
+    end
+  end
+
+  def show_method(name, singleton_method_index, instance_method_index)
+    singleton_name = name.sub('.', '::')
+    instance_name = name.sub('.', '#')
+    hrefs = indexes[:method].select do |method_name|
+      method_name.start_with?(singleton_name) ||
+        method_name.start_with?(instance_name)
+    end
+    case hrefs.size
+    when 0
+      puts "Nothing known about #{name}."
+    when 1
+      href = hrefs.first.last
+      open_url(href)
+    else
+      names = hrefs.map {|href| href[0] }
+      choice_index = get_choice_index(names)
+      method_name = names[choice_index]
+      hrefs = hrefs[method_name].sort
+      methods = hrefs.map do|href|
+        href.split('.html').first + method_name
+      end
+      if methods.size == 1
+        href = hrefs.first
+        open_url(href)
+      else
+        method_index = get_choice_index(methods)
+        href = hrefs[method_index]
+        open_url(href)
+      end
+    end
   end
 
   def get_choice_index(choices)
