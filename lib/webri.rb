@@ -159,34 +159,16 @@ class WebRI
       return if choice_index.nil?
       href = paths[choice_index]
     when 1
-      href = hrefs.first.last.first
+      href = hrefs.first
       puts "Found one file name starting with '#{name}': #{href.sub('.html', '')}."
     else
-      names = hrefs.map {|href| href[0].start_with?(name) ? href[0] : nil }
-      puts "Found #{names.size} class and module names starting with '#{name}'."
+      puts "Found #{hrefs.size} file names starting with '#{name}'."
       message = "Show names?'"
       return unless get_boolean_answer(message)
-      choice_index = get_choice_index(names)
+      hrefs.sort!
+      choice_index = get_choice_index(hrefs)
       return if choice_index.nil?
-      href = names[choice_index] + '.html'
-      puts "Found #{hrefs.size} file names starting with '#{name}'."
-      return
-      names = []
-      hrefs.map do |href|
-        _name, _hrefs = *href
-        _hrefs.each do |_href|
-          # Build the real dir.
-          dirs = _href.split('/')
-          dirs.pop             # Removes trailing page name (*.html).
-          dirs.push(nil)       # Forces a slash at the end.
-          dirs.unshift('.')    # Forces a dot at the beginning.
-          dir = dirs.join('/')
-          s = "#{_name} (#{dir})"
-          names.push(s)
-        end
-      end
-      choice_index = get_choice_index(names)
-      href = hrefs[choice_index].last.first
+      href = hrefs[choice_index]
     end
     open_url(href)
   end
