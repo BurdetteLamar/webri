@@ -212,9 +212,10 @@ class WebRI
         href = hrefs[choice_index]
       end
     when 1
+      puts "Found one singleton method name starting with '#{name}': #{href.sub('.html', '')}."
       href = hrefs.first.last
-      open_url(href)
     else
+      puts "Found #{hrefs.size} singleton method names starting with '#{name}'."
       names = hrefs.map {|href| href[0] }
       choice_index = get_choice_index(names)
       method_name = names[choice_index]
