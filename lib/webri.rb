@@ -72,16 +72,16 @@ class WebRI
       index[name] = [] unless index.include?(name)
       index[name].push(uri)
     end
-    indexes.each_pair do |type, index|
-      puts type
-      index.each_pair do |name, uris|
-        puts '  ' + name
-        uris.each do |uri|
-          puts '    ' + uri.inspect
-        end
-      end
-    end
-    exit
+    # indexes.each_pair do |type, index|
+    #   puts type
+    #   index.each_pair do |name, uris|
+    #     puts '  ' + name
+    #     uris.each do |uri|
+    #       puts '    ' + uri.inspect
+    #     end
+    #   end
+    # end
+    # exit
   end
 
   # Show a page of Ruby documentation.
@@ -109,32 +109,38 @@ class WebRI
   def show_class(name, class_index)
     # Target is a class or module.
     # Find class and module names that start with name.
-    hrefs = class_index.select do |class_name|
+    entries = class_index.select do |class_name|
       class_name.start_with?(name)
     end
-    case hrefs.size
+    case entries.size
     when 1
-      href = hrefs.first.last.first
-      puts "Found one class or module name starting with '#{name}':\n  #{href.sub('.html', '')}"
+      name = entries.keys.first
+      uris = entries[name]
+      fail 'Two entries for class name' if uris.size > 1
+      uri = uris.first
+      puts "Found one page for class or module name starting with '#{name}':\n  #{uri}"
     when 0
-      puts "Found no class or module name starting with '#{name}'."
-      hrefs = indexes[:class]
-      names = hrefs.map {|href| href[0] }
-      message = "Show names of all #{names.size} classes and modules?"
+      puts "Found no page page for class or module name starting with '#{name}'."
+      all_entries = indexes[:class]
+      message = "Show names of all #{all_entries.size} classes and modules?"
       return unless get_boolean_answer(message)
+      names = all_entries.keys
       choice_index = get_choice_index(names)
       return if choice_index.nil?
-      href = names[choice_index] + '.html'
+      name = names[choice_index]
+      uri = all_entries[name].first
     else
-      names = hrefs.map {|href| href[0].start_with?(name) ? href[0] : nil }
-      puts "Found #{names.size} class and module names starting with '#{name}'."
-      message = "Show names?'"
+      puts "Found #{entries.size} class and module names starting with '#{name}'."
+      message = "Show found names?'"
       return unless get_boolean_answer(message)
+      names = entries.keys
       choice_index = get_choice_index(names)
       return if choice_index.nil?
-      href = names[choice_index] + '.html'
+      name = names[choice_index]
+      uri = entries[name].first
     end
-    open_url(href.gsub('::', '/'))
+    path = uri.to_s
+    open_url(path.gsub('::', '/'))
   end
 
   # Show file.
