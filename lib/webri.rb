@@ -115,10 +115,9 @@ class WebRI
     case entries.size
     when 1
       name = entries.keys.first
-      uris = entries[name]
-      fail 'Two entries for class name' if uris.size > 1
-      uri = uris.first
-      puts "Found one page for class or module name starting with '#{name}':\n  #{uri}"
+      uris = entries.values.first
+      path = uris.first.path
+      puts "Found one page for class or module name starting with '#{name}':\n  #{path}"
       message = "Open page #{path}?"
       return unless get_boolean_answer(message)
     when 0
@@ -131,6 +130,7 @@ class WebRI
       return if choice_index.nil?
       name = names[choice_index]
       uri = all_entries[name].first
+      path = uri.path
     else
       puts "Found #{entries.size} class and module names starting with '#{name}'."
       message = "Show found names?'"
@@ -140,8 +140,8 @@ class WebRI
       return if choice_index.nil?
       name = names[choice_index]
       uri = entries[name].first
+      path = uri.path
     end
-    path = uri.to_s
     open_url(path.gsub('::', '/'))
   end
 
