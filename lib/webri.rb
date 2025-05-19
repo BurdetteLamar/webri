@@ -104,7 +104,7 @@ class WebRI
     end
   end
 
-  # Show class for name.
+  # Show class.
   def show_class(name, class_index)
     # Target is a class or module.
     # Find class and module names that start with name.
@@ -112,6 +112,9 @@ class WebRI
       class_name.start_with?(name)
     end
     case hrefs.size
+    when 1
+      href = hrefs.first.last.first
+      puts "Found one class or module name starting with '#{name}':\n  #{href.sub('.html', '')}"
     when 0
       puts "Found no class or module name starting with '#{name}'."
       hrefs = indexes[:class]
@@ -121,9 +124,6 @@ class WebRI
       choice_index = get_choice_index(names)
       return if choice_index.nil?
       href = names[choice_index] + '.html'
-    when 1
-      href = hrefs.first.last.first
-      puts "Found one class or module name starting with '#{name}': #{href.sub('.html', '')}."
     else
       names = hrefs.map {|href| href[0].start_with?(name) ? href[0] : nil }
       puts "Found #{names.size} class and module names starting with '#{name}'."
@@ -136,49 +136,62 @@ class WebRI
     open_url(href.gsub('::', '/'))
   end
 
+  # Show file.
   def show_file(name, file_index)
     # Target page is a free-standing page such as 'CONTRIBUTING'.
     _, name = name.split(':', 2)
     hrefs = []
-    file_index.each_pair do |key, value|
-      next unless key.start_with?(name)
-      value.each {|value| hrefs.push(value)}
+    pattern = Regexp.new(name)
+    file_index.each_pair do |key, paths|
+      paths.each do |path|
+        next unless path.match(pattern)
+        hrefs.push(path)
+      end
     end
     case hrefs.size
+    when 1
+      href = hrefs.first
+      file_name = href
+      puts "Found one file name matching '#{pattern.inspect}':\n  #{file_name}"
+      question = "Open page?"
+      return unless get_boolean_answer(question)
     when 0
-      puts "Found no file name starting with '#{name}'."
+      puts "Found no file name matching '#{pattern.inspect}'."
       hrefs = indexes[:file]
       message = "Show names of all #{hrefs.size} files?"
       return unless get_boolean_answer(message)
-      paths = []
-      hrefs.each_pair do |key, value|
-        value.each {|path| paths.push(path)}
+      choices = []
+      hrefs.each_pair do |key, paths|
+        paths.each {|path| choices.push(path)}
       end
-      paths.sort!
-      choice_index = get_choice_index(paths)
+      choice_index = get_choice_index(choices)
       return if choice_index.nil?
       href = paths[choice_index]
-    when 1
-      href = hrefs.first
-      puts "Found one file name starting with '#{name}': #{href.sub('.html', '')}."
     else
       puts "Found #{hrefs.size} file names starting with '#{name}'."
       message = "Show names?'"
       return unless get_boolean_answer(message)
       hrefs.sort!
-      choice_index = get_choice_index(hrefs)
+      choices = hrefs.map {|href| href.sub('_rdoc.html', '').sub('_md.html', '') }
+      choice_index = get_choice_index(choices)
       return if choice_index.nil?
       href = hrefs[choice_index]
     end
     open_url(href)
   end
 
+  # Show singleton method.
   def show_singleton_method(name, singleton_method_index)
     # Target is a singleton method.
     hrefs = singleton_method_index.select do |method_name|
       method_name.start_with?(name)
     end
     case hrefs.size
+    when 1
+      href = hrefs.first.last.first
+      class_name = href.split('.').first
+      method_name = class_name + name
+      puts "Found one singleton method name starting with '#{name}':\n  #{method_name}"
     when 0
       puts "Found no singleton method name starting with '#{name}'."
       hrefs = indexes[:singleton_method]
@@ -211,13 +224,19 @@ class WebRI
         return if choice_index.nil?
         href = hrefs[choice_index]
       end
-    when 1
-      puts "Found one singleton method name starting with '#{name}': #{href.sub('.html', '')}."
-      href = hrefs.first.last
     else
       puts "Found #{hrefs.size} singleton method names starting with '#{name}'."
+      message = "Show names?'"
+      return unless get_boolean_answer(message)
       names = hrefs.map {|href| href[0] }
-      choice_index = get_choice_index(names)
+      choices = []
+      hrefs.each do |href|
+        next
+        class_name = href[1].split('.', 2).first
+        choices.push(class_name + name)
+      end
+      puts choices
+      choice_index = get_choice_index(choices)
       method_name = names[choice_index]
       hrefs = hrefs[method_name].sort
       methods = hrefs.map do|href|
@@ -225,26 +244,25 @@ class WebRI
       end
       if methods.size == 1
         href = hrefs.first
-        open_url(href)
       else
         method_index = get_choice_index(methods)
         href = hrefs[method_index]
-        open_url(href)
       end
     end
     open_url(href)
   end
 
+  # Show instance method.
   def show_instance_method(name, instance_method_index)
     hrefs = instance_method_index.select do |method_name|
       method_name.start_with?(name)
     end
     case hrefs.size
-    when 0
-      puts "Nothing known about #{name}."
     when 1
       href = hrefs.first.last
       open_url(href)
+    when 0
+      puts "Nothing known about #{name}."
     else
       names = hrefs.map {|href| href[0] }
       choice_index = get_choice_index(names)
@@ -264,6 +282,7 @@ class WebRI
     end
   end
 
+  # Show singleton or instance method.
   def show_method(name, singleton_method_index, instance_method_index)
     singleton_name = name.sub('.', '::')
     instance_name = name.sub('.', '#')
@@ -272,11 +291,11 @@ class WebRI
         method_name.start_with?(instance_name)
     end
     case hrefs.size
-    when 0
-      puts "Nothing known about #{name}."
     when 1
       href = hrefs.first.last
       open_url(href)
+    when 0
+      puts "Nothing known about #{name}."
     else
       names = hrefs.map {|href| href[0] }
       choice_index = get_choice_index(names)
@@ -296,6 +315,7 @@ class WebRI
     end
   end
 
+  # Present choices; return index.
   def get_choice_index(choices)
     index = nil
     range = (0..choices.size - 1)
@@ -313,12 +333,14 @@ class WebRI
     index
   end
 
+  # Present question; return answer.
   def get_boolean_answer(question)
     print "#{question} (y or n):  "
     $stdout.flush
     gets.match(/y/i) ? true : false
   end
 
+  # Open URL in browser.
   def open_url(target_url)
     host_os = RbConfig::CONFIG['host_os']
     executable_name = case host_os
@@ -333,7 +355,7 @@ class WebRI
                         raise RuntimeError.new(message)
                       end
     url = File.join(DocSite, doc_release, target_url)
-    puts "Opening #{url}."
+    puts "Opening web page:\n  #{url}"
     command = "#{executable_name} #{url}"
     system(command)
   end
