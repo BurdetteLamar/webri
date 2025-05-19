@@ -21,7 +21,7 @@ class WebRI
     toc_url = DocSite + self.doc_release + '/table_of_contents.html'
     toc_file = URI.open(toc_url)
     # Index for each type of entry.
-    # Each index has a hash; key is name, value is array of hrefs.
+    # Each index has a hash; key is name, value is array of URIs.
     self.indexes = {
       class: {}, # Has both classes and modules.
       file: {},
@@ -40,12 +40,12 @@ class WebRI
       #       <a href="COPYING.html">COPYING</a>
       #     </li>
       class_attr_val = $1
-      href_line = lines[i] # Second line of triplet.
-      # Consume href_line and third (unused) line.
+      anchor_line = lines[i] # Second line of triplet.
+      # Consume anchor_line and third (unused) line.
       i += 2
       # We capture variables thus:
       # - +type+ is the value of attribute 'class'.
-      # - +href+ is the value of attribute 'href'.
+      # - +path+ is the value of attribute 'href'.
       # - +name+ is the HTML text.
       type = case class_attr_val
              when 'class', 'module'
@@ -53,34 +53,35 @@ class WebRI
              when 'file'
                :file
              when 'method'
-               case href_line
+               case anchor_line
                when /method-c-/
                  :singleton_method
                when /method-i-/
                  :instance_method
                else
-                 fail href_line
+                 fail anchor_line
                end
              else
                fail class_attr_val
              end
-      _, href, rest = href_line.split('"')
+      _, path, rest = anchor_line.split('"')
+      uri = URI.parse(path)
       name = rest.split(/<|>/)[1]
-      # Add to our index.
+      # Add to index.
       index = self.indexes[type]
       index[name] = [] unless index.include?(name)
-      index[name].push(href)
+      index[name].push(uri)
     end
-    # indexes.each_pair do |type, index|
-    #   puts type
-    #   index.each_pair do |name, hrefs|
-    #     puts '  ' + name
-    #     hrefs.each do |href|
-    #       puts '    ' + href
-    #     end
-    #   end
-    # end
-    # exit
+    indexes.each_pair do |type, index|
+      puts type
+      index.each_pair do |name, uris|
+        puts '  ' + name
+        uris.each do |uri|
+          puts '    ' + uri.inspect
+        end
+      end
+    end
+    exit
   end
 
   # Show a page of Ruby documentation.
