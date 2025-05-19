@@ -119,6 +119,8 @@ class WebRI
       fail 'Two entries for class name' if uris.size > 1
       uri = uris.first
       puts "Found one page for class or module name starting with '#{name}':\n  #{uri}"
+      message = "Open page #{path}?"
+      return unless get_boolean_answer(message)
     when 0
       puts "Found no page page for class or module name starting with '#{name}'."
       all_entries = indexes[:class]
@@ -146,45 +148,50 @@ class WebRI
   # Show file.
   def show_file(name, file_index)
     # Target page is a free-standing page such as 'CONTRIBUTING'.
-    _, name = name.split(':', 2)
-    hrefs = []
-    pattern = Regexp.new(name)
-    file_index.each_pair do |key, paths|
-      paths.each do |path|
-        next unless path.match(pattern)
-        hrefs.push(path)
-      end
+    name = name.sub(/^ruby:/, '') # Discard leading 'ruby:'
+    # Find file names that start with name.
+    entries = file_index.select do |file_name|
+      file_name.start_with?(name)
     end
-    case hrefs.size
+    case entries.size
     when 1
-      href = hrefs.first
-      file_name = href
-      puts "Found one file name matching '#{pattern.inspect}':\n  #{file_name}"
-      question = "Open page?"
-      return unless get_boolean_answer(question)
-    when 0
-      puts "Found no file name matching '#{pattern.inspect}'."
-      hrefs = indexes[:file]
-      message = "Show names of all #{hrefs.size} files?"
+      full_name = entries.keys.first
+      uris = entries.values.first
+      path = uris.first.path
+      puts "Found one file name starting with '#{name}'\n  #{full_name}"
+      message = "Open page #{path}?"
       return unless get_boolean_answer(message)
-      choices = []
-      hrefs.each_pair do |key, paths|
-        paths.each {|path| choices.push(path)}
+    when 0
+      puts "Found no file name starting with '#{name}'."
+      all_entries = indexes[:file]
+      message = "Show names of all #{all_entries.size} files?"
+      return unless get_boolean_answer(message)
+      name_for_path = {}
+      all_entries.each_pair do |name, uris|
+        uris.each do |uri|
+          name_for_path[uri.path] = name
+        end
       end
+      choices = name_for_path.keys.sort
       choice_index = get_choice_index(choices)
       return if choice_index.nil?
-      href = paths[choice_index]
+      path = choices[choice_index]
     else
-      puts "Found #{hrefs.size} file names starting with '#{name}'."
+      puts "Found #{entries.size} file names starting with '#{name}'."
       message = "Show names?'"
       return unless get_boolean_answer(message)
-      hrefs.sort!
-      choices = hrefs.map {|href| href.sub('_rdoc.html', '').sub('_md.html', '') }
+      name_for_path = {}
+      entries.each_pair do |name, uris|
+        uris.each do |uri|
+          name_for_path[uri.path] = name
+        end
+      end
+      choices = name_for_path.keys.sort
       choice_index = get_choice_index(choices)
       return if choice_index.nil?
-      href = hrefs[choice_index]
+      path = choices[choice_index]
     end
-    open_url(href)
+    open_url(path)
   end
 
   # Show singleton method.
