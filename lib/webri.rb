@@ -114,11 +114,11 @@ class WebRI
     end
     case entries.size
     when 1
-      name = entries.keys.first
+      full_name = entries.keys.first
       uris = entries.values.first
       path = uris.first.path
-      puts "Found one page for class or module name starting with '#{name}':\n  #{path}"
-      message = "Open page #{path}?"
+      puts "Found one class or module name starting with '#{name}':\n  #{full_name}"
+      message = "Open #{path}?"
       return unless get_boolean_answer(message)
     when 0
       puts "Found no page page for class or module name starting with '#{name}'."
@@ -156,10 +156,10 @@ class WebRI
     case entries.size
     when 1
       full_name = entries.keys.first
+      puts "Found one file name starting with '#{name}'\n  #{full_name}"
       uris = entries.values.first
       path = uris.first.path
-      puts "Found one file name starting with '#{name}'\n  #{full_name}"
-      message = "Open page #{path}?"
+      message = "Open #{path}?"
       return unless get_boolean_answer(message)
     when 0
       puts "Found no file name starting with '#{name}'."
@@ -197,20 +197,55 @@ class WebRI
   # Show singleton method.
   def show_singleton_method(name, singleton_method_index)
     # Target is a singleton method.
-    hrefs = singleton_method_index.select do |method_name|
+    # Find method names that start with name.
+    entries = singleton_method_index.select do |method_name|
       method_name.start_with?(name)
     end
-    case hrefs.size
+    case entries.size
     when 1
-      href = hrefs.first.last.first
-      class_name = href.split('.').first
-      method_name = class_name + name
-      puts "Found one singleton method name starting with '#{name}':\n  #{method_name}"
+      # Found only one method name, but it can be in more than one class/module.
+      method_name = entries.keys.first
+      uris = entries.values.first
+      if uris.size == 1
+        uri = uris.first
+        path = uri.to_s
+        class_name = path.sub('.html', '')
+        full_name = class_name + method_name
+        puts "Found one singleton method name starting with '#{name}':\n  #{full_name}"
+        message = "Open #{path}?"
+        return unless get_boolean_answer(message)
+      else
+        puts "Found #{uris.size} singleton method names starting with '#{name}'"
+        message = "Show names?"
+        return unless get_boolean_answer(message)
+        choices = []
+        uris.each do |uri|
+          class_name = uri.path.split('.').first
+          full_name = class_name + method_name
+          choices.push(full_name)
+        end
+        choice_index = get_choice_index(choices)
+        return if choice_index.nil?
+        path = uris[choice_index].to_s
+      end
     when 0
       puts "Found no singleton method name starting with '#{name}'."
-      hrefs = indexes[:singleton_method]
-      message = "Show names of all #{hrefs.size} singleton methods?"
+      all_entries = indexes[:singleton_method]
+      message = "Show names of all #{all_entries.size} singleton methods?"
       return unless get_boolean_answer(message)
+      choices = []
+      entries.each_pair do |found_name, uris|
+        found_name =
+      end
+      uris.each do |uri|
+        class_name = uri.path.split('.').first
+        full_name = class_name + method_name
+        choices.push(full_name)
+      end
+      choice_index = get_choice_index(choices)
+      return if choice_index.nil?
+      exit
+
       choices = []
       hrefs.each_pair do |name, value|
         choice = "#{name}: "
@@ -263,7 +298,7 @@ class WebRI
         href = hrefs[method_index]
       end
     end
-    open_url(href)
+    open_url(path)
   end
 
   # Show instance method.
