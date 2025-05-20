@@ -234,44 +234,25 @@ class WebRI
       message = "Show names of all #{all_entries.size} singleton methods?"
       return unless get_boolean_answer(message)
       choices = []
-      entries.each_pair do |found_name, uris|
-        found_name =
-      end
-      uris.each do |uri|
-        class_name = uri.path.split('.').first
-        full_name = class_name + method_name
-        choices.push(full_name)
-      end
-      choice_index = get_choice_index(choices)
-      return if choice_index.nil?
-      exit
-
-      choices = []
-      hrefs.each_pair do |name, value|
-        choice = "#{name}: "
-        if value.size == 1
-          class_name = value.first.split('#').first.sub('.html', '').gsub('/', '::')
-          choice += "(implemented only in #{class_name})"
+      all_entries.each_pair do |found_name, uris|
+        if uris.size == 1
+          uri = uris.first
+          path = uri.to_s
+          class_name = path.split('.').first.gsub('/', '::')
+          choice = "#{found_name} (implemented only in #{class_name})"
         else
-          choice += "(implemented in #{value.size} classes/modules)"
+          choice = "#{found_name} (#{uris.size} implementations)"
         end
         choices.push(choice)
       end
       choice_index = get_choice_index(choices)
       return if choice_index.nil?
-      name = choices[choice_index].split(': ').first
-      hrefs = hrefs[name]
-      if hrefs.size == 1
-        href = hrefs.first
+      chosen_name = all_entries.keys[choice_index]
+      chosen_uris = all_entries[chosen_name]
+      if chosen_uris.size == 1
+        path = chosen_uris.first.to_s
       else
-        choices = []
-        hrefs.each do |href|
-          class_name = href.split('.', 2).first
-          choices.push(class_name + name)
-        end
-        choice_index = get_choice_index(choices)
-        return if choice_index.nil?
-        href = hrefs[choice_index]
+        fail 'foo'
       end
     else
       puts "Found #{hrefs.size} singleton method names starting with '#{name}'."
