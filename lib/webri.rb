@@ -15,8 +15,8 @@ class WebRI
   # and build our indexes.
   def initialize(options = {})
     # Construct the doc release; e.g., '3.4'.
-    _ = RbConfig.ruby.split('Ruby').last[0..1]
-    self.doc_release = _[0] + '.' + _[1]
+    a = RUBY_VERSION.split('.')
+    self.doc_release = a[0..1].join('.')
     # Get the doc table of contents as a temp file.
     toc_url = DocSite + self.doc_release + '/table_of_contents.html'
     toc_file = URI.open(toc_url)
