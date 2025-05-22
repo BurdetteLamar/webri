@@ -113,19 +113,18 @@ class WebRI
   def show_class(name, class_index)
     # Target is a class or module.
     # Find class and module names that start with name.
-    entries_by_name = class_index.select do |class_name|
+    found_entries = class_index.select do |class_name|
       class_name.start_with?(name)
     end
-    case entries_by_name.size
+    case found_entries.size
     when 1
-      full_name = entries_by_name.keys.first
-      entry = entries_by_name[full_name]
+      full_name = found_entries.keys.first
+      entry = found_entries[full_name]
       puts "Found one class or module name starting with '#{name}':\n  #{full_name}"
       if name != full_name
         message = "Open page #{full_name}"
         return unless get_boolean_answer(message)
       end
-      path = entry.uri.path
     when 0
       puts "Found no page page for class or module name starting with '#{name}'."
       all_entries = indexes[:class]
@@ -135,19 +134,18 @@ class WebRI
       choice_index = get_choice_index(names)
       return if choice_index.nil?
       name = names[choice_index]
-      uri = all_entries[name].first
-      path = uri.path
+      entry = all_entries[name]
     else
-      puts "Found #{entries.size} class and module names starting with '#{name}'."
+      puts "Found #{found_entries.size} class and module names starting with '#{name}'."
       message = "Show found names?'"
       return unless get_boolean_answer(message)
-      names = entries.keys
+      names = found_entries.keys
       choice_index = get_choice_index(names)
       return if choice_index.nil?
       name = names[choice_index]
-      uri = entries[name].first
-      path = uri.path
+      entry = found_entries[name]
     end
+    path = entry.uri.path
     open_url(path.gsub('::', '/'))
   end
 
