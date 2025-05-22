@@ -43,13 +43,16 @@ class WebRI
       anchor_line = lines[i] # Second line of triplet.
       # Consume anchor_line and third (unused) line.
       i += 2
+      _, path, rest = anchor_line.split('"')
+      name = rest.split(/<|>/)[1]
       # We capture variables thus:
       # - +type+ is the value of attribute 'class'.
       # - +path+ is the value of attribute 'href'.
       # - +name+ is the HTML text.
-      type = case class_attr_val
+      case class_attr_val
              when 'class', 'module'
-               :class
+               entry = ClassEntry.new(name, path)
+               self.indexes[:class][name] = entry
              when 'file'
                :file
              when 'method'
@@ -64,24 +67,25 @@ class WebRI
              else
                fail class_attr_val
              end
-      _, path, rest = anchor_line.split('"')
-      uri = URI.parse(path)
-      name = rest.split(/<|>/)[1]
-      # Add to index.
-      index = self.indexes[type]
-      index[name] = [] unless index.include?(name)
-      index[name].push(uri)
     end
-    # indexes.each_pair do |type, index|
-    #   puts type
-    #   index.each_pair do |name, uris|
-    #     puts '  ' + name
-    #     uris.each do |uri|
-    #       puts '    ' + uri.inspect
-    #     end
-    #   end
-    # end
-    # exit
+  end
+
+  class Entry
+    attr_accessor :name
+    def initialize(name)
+      self.name = name
+    end
+    def self.uri(path)
+      URI.parse(path)
+    end
+  end
+
+  class ClassEntry < Entry
+    attr_accessor :uri
+    def initialize(name, path)
+      super(name)
+      self.uri = Entry.uri(path)
+    end
   end
 
   # Show a page of Ruby documentation.
@@ -109,17 +113,19 @@ class WebRI
   def show_class(name, class_index)
     # Target is a class or module.
     # Find class and module names that start with name.
-    entries = class_index.select do |class_name|
+    entries_by_name = class_index.select do |class_name|
       class_name.start_with?(name)
     end
-    case entries.size
+    case entries_by_name.size
     when 1
-      full_name = entries.keys.first
-      uris = entries.values.first
-      path = uris.first.path
+      full_name = entries_by_name.keys.first
+      entry = entries_by_name[full_name]
       puts "Found one class or module name starting with '#{name}':\n  #{full_name}"
-      message = "Open #{path}?"
-      return unless get_boolean_answer(message)
+      if name != full_name
+        message = "Open page #{full_name}"
+        return unless get_boolean_answer(message)
+      end
+      path = entry.uri.path
     when 0
       puts "Found no page page for class or module name starting with '#{name}'."
       all_entries = indexes[:class]
