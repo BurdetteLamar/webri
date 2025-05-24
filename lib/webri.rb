@@ -43,16 +43,15 @@ class WebRI
       anchor_line = lines[i] # Second line of triplet.
       # Consume anchor_line and third (unused) line.
       i += 2
-      _, path, rest = anchor_line.split('"')
-      name = rest.split(/<|>/)[1]
       # We capture variables thus:
-      # - +type+ is the value of attribute 'class'.
       # - +path+ is the value of attribute 'href'.
-      # - +name+ is the HTML text.
+      # - +full_name+ is the HTML text.
+      _, path, rest = anchor_line.split('"')
+      full_name = rest.split(/<|>/)[1]
       case class_attr_val
              when 'class', 'module'
-               entry = ClassEntry.new(name, path)
-               self.indexes[:class][name] = entry
+               entry = ClassEntry.new(full_name, path)
+               self.indexes[:class][full_name] = entry
              when 'file'
                :file
              when 'method'
@@ -71,21 +70,28 @@ class WebRI
   end
 
   class Entry
-    attr_accessor :name
-    def initialize(name)
-      self.name = name
+
+    attr_accessor :full_name
+
+    def initialize(full_name)
+      self.full_name = full_name
     end
+
     def self.uri(path)
       URI.parse(path)
     end
+
   end
 
   class ClassEntry < Entry
+
     attr_accessor :uri
-    def initialize(name, path)
-      super(name)
+
+    def initialize(full_name, path)
+      super(full_name)
       self.uri = Entry.uri(path)
     end
+
   end
 
   # Show a page of Ruby documentation.
@@ -113,8 +119,8 @@ class WebRI
   def show_class(name, class_index)
     # Target is a class or module.
     # Find class and module names that start with name.
-    found_entries = class_index.select do |class_name|
-      class_name.start_with?(name)
+    found_entries = class_index.select do |full_name|
+      full_name.start_with?(name)
     end
     case found_entries.size
     when 1
@@ -126,9 +132,9 @@ class WebRI
         return unless get_boolean_answer(message)
       end
     when 0
-      puts "Found no page page for class or module name starting with '#{name}'."
+      puts "Found no class/module name starting with '#{name}'."
       all_entries = indexes[:class]
-      message = "Show names of all #{all_entries.size} classes and modules?"
+      message = "Show names of all #{all_entries.size} classes/modules?"
       return unless get_boolean_answer(message)
       names = all_entries.keys
       choice_index = get_choice_index(names)
@@ -136,7 +142,7 @@ class WebRI
       name = names[choice_index]
       entry = all_entries[name]
     else
-      puts "Found #{found_entries.size} class and module names starting with '#{name}'."
+      puts "Found #{found_entries.size} class/module names starting with '#{name}'."
       message = "Show found names?'"
       return unless get_boolean_answer(message)
       names = found_entries.keys
