@@ -9,10 +9,10 @@ class WebRI
   # Where the official web pages are.
   DocSite = 'https://docs.ruby-lang.org/en/'
 
-  attr_accessor :doc_release, :indexes
+  attr_accessor :doc_release, :index_for_type
 
   # Get the info from the Ruby doc site's table of contents
-  # and build our indexes.
+  # and build our index_for_type.
   def initialize(options = {})
     # Construct the doc release; e.g., '3.4'.
     a = RUBY_VERSION.split('.')
@@ -22,7 +22,7 @@ class WebRI
     toc_file = URI.open(toc_url)
     # Index for each type of entry.
     # Each index has a hash; key is name, value is array of URIs.
-    self.indexes = {
+    self.index_for_type = {
       class: {}, # Has both classes and modules.
       file: {},
       singleton_method: {},
@@ -39,7 +39,7 @@ class WebRI
       #     <li class="file">
       #       <a href="COPYING.html">COPYING</a>
       #     </li>
-      class_attr_val = $1
+      type = $1
       anchor_line = lines[i] # Second line of triplet.
       # Consume anchor_line and third (unused) line.
       i += 2
@@ -48,24 +48,28 @@ class WebRI
       # - +full_name+ is the HTML text.
       _, path, rest = anchor_line.split('"')
       full_name = rest.split(/<|>/)[1]
-      case class_attr_val
-             when 'class', 'module'
-               entry = ClassEntry.new(full_name, path)
-               self.indexes[:class][full_name] = entry
-             when 'file'
-               :file
-             when 'method'
-               case anchor_line
-               when /method-c-/
-                 :singleton_method
-               when /method-i-/
-                 :instance_method
-               else
-                 fail anchor_line
-               end
-             else
-               fail class_attr_val
-             end
+      case type
+      when 'class', 'module'
+        entry = ClassEntry.new(full_name, path)
+        index = self.index_for_type[:class]
+        index[full_name] = entry
+      when 'file'
+        entry = FileEntry.new(full_name)
+        index = self.index_for_type[:file]
+        index[full_name] = [] unless index.include?(full_name)
+        index[full_name].push(entry)
+      when 'method'
+        case anchor_line
+        when /method-c-/
+          :singleton_method
+        when /method-i-/
+          :instance_method
+        else
+          fail anchor_line
+        end
+      else
+        fail class_attr_val
+      end
     end
   end
 
@@ -94,22 +98,35 @@ class WebRI
 
   end
 
+  class FileEntry < Entry
+
+    attr_accessor :uris
+
+    def initialize(full_name)
+      super(full_name)
+    end
+
+    def add_path(path)
+      self.uris.push(Entry.uri(path))
+    end
+  end
+
   # Show a page of Ruby documentation.
   def show(name)
     # Figure out what's asked for.
     case
     when name.match(/^[A-Z]/)
-      show_class(name, indexes[:class])
+      show_class(name, index_for_type[:class])
     when name.start_with?('ruby:')
-      show_file(name, indexes[:file])
+      show_file(name, index_for_type[:file])
     when name.start_with?('::')
-      show_singleton_method(name, indexes[:singleton_method])
+      show_singleton_method(name, index_for_type[:singleton_method])
     when name.start_with?('#')
-      show_instance_method(name, indexes[:instance_method])
+      show_instance_method(name, index_for_type[:instance_method])
     when name.start_with?('.')
-      show_method(name, indexes[:singleton_method], indexes[:instance_method])
+      show_method(name, index_for_type[:singleton_method], index_for_type[:instance_method])
     when name.match(/^[a-z]/)
-      show_method(name, indexes[:singleton_method], indexes[:instance_method])
+      show_method(name, index_for_type[:singleton_method], index_for_type[:instance_method])
     else
       fail name
     end
@@ -133,7 +150,7 @@ class WebRI
       end
     when 0
       puts "Found no class/module name starting with '#{name}'."
-      all_entries = indexes[:class]
+      all_entries = index_for_type[:class]
       message = "Show names of all #{all_entries.size} classes/modules?"
       return unless get_boolean_answer(message)
       names = all_entries.keys
@@ -173,7 +190,7 @@ class WebRI
       return unless get_boolean_answer(message)
     when 0
       puts "Found no file name starting with '#{name}'."
-      all_entries = indexes[:file]
+      all_entries = index_for_type[:file]
       message = "Show names of all #{all_entries.size} files?"
       return unless get_boolean_answer(message)
       name_for_path = {}
@@ -240,7 +257,7 @@ class WebRI
       end
     when 0
       puts "Found no singleton method name starting with '#{name}'."
-      all_entries = indexes[:singleton_method]
+      all_entries = index_for_type[:singleton_method]
       message = "Show names of all #{all_entries.size} singleton methods?"
       return unless get_boolean_answer(message)
       choices = []
@@ -326,7 +343,7 @@ class WebRI
   def show_method(name, singleton_method_index, instance_method_index)
     singleton_name = name.sub('.', '::')
     instance_name = name.sub('.', '#')
-    hrefs = indexes[:method].select do |method_name|
+    hrefs = index_for_type[:method].select do |method_name|
       method_name.start_with?(singleton_name) ||
         method_name.start_with?(instance_name)
     end
