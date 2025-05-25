@@ -118,6 +118,10 @@ class WebRI
       "#{name}: #{path}"
     end
 
+    def self.path(choice)
+      choice.split(': ').last
+    end
+
   end
 
   # Show a page of Ruby documentation.
@@ -215,7 +219,7 @@ class WebRI
       choice_index = get_choice_index(choices)
       return if choice_index.nil?
       choice = choices[choice_index]
-      path = choice.split(': ').last
+      path = FileEntry.path(choice)
     else
       puts "Found #{entries.size} file names starting with '#{name}'."
       message = "Show names?'"
