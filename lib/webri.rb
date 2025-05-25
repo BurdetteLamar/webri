@@ -1,7 +1,6 @@
 # frozen_string_literal: true
 require 'rbconfig'
 require 'open-uri'
-require 'rexml'
 
 # A class to display Ruby HTML documentation.
 class WebRI
@@ -35,17 +34,19 @@ class WebRI
       item_line = lines[i]
       i += 1
       next unless item_line.match('<li class="(\w+)"')
+      class_attr_value = $1 # Save for later.
       # We have a triplet of lines such as:
       #     <li class="file">
       #       <a href="COPYING.html">COPYING</a>
       #     </li>
-      type = $1
       anchor_line = lines[i] # Second line of triplet.
       # Consume anchor_line and third (unused) line.
       i += 2
       # We capture variables thus:
+      # - +type+ is the value of attribute 'class'.
       # - +path+ is the value of attribute 'href'.
       # - +full_name+ is the HTML text.
+      type = class_attr_value
       _, path, rest = anchor_line.split('"')
       full_name = rest.split(/<|>/)[1]
       case type
