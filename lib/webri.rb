@@ -55,11 +55,15 @@ class WebRI
         index = self.index_for_type[:class]
         index[full_name] = entry
       when 'file'
-        entry = FileEntry.new(full_name)
         index = self.index_for_type[:file]
-        index[full_name] = [] unless index.include?(full_name)
-        index[full_name].push(entry)
-      when 'method'
+        if index.include?(full_name)
+          entry = index[full_name]
+        else
+          entry = FileEntry.new(full_name)
+          index[full_name] = entry
+        end
+        entry.paths.push(path)
+        when 'method'
         case anchor_line
         when /method-c-/
           :singleton_method
@@ -90,26 +94,30 @@ class WebRI
 
   class ClassEntry < Entry
 
-    attr_accessor :uri
+    attr_accessor :path
 
     def initialize(full_name, path)
       super(full_name)
-      self.uri = Entry.uri(path)
+      self.path = path
     end
 
   end
 
   class FileEntry < Entry
 
-    attr_accessor :uris
+    attr_accessor :paths
 
     def initialize(full_name)
       super(full_name)
+      self.paths = []
     end
 
-    def add_path(path)
-      self.uris.push(Entry.uri(path))
+    def self.choice(path)
+      a = path.split('/')
+      name = a.pop.sub('_md', '').sub('_rdoc', '').sub('.html', '')
+      "#{name}: #{path}"
     end
+
   end
 
   # Show a page of Ruby documentation.
@@ -169,8 +177,8 @@ class WebRI
       name = names[choice_index]
       entry = found_entries[name]
     end
-    path = entry.uri.path
-    open_url(path.gsub('::', '/'))
+    uri = Entry.uri(entry.path)
+    open_url(uri.path.gsub('::', '/'))
   end
 
   # Show file.
@@ -185,41 +193,48 @@ class WebRI
     when 1
       full_name = entries.keys.first
       puts "Found one file name starting with '#{name}'\n  #{full_name}"
-      uris = entries.values.first
-      path = uris.first.path
-      message = "Open #{path}?"
-      return unless get_boolean_answer(message)
+      if name != full_name
+        message = "Open page #{full_name}"
+        return unless get_boolean_answer(message)
+      end
+      entry = entries.values.first
+      path = entry.paths.first
     when 0
       puts "Found no file name starting with '#{name}'."
       all_entries = index_for_type[:file]
       message = "Show names of all #{all_entries.size} files?"
       return unless get_boolean_answer(message)
-      name_for_path = {}
-      all_entries.each_pair do |name, uris|
-        uris.each do |uri|
-          name_for_path[uri.path] = name
+      choices = []
+      all_entries.each_pair do |name, entry|
+        entry.paths.each do |path|
+          choice = FileEntry.choice(path)
+          choices.push(choice)
         end
       end
-      choices = name_for_path.keys.sort
+      choices.sort!
       choice_index = get_choice_index(choices)
       return if choice_index.nil?
-      path = choices[choice_index]
+      choice = choices[choice_index]
+      path = choice.split(': ').last
     else
       puts "Found #{entries.size} file names starting with '#{name}'."
       message = "Show names?'"
       return unless get_boolean_answer(message)
-      name_for_path = {}
-      entries.each_pair do |name, uris|
-        uris.each do |uri|
-          name_for_path[uri.path] = name
+      choices = []
+      entries.each_pair do |name, entry|
+        entry.paths.each do |path|
+          choice = FileEntry.choice(path)
+          choices.push(choice)
         end
       end
-      choices = name_for_path.keys.sort
+      choices.sort!
       choice_index = get_choice_index(choices)
       return if choice_index.nil?
-      path = choices[choice_index]
+      choice = choices[choice_index]
+      path = choice.split(': ').last
     end
-    open_url(path)
+    uri = Entry.uri(path)
+    open_url(uri)
   end
 
   # Show singleton method.
