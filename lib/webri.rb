@@ -103,7 +103,7 @@ class WebRI
 
   end
 
-  class FileEntry < Entry
+  class MultiplePathEntry < Entry
 
     attr_accessor :paths
 
@@ -111,6 +111,10 @@ class WebRI
       super(full_name)
       self.paths = []
     end
+
+  end
+
+  class FileEntry < MultiplePathEntry
 
     # Return array of choice strings for entries.
     def self.choices(entries)
