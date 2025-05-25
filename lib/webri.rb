@@ -112,12 +112,26 @@ class WebRI
       self.paths = []
     end
 
+    # Return array of choice strings for entries.
+    def self.choices(entries)
+      choices = []
+      entries.each_pair do |name, entry|
+        entry.paths.each do |path|
+          choice = FileEntry.choice(path)
+          choices.push(choice)
+        end
+      end
+      choices.sort
+    end
+
+    # Return a choice string for a path.
     def self.choice(path)
       a = path.split('/')
       name = a.pop.sub('_md', '').sub('_rdoc', '').sub('.html', '')
       "#{name}: #{path}"
     end
 
+    # Return path string parsed out of choice string.
     def self.path(choice)
       choice.split(': ').last
     end
@@ -208,14 +222,7 @@ class WebRI
       all_entries = index_for_type[:file]
       message = "Show names of all #{all_entries.size} files?"
       return unless get_boolean_answer(message)
-      choices = []
-      all_entries.each_pair do |name, entry|
-        entry.paths.each do |path|
-          choice = FileEntry.choice(path)
-          choices.push(choice)
-        end
-      end
-      choices.sort!
+      choices = FileEntry.choices(all_entries)
       choice_index = get_choice_index(choices)
       return if choice_index.nil?
       choice = choices[choice_index]
@@ -224,14 +231,7 @@ class WebRI
       puts "Found #{entries.size} file names starting with '#{name}'."
       message = "Show names?'"
       return unless get_boolean_answer(message)
-      choices = []
-      entries.each_pair do |name, entry|
-        entry.paths.each do |path|
-          choice = FileEntry.choice(path)
-          choices.push(choice)
-        end
-      end
-      choices.sort!
+      choices = FileEntry.choices(entries)
       choice_index = get_choice_index(choices)
       return if choice_index.nil?
       choice = choices[choice_index]
