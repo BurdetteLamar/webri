@@ -132,26 +132,22 @@ class WebRI
 
     # Return array of choice strings for entries.
     def self.choices(entries)
-      choices = []
+      choices = {}
       entries.each_pair do |name, entry|
         entry.paths.each do |path|
-          choice = self.choice(path)
-          choices.push(choice)
+          choice = self.choice(name, path)
+          choices[choice] = path
         end
       end
-      choices.sort
+      choices
+      Hash[choices.sort]
     end
 
-    # Return a choice string for a path.
-    def self.choice(path)
+    # Return a choice for a path.
+    def self.choice(name, path)
       a = path.split('/')
-      name = a.pop.sub('_md', '').sub('_rdoc', '').sub('.html', '')
-      "#{name}: #{path}"
-    end
-
-    # Return path string parsed out of choice string.
-    def self.path(choice)
-      choice.split(': ').last
+      a.pop.sub('_md', '').sub('_rdoc', '').sub('.html', '') + ' ' + path
+      "#{name}: (#{path})"
     end
 
   end
@@ -253,39 +249,39 @@ class WebRI
   def show_file(name, file_index)
     # Target page is a free-standing page such as 'CONTRIBUTING'.
     name = name.sub(/^ruby:/, '') # Discard leading 'ruby:'
+    all_entries = index_for_type[:file]
+    all_choices = FileEntry.choices(all_entries)
     # Find file names that start with name.
-    entries = file_index.select do |file_name|
-      file_name.start_with?(name)
+    selected_entries = all_entries.select do |key, value|
+      key.start_with?(name)
     end
-    case entries.size
+    case selected_entries.size
     when 1
-      full_name = entries.keys.first
-      puts "Found one file name starting with '#{name}'\n  #{full_name}"
+      choices = FileEntry.choices(selected_entries)
+      choice = choices.keys.first
+      path = choices.values.first
+      puts "Found one file name starting with '#{name}'\n  #{choice}"
+      full_name = choice.split(':').first
       if name != full_name
-        message = "Open page #{full_name}"
+        message = "Open page #{path}"
         return unless get_boolean_answer(message)
       end
-      entry = entries.values.first
-      path = entry.paths.first
+      path
     when 0
       puts "Found no file name starting with '#{name}'."
-      all_entries = index_for_type[:file]
-      choices = FileEntry.choices(all_entries)
-      message = "Show names of all #{choices.size} files?"
+      message = "Show names of all #{all_choices.size} files?"
       return unless get_boolean_answer(message)
-      choice_index = get_choice_index(choices)
-      return if choice_index.nil?
-      choice = choices[choice_index]
-      path = FileEntry.path(choice)
+      key = get_choice(all_choices.keys)
+      return if key.nil?
+      path = all_choices[key]
     else
-      puts "Found #{entries.size} file names starting with '#{name}'."
+      choices = FileEntry.choices(entries)
+      puts "Found #{choices.size} file names starting with '#{name}'."
       message = "Show names?'"
       return unless get_boolean_answer(message)
-      choices = FileEntry.choices(entries)
-      choice_index = get_choice_index(choices)
-      return if choice_index.nil?
-      choice = choices[choice_index]
-      path = FileEntry.path(choice)
+      key = get_choice(choices.keys)
+      return if key.nil?
+      path = choices[key]
     end
     uri = Entry.uri(path)
     open_url(uri)
@@ -412,8 +408,8 @@ class WebRI
     end
   end
 
-  # Present choices; return index.
-  def get_choice_index(choices)
+  # Present choices; return choice.
+  def get_choice(choices)
     index = nil
     range = (0..choices.size - 1)
     until range.include?(index)
@@ -427,7 +423,7 @@ class WebRI
       index = response.match(/^\d+$/) ? response.to_i : -1
       return if index == -1
     end
-    index
+    choices[index]
   end
 
   # Present question; return answer.
