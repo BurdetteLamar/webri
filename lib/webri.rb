@@ -150,6 +150,11 @@ class WebRI
       "#{name}: (#{path})"
     end
 
+    # Return the full name from a choice string.
+    def self.full_name_for_choice(choice)
+      choice.split(':').first
+    end
+
   end
 
   class MethodEntry < MultiplePathEntry
@@ -247,23 +252,23 @@ class WebRI
 
   # Show file.
   def show_file(name, file_index)
-    # Target page is a free-standing page such as 'CONTRIBUTING'.
+    # Target page is a free-standing page such as 'COPYING'.
     name = name.sub(/^ruby:/, '') # Discard leading 'ruby:'
     all_entries = index_for_type[:file]
     all_choices = FileEntry.choices(all_entries)
-    # Find file names that start with name.
+    # Find entries whose names that start with name.
     selected_entries = all_entries.select do |key, value|
       key.start_with?(name)
     end
     case selected_entries.size
     when 1
-      choices = FileEntry.choices(selected_entries)
-      choice = choices.keys.first
-      path = choices.values.first
+      selected_choices = FileEntry.choices(selected_entries)
+      choice = selected_choices.keys.first
+      path = selected_choices.values.first
       puts "Found one file name starting with '#{name}'\n  #{choice}"
-      full_name = choice.split(':').first
+      full_name = FileEntry.full_name_for_choice(choice)
       if name != full_name
-        message = "Open page #{path}"
+        message = "Open page #{path}?"
         return unless get_boolean_answer(message)
       end
       path
@@ -275,13 +280,13 @@ class WebRI
       return if key.nil?
       path = all_choices[key]
     else
-      choices = FileEntry.choices(entries)
-      puts "Found #{choices.size} file names starting with '#{name}'."
+      selected_choices = FileEntry.choices(selected_entries)
+      puts "Found #{selected_choices.size} file names starting with '#{name}'."
       message = "Show names?'"
       return unless get_boolean_answer(message)
-      key = get_choice(choices.keys)
+      key = get_choice(selected_choices.keys)
       return if key.nil?
-      path = choices[key]
+      path = selected_choices[key]
     end
     uri = Entry.uri(path)
     open_url(uri)
