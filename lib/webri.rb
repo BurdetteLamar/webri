@@ -63,12 +63,26 @@ class WebRI
           index[full_name] = entry
         end
         entry.paths.push(path)
-        when 'method'
+      when 'method'
         case anchor_line
         when /method-c-/
-          :singleton_method
+          index = self.index_for_type[:singleton_method]
+          if index.include?(full_name)
+            entry = index[full_name]
+          else
+            entry = MethodEntry.new(full_name)
+            index[full_name] = entry
+          end
+          entry.paths.push(path)
         when /method-i-/
-          :instance_method
+          index = self.index_for_type[:instance_method]
+          if index.include?(full_name)
+            entry = index[full_name]
+          else
+            entry = MethodEntry.new(full_name)
+            index[full_name] = entry
+          end
+          entry.paths.push(path)
         else
           fail anchor_line
         end
@@ -121,7 +135,7 @@ class WebRI
       choices = []
       entries.each_pair do |name, entry|
         entry.paths.each do |path|
-          choice = FileEntry.choice(path)
+          choice = self.choice(path)
           choices.push(choice)
         end
       end
@@ -138,6 +152,38 @@ class WebRI
     # Return path string parsed out of choice string.
     def self.path(choice)
       choice.split(': ').last
+    end
+
+  end
+
+  class MethodEntry < MultiplePathEntry
+
+    # Return array of choice strings for entries.
+    def self.choices(entries)
+      choices = []
+      entries.each_pair do |name, entry|
+        entry.paths.each do |path|
+          choice = self.choice(path)
+          choices.push(choice)
+        end
+      end
+      choices.sort
+    end
+
+    # Return a choice string for a path.
+    def self.choice(path)
+      class_name, method_name = path.split('.html#method-c-')
+      class_name.gsub!('/', '::')
+      "::#{method_name}: #{class_name}::#{method_name}"
+    end
+
+    # Return path string parsed out of choice string.
+    def self.path(choice)
+      path = choice.split(': ').last
+      a = path.split('::')
+      method_name = a.pop
+      class_path = a.join('/')
+      "#{class_path}.html#method-c-#{method_name}"
     end
 
   end
@@ -224,9 +270,9 @@ class WebRI
     when 0
       puts "Found no file name starting with '#{name}'."
       all_entries = index_for_type[:file]
-      message = "Show names of all #{all_entries.size} files?"
-      return unless get_boolean_answer(message)
       choices = FileEntry.choices(all_entries)
+      message = "Show names of all #{choices.size} files?"
+      return unless get_boolean_answer(message)
       choice_index = get_choice_index(choices)
       return if choice_index.nil?
       choice = choices[choice_index]
@@ -239,7 +285,7 @@ class WebRI
       choice_index = get_choice_index(choices)
       return if choice_index.nil?
       choice = choices[choice_index]
-      path = choice.split(': ').last
+      path = FileEntry.path(choice)
     end
     uri = Entry.uri(path)
     open_url(uri)
@@ -255,60 +301,29 @@ class WebRI
     case entries.size
     when 1
       # Found only one method name, but it can be in more than one class/module.
-      method_name = entries.keys.first
-      uris = entries.values.first
-      if uris.size == 1
-        uri = uris.first
-        path = uri.to_s
-        class_name = path.sub('.html', '')
-        full_name = class_name + method_name
-        puts "Found one singleton method name starting with '#{name}':\n  #{full_name}"
-        message = "Open #{path}?"
+      full_name = entries.keys.first
+      puts "Found one singleton method name starting with '#{name}':\n  #{full_name}"
+      if name != full_name
+        message = "Open page #{full_name}"
         return unless get_boolean_answer(message)
-      else
-        puts "Found #{uris.size} singleton method names starting with '#{name}'"
-        message = "Show names?"
-        return unless get_boolean_answer(message)
-        choices = []
-        uris.each do |uri|
-          class_name = uri.path.split('.').first
-          full_name = class_name + method_name
-          choices.push(full_name)
-        end
-        choice_index = get_choice_index(choices)
-        return if choice_index.nil?
-        path = uris[choice_index].to_s
       end
+      entry = entries.values.first
+      path = entry.paths.first
     when 0
       puts "Found no singleton method name starting with '#{name}'."
       all_entries = index_for_type[:singleton_method]
-      message = "Show names of all #{all_entries.size} singleton methods?"
+      choices = MethodEntry.choices(all_entries)
+      message = "Show names of all #{choices.size} singleton methods?"
       return unless get_boolean_answer(message)
-      choices = []
-      all_entries.each_pair do |found_name, uris|
-        if uris.size == 1
-          uri = uris.first
-          path = uri.to_s
-          class_name = path.split('.').first.gsub('/', '::')
-          choice = "#{found_name} (implemented only in #{class_name})"
-        else
-          choice = "#{found_name} (#{uris.size} implementations)"
-        end
-        choices.push(choice)
-      end
       choice_index = get_choice_index(choices)
       return if choice_index.nil?
-      chosen_name = all_entries.keys[choice_index]
-      chosen_uris = all_entries[chosen_name]
-      if chosen_uris.size == 1
-        path = chosen_uris.first.to_s
-      else
-        fail 'foo'
-      end
+      choice = choices[choice_index]
+      path = MethodEntry.path(choice)
     else
-      puts "Found #{hrefs.size} singleton method names starting with '#{name}'."
+      puts "Found #{entries.size} singleton method names starting with '#{name}'."
       message = "Show names?'"
       return unless get_boolean_answer(message)
+      choices =
       names = hrefs.map {|href| href[0] }
       choices = []
       hrefs.each do |href|
@@ -330,7 +345,8 @@ class WebRI
         href = hrefs[method_index]
       end
     end
-    open_url(path)
+    uri = Entry.uri(path)
+    open_url(uri)
   end
 
   # Show instance method.
