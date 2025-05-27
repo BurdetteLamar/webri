@@ -7,9 +7,12 @@ require 'open3'
 class TestWebRI < Minitest::Test
 
   def test_help
-
+    webri_session('', '--help') do |stdin, stdout, stderr|
+      out = stdout.readpartial(4096)
+      assert_match('Usage: webri [options] name', out)
+    end
   end
-  
+
   def test_version
     version = WebRI::VERSION
     assert_match(/\d+\.\d+\.\d+/, version)
@@ -67,8 +70,8 @@ class TestWebRI < Minitest::Test
   end
 
   # Open a webri session and yield its IO streams.
-  def webri_session(name)
-    command = "ruby bin/webri --noop #{name}" # Noop: don't actually open the web page.
+  def webri_session(name, options_s = '--noop')
+    command = "ruby bin/webri #{options_s} #{name}" # Noop: don't actually open the web page.
     Open3.popen3(command) do |stdin, stdout, stderr, wait_thread|
       yield stdin, stdout, stderr
     end
