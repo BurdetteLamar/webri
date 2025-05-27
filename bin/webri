@@ -39,6 +39,10 @@ parser.on('-v', '--version', 'Prints the version of webri.') do
   puts WebRI::VERSION
   exit
 end
+parser.on('-n', '--noop', 'Do not open web page.') do |value|
+  options[:noop] = true
+end
+
 
 parser.parse!
 

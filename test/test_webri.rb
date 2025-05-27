@@ -12,7 +12,7 @@ class TestWebRI < Minitest::Test
 
   # Open a webri session and yield its IO streams.
   def webri_session(name)
-    command = "ruby -d bin/webri #{name}"
+    command = "ruby bin/webri --noop #{name}"
     Open3.popen3(command) do |stdin, stdout, stderr, wait_thread|
       yield stdin, stdout, stderr
     end
@@ -30,7 +30,7 @@ class TestWebRI < Minitest::Test
       assert_match(/Choose/, out)
       stdin.write_nonblock("0\n")
       out = stdout.readpartial(4096)
-      assert_match(/Opening/, out)
+      assert_match(/Web page:/, out)
     end
   end
 
@@ -42,7 +42,7 @@ class TestWebRI < Minitest::Test
       assert_match(/Found one file name starting with '#{short_name}'./, out)
       stdin.write_nonblock("y\n")
       out = stdout.readpartial(4096)
-      assert_match(/Opening/, out)
+      assert_match(/Web page:/, out)
     end
   end
 
@@ -52,7 +52,7 @@ class TestWebRI < Minitest::Test
     webri_session(name) do |stdin, stdout, stderr|
       out = stdout.readpartial(4096)
       assert_match(/Found one file name starting with '#{short_name}'./, out)
-      assert_match(/Opening/, out)
+      assert_match(/Web page:/, out)
     end
   end
 
@@ -66,7 +66,7 @@ class TestWebRI < Minitest::Test
       out = stdout.readpartial(8192)
       stdin.write_nonblock("0\n")
       out = stdout.readpartial(4096)
-      assert_match(/Opening/, out)
+      assert_match(/Web page:/, out)
     end
   end
 

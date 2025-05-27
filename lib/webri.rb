@@ -8,11 +8,12 @@ class WebRI
   # Where the official web pages are.
   DocSite = 'https://docs.ruby-lang.org/en/'
 
-  attr_accessor :doc_release, :index_for_type
+  attr_accessor :doc_release, :index_for_type, :noop
 
   # Get the info from the Ruby doc site's table of contents
   # and build our index_for_type.
   def initialize(options = {})
+    self.noop = options[:noop]
     # Construct the doc release; e.g., '3.4'.
     a = RUBY_VERSION.split('.')
     self.doc_release = a[0..1].join('.')
@@ -452,9 +453,9 @@ class WebRI
                         raise RuntimeError.new(message)
                       end
     url = File.join(DocSite, doc_release, target_url)
-    puts "Opening web page:\n  #{url}"
+    puts "Web page:\n  #{url}"
     command = "#{executable_name} #{url}"
-    if ENV['WEBRI_NOOP']
+    if noop
       puts "Command: '#{command}'"
     else
       system(command)
