@@ -46,12 +46,15 @@ class TestWebRI < Minitest::Test
     end
   end
 
-  def zzz_test_file_all_choices
-    name = 'ruby:nosuch' # Should offer all choices.
+  def test_file_all_choices
+    short_name = 'nosuch'
+    name = "ruby:#{short_name}" # Should offer all choices.
     webri_session(name) do |stdin, stdout, stderr|
       out = stdout.readpartial(4096)
-      assert_match(/no file name starting with/, out)
+      assert_match(/Found no file name starting with '#{short_name}'./, out)
       stdin.write_nonblock("y\n")
+      out = stdout.readpartial(8192)
+      stdin.write_nonblock("0\n")
       out = stdout.readpartial(4096)
       assert_match(/Opening/, out)
     end
