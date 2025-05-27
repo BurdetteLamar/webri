@@ -46,6 +46,16 @@ class TestWebRI < Minitest::Test
     end
   end
 
+  def test_file_no_choice
+    short_name = 'yjit'
+    name = "ruby:#{short_name}" # Should offer no choices.
+    webri_session(name) do |stdin, stdout, stderr|
+      out = stdout.readpartial(4096)
+      assert_match(/Found one file name starting with '#{short_name}'./, out)
+      assert_match(/Opening/, out)
+    end
+  end
+
   def test_file_all_choices
     short_name = 'nosuch'
     name = "ruby:#{short_name}" # Should offer all choices.
