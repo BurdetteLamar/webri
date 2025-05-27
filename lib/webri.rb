@@ -454,7 +454,11 @@ class WebRI
     url = File.join(DocSite, doc_release, target_url)
     puts "Opening web page:\n  #{url}"
     command = "#{executable_name} #{url}"
-    system(command) unless $DEBUG
+    if ENV['WEBRI_NOOP']
+      puts "Command: '#{command}'"
+    else
+      system(command)
+    end
   end
 
 end

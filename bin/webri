@@ -39,6 +39,7 @@ parser.on('-v', '--version', 'Prints the version of webri.') do
   puts WebRI::VERSION
   exit
 end
+
 parser.parse!
 
 error_message = case ARGV.size

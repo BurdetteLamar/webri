@@ -21,7 +21,7 @@ class TestWebRI < Minitest::Test
 
   def test_file_multiple_choices
     short_name = 'c'
-    name = "ruby:#{short_name}" # Should offer multiple choices.
+    name = "ruby:#{short_name}" # Should offer multiple choices and open chosen page.
     webri_session(name) do |stdin, stdout, stderr|
       out = stdout.readpartial(4096)
       assert_match(/Found \d+ file names starting with '#{short_name}'./, out)
@@ -36,7 +36,7 @@ class TestWebRI < Minitest::Test
 
   def test_file_one_choice
     short_name = 'yji'
-    name = "ruby:#{short_name}" # Should offer one choice.
+    name = "ruby:#{short_name}" # Should offer one choice and open page if requested.
     webri_session(name) do |stdin, stdout, stderr|
       out = stdout.readpartial(4096)
       assert_match(/Found one file name starting with '#{short_name}'./, out)
@@ -48,7 +48,7 @@ class TestWebRI < Minitest::Test
 
   def test_file_no_choice
     short_name = 'yjit'
-    name = "ruby:#{short_name}" # Should offer no choices.
+    name = "ruby:#{short_name}" # Should offer no choices and open page immediately.
     webri_session(name) do |stdin, stdout, stderr|
       out = stdout.readpartial(4096)
       assert_match(/Found one file name starting with '#{short_name}'./, out)
@@ -58,7 +58,7 @@ class TestWebRI < Minitest::Test
 
   def test_file_all_choices
     short_name = 'nosuch'
-    name = "ruby:#{short_name}" # Should offer all choices.
+    name = "ruby:#{short_name}" # Should offer all choices and open chosen page.
     webri_session(name) do |stdin, stdout, stderr|
       out = stdout.readpartial(4096)
       assert_match(/Found no file name starting with '#{short_name}'./, out)
