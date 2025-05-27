@@ -36,6 +36,16 @@ class TestWebRI < Minitest::Test
     end
   end
 
+  def test_file_one_choice
+    webri_session('ruby:ch') do |stdin, stdout, stderr|
+      out = stdout.readpartial(4096)
+      assert_match(/file name starting with/, out)
+      stdin.write_nonblock("y\n")
+      out = stdout.readpartial(4096)
+      assert_match(/Opening/, out)
+    end
+  end
+
   def zzz_test_foo
     Open3.popen3('ruby bin/webri ruby:c') do |stdin, stdout, stderr, wait_thread|
       puts stdout.readpartial(4096)
