@@ -6,17 +6,13 @@ require 'open3'
 
 class TestWebRI < Minitest::Test
 
-  def test_that_it_has_a_version_number
-    refute_nil WebRI::VERSION
+  def test_help
+
   end
-
-  # Open a webri session and yield its IO streams.
-  def webri_session(name)
-    command = "ruby bin/webri --noop #{name}"
-    Open3.popen3(command) do |stdin, stdout, stderr, wait_thread|
-      yield stdin, stdout, stderr
-    end
-
+  
+  def test_version
+    version = WebRI::VERSION
+    assert_match(/\d+\.\d+\.\d+/, version)
   end
 
   def test_file_multiple_choices
@@ -67,6 +63,14 @@ class TestWebRI < Minitest::Test
       stdin.write_nonblock("0\n")
       out = stdout.readpartial(4096)
       assert_match(/Web page:/, out)
+    end
+  end
+
+  # Open a webri session and yield its IO streams.
+  def webri_session(name)
+    command = "ruby bin/webri --noop #{name}" # Noop: don't actually open the web page.
+    Open3.popen3(command) do |stdin, stdout, stderr, wait_thread|
+      yield stdin, stdout, stderr
     end
   end
 
