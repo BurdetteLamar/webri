@@ -139,7 +139,6 @@ class WebRI
           choices[choice] = path
         end
       end
-      choices
       Hash[choices.sort]
     end
 
@@ -455,7 +454,7 @@ class WebRI
     url = File.join(DocSite, doc_release, target_url)
     puts "Opening web page:\n  #{url}"
     command = "#{executable_name} #{url}"
-    system(command)
+    system(command) unless $DEBUG
   end
 
 end
