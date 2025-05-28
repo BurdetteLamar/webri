@@ -36,7 +36,7 @@ class TestWebRI < Minitest::Test
     webri_session(name) do |stdin, stdout, stderr|
       output = read(stdout)
       assert_match(/Found one class or module name starting with '#{name}'./, output)
-      assert_match('Web page:', output)
+      check_web_page(output)
     end
   end
 
@@ -49,7 +49,7 @@ class TestWebRI < Minitest::Test
       check_choices(stdin, stdout, output)
       writeln(stdin, '0')
       output = read(stdout)
-      assert_match('Web page:', output)
+      check_web_page(output)
     end
   end
 
@@ -61,7 +61,7 @@ class TestWebRI < Minitest::Test
       check_choices(stdin, stdout, output)
       writeln(stdin, '0')
       output = read(stdout)
-      assert_match('Web page:', output)
+      check_web_page(output)
     end
   end
 
@@ -72,7 +72,7 @@ class TestWebRI < Minitest::Test
       assert_match(/Found one class or module name starting with '#{name}'./, output)
       writeln(stdin, 'y')
       output = read(stdout)
-      assert_match('Web page:', output)
+      check_web_page(output)
     end
   end
 
@@ -84,7 +84,7 @@ class TestWebRI < Minitest::Test
     webri_session(name) do |stdin, stdout, stderr|
       output = read(stdout)
       assert_match(/Found one file name starting with '#{short_name}'./, output)
-      assert_match('Web page:', output)
+      check_web_page(output)
     end
   end
 
@@ -98,7 +98,7 @@ class TestWebRI < Minitest::Test
       check_choices(stdin, stdout, output)
       writeln(stdin, '0')
       output = read(stdout)
-      assert_match('Web page:', output)
+      check_web_page(output)
     end
   end
 
@@ -111,7 +111,7 @@ class TestWebRI < Minitest::Test
       check_choices(stdin, stdout, output)
       writeln(stdin, '0')
       output = read(stdout)
-      assert_match('Web page:', output)
+      check_web_page(output)
     end
   end
 
@@ -130,7 +130,7 @@ class TestWebRI < Minitest::Test
       check_choices(stdin, stdout, output)
       writeln(stdin, '0')
       output = read(stdout)
-      assert_match('Web page:', output)
+      check_web_page(output)
     end
   end
 
@@ -142,7 +142,7 @@ class TestWebRI < Minitest::Test
       assert_match(/Found one file name starting with '#{short_name}'./, output)
       writeln(stdin, 'y')
       output = read(stdout)
-      assert_match('Web page:', output)
+      check_web_page(output)
     end
   end
 
@@ -172,6 +172,23 @@ class TestWebRI < Minitest::Test
     # Cannot use readline for this because it has no trailing newline.
     output = read(stdout)
     assert_match(/^Choose/, output)
+  end
+
+  def check_web_page(output)
+    lines = output.split("\n")
+    web_line, url_line = case lines.size
+                         when 3
+                           lines[0..1]
+                         when 5
+                           lines[2..3]
+                         else
+                           assert(false, 'Trailing line count not 3 or 5.')
+                           return
+                         end
+    assert_match(/Web page:/, web_line)
+    returned_value = URI.open(url_line.chomp.strip)
+    classes = [Tempfile, StringIO]
+    assert(classes.include?(returned_value.class))
   end
 
   def read(stdout)
