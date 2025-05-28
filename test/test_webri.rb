@@ -18,6 +18,13 @@ class TestWebRI < Minitest::Test
     assert_match(/\d+\.\d+\.\d+/, version)
   end
 
+  def test_no_name
+    webri_session('') do |stdin, stdout, stderr|
+      err = stderr.readpartial(4096)
+      assert_match('No name given.', err)
+    end
+  end
+
   def test_file_multiple_choices
     short_name = 'c'
     name = "ruby:#{short_name}" # Should offer multiple choices and open chosen page.
@@ -26,10 +33,10 @@ class TestWebRI < Minitest::Test
       assert_match(/Found \d+ file names starting with '#{short_name}'./, out)
       stdin.write_nonblock("y\n")
       out = stdout.readpartial(4096)
-      assert_match(/Choose/, out)
+      assert_match('Choose', out)
       stdin.write_nonblock("0\n")
       out = stdout.readpartial(4096)
-      assert_match(/Web page:/, out)
+      assert_match('Web page:', out)
     end
   end
 
@@ -41,7 +48,7 @@ class TestWebRI < Minitest::Test
       assert_match(/Found one file name starting with '#{short_name}'./, out)
       stdin.write_nonblock("y\n")
       out = stdout.readpartial(4096)
-      assert_match(/Web page:/, out)
+      assert_match('Web page:', out)
     end
   end
 
@@ -51,7 +58,7 @@ class TestWebRI < Minitest::Test
     webri_session(name) do |stdin, stdout, stderr|
       out = stdout.readpartial(4096)
       assert_match(/Found one file name starting with '#{short_name}'./, out)
-      assert_match(/Web page:/, out)
+      assert_match('Web page:', out)
     end
   end
 
@@ -65,13 +72,14 @@ class TestWebRI < Minitest::Test
       out = stdout.readpartial(8192)
       stdin.write_nonblock("0\n")
       out = stdout.readpartial(4096)
-      assert_match(/Web page:/, out)
+      assert_match('Web page:', out)
     end
   end
 
   # Open a webri session and yield its IO streams.
+  # Option --noop means don't actually open the web page.
   def webri_session(name, options_s = '--noop')
-    command = "ruby bin/webri #{options_s} #{name}" # Noop: don't actually open the web page.
+    command = "ruby bin/webri #{options_s} #{name}"
     Open3.popen3(command) do |stdin, stdout, stderr, wait_thread|
       yield stdin, stdout, stderr
     end
