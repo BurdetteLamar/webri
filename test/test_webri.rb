@@ -176,19 +176,24 @@ class TestWebRI < Minitest::Test
 
   def check_web_page(output)
     lines = output.split("\n")
-    web_line, url_line = case lines.size
-                         when 3
-                           lines[0..1]
-                         when 5
-                           lines[2..3]
-                         else
-                           assert(false, 'Trailing line count not 3 or 5.')
-                           return
-                         end
+    case lines.size
+    when 5
+      found_line = lines.shift
+      assert_match(/Found/, found_line)
+      lines.shift
+    when 3
+    else
+      assert(false, 'Trailing line count not 3 or 5.')
+      return
+    end
+    web_line = lines.shift
     assert_match(/Web page:/, web_line)
+    url_line = lines.shift
     returned_value = URI.open(url_line.chomp.strip)
     classes = [Tempfile, StringIO]
     assert(classes.include?(returned_value.class))
+    command_line = lines.shift
+    assert_match(/Command:/, command_line)
   end
 
   def read(stdout)
