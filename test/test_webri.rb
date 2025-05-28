@@ -46,7 +46,9 @@ class TestWebRI < Minitest::Test
       out = stdout.readpartial(4096)
       assert_match(/Found no class or module name starting with '#{name}'./, out)
       assert_match(/Show names of all (\d+) classes and modules?/, out)
-      check_choices(stdin, stdout, out)
+      out.match(/(\d+)/)
+      choice_count = $1.to_i
+      check_choices(stdin, stdout, choice_count)
       stdin.write("0\n")
       out = stdout.readpartial(4096)
       assert_match('Web page:', out)
@@ -118,9 +120,7 @@ class TestWebRI < Minitest::Test
     end
   end
 
-  def check_choices(stdin, stdout, out)
-    out.match(/(\d+)/)
-    choice_count = $1.to_i
+  def check_choices(stdin, stdout, choice_count)
     stdin.write("y\n")
     for i in 0...choice_count do
       stdout.readline
