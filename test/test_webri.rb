@@ -53,6 +53,29 @@ class TestWebRI < Minitest::Test
     end
   end
 
+  def test_class_multiple_choices
+    name = 'Ar'
+    webri_session(name) do |stdin, stdout, stderr|
+      output = read(stdout)
+      assert_match(/Found \d+ class and module names starting with '#{name}'./, output)
+      check_choices(stdin, stdout, output)
+      writeln(stdin, '0')
+      output = read(stdout)
+      assert_match('Web page:', output)
+    end
+  end
+
+  def test_class_one_choice
+    name = 'Arr'
+    webri_session(name) do |stdin, stdout, stderr|
+      output = read(stdout)
+      assert_match(/Found one class or module name starting with '#{name}'./, output)
+      writeln(stdin, 'y')
+      output = read(stdout)
+      assert_match('Web page:', output)
+    end
+  end
+
   # Files.
 
   def test_file_no_choice
@@ -116,6 +139,7 @@ class TestWebRI < Minitest::Test
   end
 
   def check_choices(stdin, stdout, output)
+    # String argument output must contain the count of choices.
     output.match(/(\d+)/)
     choice_count = $1.to_i
     assert_operator(choice_count, :>, 1)
