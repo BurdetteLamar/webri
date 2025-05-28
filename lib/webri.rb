@@ -116,6 +116,29 @@ class WebRI
       self.path = path
     end
 
+    # Return array of choice strings for entries.
+    def self.choices(entries)
+      choices = {}
+      entries.each_pair do |name, entry|
+        path = entry.path
+        choice = self.choice(name, path)
+        choices[choice] = path
+      end
+      Hash[choices.sort]
+    end
+
+    # Return a choice for a path.
+    def self.choice(name, path)
+      a = path.split('/')
+      a.pop.sub('_md', '').sub('_rdoc', '').sub('.html', '') + ' ' + path
+      "#{name}: (#{path})"
+    end
+
+    # Return the full name from a choice string.
+    def self.full_name_for_choice(choice)
+      choice.split(':').first
+    end
+
   end
 
   class MultiplePathEntry < Entry
@@ -126,10 +149,6 @@ class WebRI
       super(full_name)
       self.paths = []
     end
-
-  end
-
-  class FileEntry < MultiplePathEntry
 
     # Return array of choice strings for entries.
     def self.choices(entries)
@@ -142,6 +161,10 @@ class WebRI
       end
       Hash[choices.sort]
     end
+
+  end
+
+  class FileEntry < MultiplePathEntry
 
     # Return a choice for a path.
     def self.choice(name, path)
@@ -214,39 +237,41 @@ class WebRI
   def show_class(name, class_index)
     # Target is a class or module.
     # Find class and module names that start with name.
-    found_entries = class_index.select do |full_name|
-      full_name.start_with?(name)
+    all_entries = index_for_type[:class]
+    all_choices = ClassEntry.choices(all_entries)
+    # Find entries whose names that start with name.
+    selected_entries = all_entries.select do |key, value|
+      key.start_with?(name)
     end
-    case found_entries.size
+    case selected_entries.size
     when 1
-      full_name = found_entries.keys.first
-      entry = found_entries[full_name]
-      puts "Found one class or module name starting with '#{name}':\n  #{full_name}"
+      selected_choices = ClassEntry.choices(selected_entries)
+      choice = selected_choices.keys.first
+      path = selected_choices.values.first
+      puts "Found one class or module name starting with '#{name}'\n  #{choice}"
+      full_name = FileEntry.full_name_for_choice(choice)
       if name != full_name
-        message = "Open page #{full_name}"
+        message = "Open page #{path}?"
         return unless get_boolean_answer(message)
       end
+      path
     when 0
-      puts "Found no class/module name starting with '#{name}'."
-      all_entries = index_for_type[:class]
-      message = "Show names of all #{all_entries.size} classes/modules?"
+      puts "Found no class or module name starting with '#{name}'."
+      message = "Show names of all #{all_choices.size} classes and modules?"
       return unless get_boolean_answer(message)
-      names = all_entries.keys
-      choice_index = get_choice_index(names)
-      return if choice_index.nil?
-      name = names[choice_index]
-      entry = all_entries[name]
+      key = get_choice(all_choices.keys)
+      return if key.nil?
+      path = all_choices[key]
     else
-      puts "Found #{found_entries.size} class/module names starting with '#{name}'."
-      message = "Show found names?'"
+      selected_choices = ClassEntry.choices(selected_entries)
+      puts "Found #{selected_choices.size} class and module names starting with '#{name}'."
+      message = "Show names?'"
       return unless get_boolean_answer(message)
-      names = found_entries.keys
-      choice_index = get_choice_index(names)
-      return if choice_index.nil?
-      name = names[choice_index]
-      entry = found_entries[name]
+      key = get_choice(selected_choices.keys)
+      return if key.nil?
+      path = selected_choices[key]
     end
-    uri = Entry.uri(entry.path)
+    uri = Entry.uri(path)
     open_url(uri.path.gsub('::', '/'))
   end
 
@@ -422,7 +447,7 @@ class WebRI
         s = "%6d" % i
         puts "  #{s}:  #{choice}"
       end
-      print "Choose (#{range}):  "
+      print "Choose (#{range}):"
       $stdout.flush
       response = gets
       index = response.match(/^\d+$/) ? response.to_i : -1

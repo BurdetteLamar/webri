@@ -32,10 +32,30 @@ class TestWebRI < Minitest::Test
   # Classes and modules.
 
   def test_class_no_choice
-    name = 'Array' # Should offer no choices and open page immediately.
+    name = 'Array'
     webri_session(name) do |stdin, stdout, stderr|
       out = stdout.readpartial(4096)
       assert_match(/Found one class or module name starting with '#{name}'./, out)
+      assert_match('Web page:', out)
+    end
+  end
+
+  def test_class_all_choices
+    name = 'Nosuch' # Should offer all choices and open chosen page.
+    webri_session(name) do |stdin, stdout, stderr|
+      out = stdout.readpartial(4096)
+      assert_match(/Found no class or module name starting with '#{name}'./, out)
+      assert_match(/Show names of all (\d+) classes and modules?/, out)
+      out.match(/(\d+)/)
+      choice_count = $1.to_i
+      stdin.write("y\n")
+      for i in 0...choice_count do
+        stdout.readline
+      end
+      out = stdout.readpartial(4096)
+      assert_match(/^Choose/, out)
+      stdin.write("0\n")
+      out = stdout.readpartial(4096)
       assert_match('Web page:', out)
     end
   end
@@ -58,6 +78,7 @@ class TestWebRI < Minitest::Test
     webri_session(name) do |stdin, stdout, stderr|
       out = stdout.readpartial(4096)
       assert_match(/Found no file name starting with '#{short_name}'./, out)
+      assert_match(/Show names of all \d+ files?/, out)
       stdin.write("y\n")
       out = stdout.readpartial(8192)
       stdin.write("0\n")
