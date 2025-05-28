@@ -124,9 +124,12 @@ class TestWebRI < Minitest::Test
   end
 
   def check_choices(stdin, stdout, choice_count)
+    # Verify that the correct number of choices are offered.
     for i in 0...choice_count do
-      stdout.readline
+      out = stdout.readline
+      assert_match("#{i}", out)
     end
+    # Cannot use readline for this because it has no trailing newline.
     out = stdout.readpartial(4096)
     assert_match(/^Choose/, out)
   end
