@@ -45,7 +45,7 @@ class TestWebRI < Minitest::Test
     webri_session(name) do |stdin, stdout, stderr|
       out = stdout.readpartial(4096)
       assert_match(/Found no class or module name starting with '#{name}'./, out)
-      assert_match(/Show names of all (\d+) classes and modules?/, out)
+      assert_match(/Show names of all \d+ classes and modules?/, out)
       out.match(/(\d+)/)
       choice_count = $1.to_i
       stdin.write("y\n")
@@ -75,8 +75,10 @@ class TestWebRI < Minitest::Test
       out = stdout.readpartial(4096)
       assert_match(/Found no file name starting with '#{short_name}'./, out)
       assert_match(/Show names of all \d+ files?/, out)
+      out.match(/(\d+)/)
+      choice_count = $1.to_i
       stdin.write("y\n")
-      out = stdout.readpartial(8192)
+      check_choices(stdin, stdout, choice_count)
       stdin.write("0\n")
       out = stdout.readpartial(4096)
       assert_match('Web page:', out)
