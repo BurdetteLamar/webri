@@ -85,9 +85,7 @@ class TestWebRI < Minitest::Test
     webri_session(name) do |stdin, stdout, stderr|
       out = stdout.readpartial(4096)
       assert_match(/Found \d+ file names starting with '#{short_name}'./, out)
-      stdin.write("y\n")
-      out = stdout.readpartial(4096)
-      assert_match('Choose', out)
+      check_choices(stdin, stdout, out)
       stdin.write("0\n")
       out = stdout.readpartial(4096)
       assert_match('Web page:', out)
