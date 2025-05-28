@@ -29,7 +29,42 @@ class TestWebRI < Minitest::Test
     end
   end
 
-  # Successes.
+  # Classes and modules.
+
+  def test_class_no_choice
+    name = 'Array' # Should offer no choices and open page immediately.
+    webri_session(name) do |stdin, stdout, stderr|
+      out = stdout.readpartial(4096)
+      assert_match(/Found one class or module name starting with '#{name}'./, out)
+      assert_match('Web page:', out)
+    end
+  end
+
+  # Files.
+
+  def test_file_no_choice
+    short_name = 'yjit'
+    name = "ruby:#{short_name}" # Should offer no choices and open page immediately.
+    webri_session(name) do |stdin, stdout, stderr|
+      out = stdout.readpartial(4096)
+      assert_match(/Found one file name starting with '#{short_name}'./, out)
+      assert_match('Web page:', out)
+    end
+  end
+
+  def test_file_all_choices
+    short_name = 'nosuch'
+    name = "ruby:#{short_name}" # Should offer all choices and open chosen page.
+    webri_session(name) do |stdin, stdout, stderr|
+      out = stdout.readpartial(4096)
+      assert_match(/Found no file name starting with '#{short_name}'./, out)
+      stdin.write("y\n")
+      out = stdout.readpartial(8192)
+      stdin.write("0\n")
+      out = stdout.readpartial(4096)
+      assert_match('Web page:', out)
+    end
+  end
 
   def test_file_multiple_choices
     short_name = 'c'
@@ -53,30 +88,6 @@ class TestWebRI < Minitest::Test
       out = stdout.readpartial(4096)
       assert_match(/Found one file name starting with '#{short_name}'./, out)
       stdin.write("y\n")
-      out = stdout.readpartial(4096)
-      assert_match('Web page:', out)
-    end
-  end
-
-  def test_file_no_choice
-    short_name = 'yjit'
-    name = "ruby:#{short_name}" # Should offer no choices and open page immediately.
-    webri_session(name) do |stdin, stdout, stderr|
-      out = stdout.readpartial(4096)
-      assert_match(/Found one file name starting with '#{short_name}'./, out)
-      assert_match('Web page:', out)
-    end
-  end
-
-  def test_file_all_choices
-    short_name = 'nosuch'
-    name = "ruby:#{short_name}" # Should offer all choices and open chosen page.
-    webri_session(name) do |stdin, stdout, stderr|
-      out = stdout.readpartial(4096)
-      assert_match(/Found no file name starting with '#{short_name}'./, out)
-      stdin.write("y\n")
-      out = stdout.readpartial(8192)
-      stdin.write("0\n")
       out = stdout.readpartial(4096)
       assert_match('Web page:', out)
     end
