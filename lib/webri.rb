@@ -285,7 +285,14 @@ class WebRI
     selected_entries = all_entries.select do |key, value|
       key.start_with?(name)
     end
-    case selected_entries.size
+    # Find paths for selected_choices
+    selected_paths = []
+    selected_entries.each_pair do |name, entry|
+      entry.paths.each do |path|
+        selected_paths.push(path)
+      end
+    end
+    case selected_paths.size
     when 1
       selected_choices = FileEntry.choices(selected_entries)
       choice = selected_choices.keys.first
@@ -320,21 +327,36 @@ class WebRI
   # Show singleton method.
   def show_singleton_method(name, singleton_method_index)
     # Target is a singleton method.
-    # Find method names that start with name.
-    entries = singleton_method_index.select do |method_name|
-      method_name.start_with?(name)
+    all_entries = index_for_type[:singleton_method]
+    all_choices = MethodEntry.choices(all_entries)
+    # Find entries whose names that start with name.
+    selected_entries = all_entries.select do |key, value|
+      key.start_with?(name)
     end
-    case entries.size
+    case selected_entries.size
     when 1
-      # Found only one method name, but it can be in more than one class/module.
-      full_name = entries.keys.first
-      puts "Found one singleton method name starting with '#{name}':\n  #{full_name}"
+      selected_choices = MethodEntry.choices(selected_entries)
+      choice = selected_choices.keys.first
+      path = selected_choices.values.first
+
+      puts "Found one singleton method name starting with '#{name}'\n  #{choice}"
+      full_name = MethodEntry.full_name_for_choice(choice)
       if name != full_name
-        message = "Open page #{full_name}"
+        message = "Open page #{path}?"
         return unless get_boolean_answer(message)
       end
-      entry = entries.values.first
-      path = entry.paths.first
+      path
+      #
+      #
+      # # Found only one method name, but it can be in more than one class/module.
+      # full_name = entries.keys.first
+      # puts "Found one singleton method name starting with '#{name}':\n  #{full_name}"
+      # if name != full_name
+      #   message = "Open page #{full_name}"
+      #   return unless get_boolean_answer(message)
+      # end
+      # entry = entries.values.first
+      # path = entry.paths.first
     when 0
       puts "Found no singleton method name starting with '#{name}'."
       all_entries = index_for_type[:singleton_method]

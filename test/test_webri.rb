@@ -102,8 +102,21 @@ class TestWebRI < Minitest::Test
     end
   end
 
-  def test_file_multiple_choices
+  def test_file_multiple_choices_multiple_entries
     short_name = 'c'
+    name = "ruby:#{short_name}" # Should offer multiple choices and open chosen page.
+    webri_session(name) do |stdin, stdout, stderr|
+      output = read(stdout)
+      assert_match(/Found \d+ file names starting with '#{short_name}'./, output)
+      check_choices(stdin, stdout, output)
+      writeln(stdin, '0')
+      output = read(stdout)
+      assert_match('Web page:', output)
+    end
+  end
+
+  def test_file_multiple_choices_one_entry_multiple_choices
+    short_name = 'method'
     name = "ruby:#{short_name}" # Should offer multiple choices and open chosen page.
     webri_session(name) do |stdin, stdout, stderr|
       output = read(stdout)
