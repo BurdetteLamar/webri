@@ -46,10 +46,7 @@ class TestWebRI < Minitest::Test
       out = stdout.readpartial(4096)
       assert_match(/Found no class or module name starting with '#{name}'./, out)
       assert_match(/Show names of all \d+ classes and modules?/, out)
-      out.match(/(\d+)/)
-      choice_count = $1.to_i
-      stdin.write("y\n")
-      check_choices(stdin, stdout, choice_count)
+      check_choices(stdin, stdout, out)
       stdin.write("0\n")
       out = stdout.readpartial(4096)
       assert_match('Web page:', out)
@@ -75,10 +72,7 @@ class TestWebRI < Minitest::Test
       out = stdout.readpartial(4096)
       assert_match(/Found no file name starting with '#{short_name}'./, out)
       assert_match(/Show names of all \d+ files?/, out)
-      out.match(/(\d+)/)
-      choice_count = $1.to_i
-      stdin.write("y\n")
-      check_choices(stdin, stdout, choice_count)
+      check_choices(stdin, stdout, out)
       stdin.write("0\n")
       out = stdout.readpartial(4096)
       assert_match('Web page:', out)
@@ -123,7 +117,10 @@ class TestWebRI < Minitest::Test
     end
   end
 
-  def check_choices(stdin, stdout, choice_count)
+  def check_choices(stdin, stdout, out)
+    out.match(/(\d+)/)
+    choice_count = $1.to_i
+    stdin.write("y\n")
     # Verify that the correct number of choices are offered.
     for i in 0...choice_count do
       out = stdout.readline
