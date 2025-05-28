@@ -120,6 +120,12 @@ class TestWebRI < Minitest::Test
     name = "ruby:#{short_name}" # Should offer multiple choices and open chosen page.
     webri_session(name) do |stdin, stdout, stderr|
       output = read(stdout)
+      output.match(/(\d+)/)
+      # This test is for a file name that has multiple paths.
+      # Check whether it's so for the given file name.
+      # If not, we need to change the file name for this test.
+      choice_count = $1.to_i
+      assert_operator(choice_count, :>, 1, 'File name should have multiple paths.')
       assert_match(/Found \d+ file names starting with '#{short_name}'./, output)
       check_choices(stdin, stdout, output)
       writeln(stdin, '0')

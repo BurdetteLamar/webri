@@ -19,7 +19,14 @@ class WebRI
     self.doc_release = a[0..1].join('.')
     # Get the doc table of contents as a temp file.
     toc_url = DocSite + self.doc_release + '/table_of_contents.html'
-    toc_file = URI.open(toc_url)
+    begin
+      toc_file = URI.open(toc_url)
+    rescue Socket::ResolutionError => x
+      message = "#{x.class}: #{x.message}\nPossibly not connected to internet."
+      $stderr.puts(message)
+      exit
+    end
+
     # Index for each type of entry.
     # Each index has a hash; key is name, value is array of URIs.
     self.index_for_type = {
