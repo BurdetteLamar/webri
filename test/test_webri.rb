@@ -119,10 +119,11 @@ class TestWebRI < Minitest::Test
     output.match(/(\d+)/)
     choice_count = $1.to_i
     writeln(stdin, 'y')
-    # Verify that the correct number of choices are offered.
+    # Verify the choices.
+    # Each choice line ends with newline, so use readline.
     for i in 0...choice_count do
       output = stdout.readline
-      assert_match("#{i}", output)
+      assert_match("#{i}:", output)
     end
     # Cannot use readline for this because it has no trailing newline.
     output = read(stdout)
