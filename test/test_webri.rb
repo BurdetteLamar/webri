@@ -10,8 +10,8 @@ class TestWebRI < Minitest::Test
 
   def test_help
     webri_session('', '--help') do |stdin, stdout, stderr|
-      out = read(stdout)
-      assert_match('Usage: webri [options] name', out)
+      output = read(stdout)
+      assert_match('Usage: webri [options] name', output)
     end
   end
 
@@ -34,22 +34,22 @@ class TestWebRI < Minitest::Test
   def test_class_no_choice
     name = 'Array'
     webri_session(name) do |stdin, stdout, stderr|
-      out = read(stdout)
-      assert_match(/Found one class or module name starting with '#{name}'./, out)
-      assert_match('Web page:', out)
+      output = read(stdout)
+      assert_match(/Found one class or module name starting with '#{name}'./, output)
+      assert_match('Web page:', output)
     end
   end
 
   def test_class_all_choices
     name = 'Nosuch' # Should offer all choices and open chosen page.
     webri_session(name) do |stdin, stdout, stderr|
-      out = read(stdout)
-      assert_match(/Found no class or module name starting with '#{name}'./, out)
-      assert_match(/Show names of all \d+ classes and modules?/, out)
-      check_choices(stdin, stdout, out)
+      output = read(stdout)
+      assert_match(/Found no class or module name starting with '#{name}'./, output)
+      assert_match(/Show names of all \d+ classes and modules?/, output)
+      check_choices(stdin, stdout, output)
       stdin.write("0\n")
-      out = read(stdout)
-      assert_match('Web page:', out)
+      output = read(stdout)
+      assert_match('Web page:', output)
     end
   end
 
@@ -59,9 +59,9 @@ class TestWebRI < Minitest::Test
     short_name = 'yjit'
     name = "ruby:#{short_name}" # Should offer no choices and open page immediately.
     webri_session(name) do |stdin, stdout, stderr|
-      out = read(stdout)
-      assert_match(/Found one file name starting with '#{short_name}'./, out)
-      assert_match('Web page:', out)
+      output = read(stdout)
+      assert_match(/Found one file name starting with '#{short_name}'./, output)
+      assert_match('Web page:', output)
     end
   end
 
@@ -69,13 +69,13 @@ class TestWebRI < Minitest::Test
     short_name = 'nosuch'
     name = "ruby:#{short_name}" # Should offer all choices and open chosen page.
     webri_session(name) do |stdin, stdout, stderr|
-      out = read(stdout)
-      assert_match(/Found no file name starting with '#{short_name}'./, out)
-      assert_match(/Show names of all \d+ files?/, out)
-      check_choices(stdin, stdout, out)
+      output = read(stdout)
+      assert_match(/Found no file name starting with '#{short_name}'./, output)
+      assert_match(/Show names of all \d+ files?/, output)
+      check_choices(stdin, stdout, output)
       stdin.write("0\n")
-      out = read(stdout)
-      assert_match('Web page:', out)
+      output = read(stdout)
+      assert_match('Web page:', output)
     end
   end
 
@@ -83,12 +83,12 @@ class TestWebRI < Minitest::Test
     short_name = 'c'
     name = "ruby:#{short_name}" # Should offer multiple choices and open chosen page.
     webri_session(name) do |stdin, stdout, stderr|
-      out = read(stdout)
-      assert_match(/Found \d+ file names starting with '#{short_name}'./, out)
-      check_choices(stdin, stdout, out)
+      output = read(stdout)
+      assert_match(/Found \d+ file names starting with '#{short_name}'./, output)
+      check_choices(stdin, stdout, output)
       stdin.write("0\n")
-      out = read(stdout)
-      assert_match('Web page:', out)
+      output = read(stdout)
+      assert_match('Web page:', output)
     end
   end
 
@@ -96,11 +96,11 @@ class TestWebRI < Minitest::Test
     short_name = 'yji'
     name = "ruby:#{short_name}" # Should offer one choice and open page if requested.
     webri_session(name) do |stdin, stdout, stderr|
-      out = read(stdout)
-      assert_match(/Found one file name starting with '#{short_name}'./, out)
+      output = read(stdout)
+      assert_match(/Found one file name starting with '#{short_name}'./, output)
       stdin.write("y\n")
-      out = read(stdout)
-      assert_match('Web page:', out)
+      output = read(stdout)
+      assert_match('Web page:', output)
     end
   end
 
@@ -115,18 +115,18 @@ class TestWebRI < Minitest::Test
     end
   end
 
-  def check_choices(stdin, stdout, out)
-    out.match(/(\d+)/)
+  def check_choices(stdin, stdout, output)
+    output.match(/(\d+)/)
     choice_count = $1.to_i
     stdin.write("y\n")
     # Verify that the correct number of choices are offered.
     for i in 0...choice_count do
-      out = stdout.readline
-      assert_match("#{i}", out)
+      output = stdout.readline
+      assert_match("#{i}", output)
     end
     # Cannot use readline for this because it has no trailing newline.
-    out = read(stdout)
-    assert_match(/^Choose/, out)
+    output = read(stdout)
+    assert_match(/^Choose/, output)
   end
 
   def read(stdout)
