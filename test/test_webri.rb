@@ -6,6 +6,8 @@ require 'open3'
 
 class TestWebRI < Minitest::Test
 
+  # Housekeeping.
+
   def test_help
     webri_session('', '--help') do |stdin, stdout, stderr|
       out = stdout.readpartial(4096)
@@ -18,6 +20,8 @@ class TestWebRI < Minitest::Test
     assert_match(/\d+\.\d+\.\d+/, version)
   end
 
+  # Errors.
+
   def test_no_name
     webri_session('') do |stdin, stdout, stderr|
       err = stderr.readpartial(4096)
@@ -25,16 +29,18 @@ class TestWebRI < Minitest::Test
     end
   end
 
+  # Successes.
+
   def test_file_multiple_choices
     short_name = 'c'
     name = "ruby:#{short_name}" # Should offer multiple choices and open chosen page.
     webri_session(name) do |stdin, stdout, stderr|
       out = stdout.readpartial(4096)
       assert_match(/Found \d+ file names starting with '#{short_name}'./, out)
-      stdin.write_nonblock("y\n")
+      stdin.write("y\n")
       out = stdout.readpartial(4096)
       assert_match('Choose', out)
-      stdin.write_nonblock("0\n")
+      stdin.write("0\n")
       out = stdout.readpartial(4096)
       assert_match('Web page:', out)
     end
@@ -46,7 +52,7 @@ class TestWebRI < Minitest::Test
     webri_session(name) do |stdin, stdout, stderr|
       out = stdout.readpartial(4096)
       assert_match(/Found one file name starting with '#{short_name}'./, out)
-      stdin.write_nonblock("y\n")
+      stdin.write("y\n")
       out = stdout.readpartial(4096)
       assert_match('Web page:', out)
     end
@@ -68,13 +74,15 @@ class TestWebRI < Minitest::Test
     webri_session(name) do |stdin, stdout, stderr|
       out = stdout.readpartial(4096)
       assert_match(/Found no file name starting with '#{short_name}'./, out)
-      stdin.write_nonblock("y\n")
+      stdin.write("y\n")
       out = stdout.readpartial(8192)
-      stdin.write_nonblock("0\n")
+      stdin.write("0\n")
       out = stdout.readpartial(4096)
       assert_match('Web page:', out)
     end
   end
+
+  # Infrastructure.
 
   # Open a webri session and yield its IO streams.
   # Option --noop means don't actually open the web page.
