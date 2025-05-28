@@ -48,6 +48,7 @@ class TestWebRI < Minitest::Test
       assert_match(/Show names of all (\d+) classes and modules?/, out)
       out.match(/(\d+)/)
       choice_count = $1.to_i
+      stdin.write("y\n")
       check_choices(stdin, stdout, choice_count)
       stdin.write("0\n")
       out = stdout.readpartial(4096)
@@ -121,7 +122,6 @@ class TestWebRI < Minitest::Test
   end
 
   def check_choices(stdin, stdout, choice_count)
-    stdin.write("y\n")
     for i in 0...choice_count do
       stdout.readline
     end
