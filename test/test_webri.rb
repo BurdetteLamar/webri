@@ -178,9 +178,11 @@ class TestWebRI < Minitest::Test
     lines = output.split("\n")
     case lines.size
     when 5
+      # Two extra lines: 'Found', and what was found.
       found_line = lines.shift
       assert_match(/Found/, found_line)
-      lines.shift
+      page_line = lines.shift
+      assert_match(/\.html/, page_line)
     when 3
     else
       assert(false, 'Trailing line count not 3 or 5.')
