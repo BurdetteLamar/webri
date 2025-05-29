@@ -2,6 +2,18 @@
 require 'rbconfig'
 require 'open-uri'
 
+# TODO: Update help text.
+# TODO: Add --release option.
+# TODO: Test all releases.
+# TODO: Show all release numbers; allow choice.
+# TODO: Test whether there are multi-path entries in files, methods.
+# TODO: Support interactive mode (remain in app).
+# TODO: Support pager.
+# TODO: Update README.md.
+# TODO: Support .webrirc.
+# TODO: Review RI docs, options, and help.
+# TODO: Review RDoc docs, options, and help.
+
 # A class to display Ruby HTML documentation.
 class WebRI
 
