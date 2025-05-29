@@ -5,6 +5,7 @@ require 'open-uri'
 # TODO: Update help text.
 # TODO: Add --release option.
 # TODO: Test all releases.
+# TODO: Test options.
 # TODO: Show all release numbers; allow choice.
 # TODO: Test whether there are multi-path entries in files, methods.
 # TODO: Support interactive mode (remain in app).
