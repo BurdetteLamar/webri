@@ -139,13 +139,13 @@ class WebRI
 
     # Return array of choice strings for entries.
     def self.choices(entries)
-      choices = []
+      choices = {}
       entries.each_pair do |name, entry|
         path = entry.path
         choice = self.choice(name, path)
-        choices.push(choice)
+        choices[choice] = path
       end
-      choices.sort
+      Hash[choices.sort]
     end
 
     # Return a choice for a path.
@@ -156,11 +156,8 @@ class WebRI
     end
 
     # Return the full name from a choice string.
-    def self.full_name_and_path(choice)
-      full_name, path = choice.split(': ')
-      path.sub!('(', '')
-      path.sub!(')', '')
-      [full_name, path]
+    def self.full_name_for_choice(choice)
+      choice.split(':').first
     end
 
   end
@@ -270,9 +267,10 @@ class WebRI
     case candidate_entries.size
     when 1
       selected_choices = ClassEntry.choices(candidate_entries)
-      choice = selected_choices.first
+      choice = selected_choices.keys.first
+      path = selected_choices.values.first
       puts "Found one class or module name starting with '#{name}'\n  #{choice}"
-      full_name, path = ClassEntry.full_name_and_path(choice)
+      full_name = FileEntry.full_name_for_choice(choice)
       if name != full_name
         message = "Open page #{path}?"
         return unless get_boolean_answer(message)
@@ -282,19 +280,17 @@ class WebRI
       puts "Found no class or module name starting with '#{name}'."
       message = "Show names of all #{all_choices.size} classes and modules?"
       return unless get_boolean_answer(message)
-      choice = get_choice(all_choices)
-      return if choice.nil?
-      _, path = ClassEntry.full_name_and_path(choice)
-      path
+      key = get_choice(all_choices.keys)
+      return if key.nil?
+      path = all_choices[key]
     else
       selected_choices = ClassEntry.choices(candidate_entries)
       puts "Found #{selected_choices.size} class and module names starting with '#{name}'."
       message = "Show names?'"
       return unless get_boolean_answer(message)
-      choice = get_choice(selected_choices)
-      return if choice.nil?
-      _, path = ClassEntry.full_name_and_path(choice)
-      path
+      key = get_choice(selected_choices.keys)
+      return if key.nil?
+      path = selected_choices[key]
     end
     uri = Entry.uri(path)
     open_url(uri.path.gsub('::', '/'))
