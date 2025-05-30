@@ -137,28 +137,28 @@ class WebRI
       self.path = path
     end
 
-    # Return array of choice strings for entries.
+    # Return hash of name/path pairs for entries.
     def self.choices(entries)
       choices = {}
       entries.each_pair do |name, entry|
         path = entry.path
-        choice = self.choice(name, path)
-        choices[choice] = path
+        choices[name] = path
       end
-      Hash[choices.sort]
+      # Hash[choices.sort]
+      choices
     end
 
-    # Return a choice for a path.
-    def self.choice(name, path)
-      a = path.split('/')
-      a.pop.sub('.html', '') + ' ' + path
-      "#{name}: (#{path})"
-    end
-
-    # Return the full name from a choice string.
-    def self.full_name_for_choice(choice)
-      choice.split(':').first
-    end
+    # # Return a choice for a path.
+    # def self.choice(name, path)
+    #   a = path.split('/')
+    #   a.pop.sub('.html', '') + ' ' + path
+    #   "#{name}: (#{path})"
+    # end
+    #
+    # # Return the full name from a choice string.
+    # def self.full_name_for_choice(choice)
+    #   choice.split(':').first
+    # end
 
   end
 
@@ -259,7 +259,7 @@ class WebRI
     # Target is a class or module.
     # Find class and module names that start with name.
     all_entries = index_for_type[:class]
-    all_choices = ClassEntry.choices(all_entries)
+    choices = ClassEntry.choices(all_entries)
     # Find entries whose names that start with name.
     candidate_entries = all_entries.select do |key, value|
       key.start_with?(name)
@@ -278,11 +278,11 @@ class WebRI
       path
     when 0
       puts "Found no class or module name starting with '#{name}'."
-      message = "Show names of all #{all_choices.size} classes and modules?"
+      message = "Show names of all #{choices.size} classes and modules?"
       return unless get_boolean_answer(message)
-      key = get_choice(all_choices.keys)
+      key = get_choice(choices.keys)
       return if key.nil?
-      path = all_choices[key]
+      path = choices[key]
     else
       selected_choices = ClassEntry.choices(candidate_entries)
       puts "Found #{selected_choices.size} class and module names starting with '#{name}'."
