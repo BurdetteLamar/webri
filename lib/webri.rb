@@ -73,8 +73,8 @@ class WebRI
       full_name = rest.split(/<|>/)[1]
       case type
       when 'class', 'module'
-        entry = ClassEntry.new(full_name, path)
         index = self.index_for_type[:class]
+        entry = ClassEntry.new(full_name, path)
         index[full_name] = entry
       when 'file'
         index = self.index_for_type[:file]
@@ -144,21 +144,8 @@ class WebRI
         path = entry.path
         choices[name] = path
       end
-      # Hash[choices.sort]
       choices
     end
-
-    # # Return a choice for a path.
-    # def self.choice(name, path)
-    #   a = path.split('/')
-    #   a.pop.sub('.html', '') + ' ' + path
-    #   "#{name}: (#{path})"
-    # end
-    #
-    # # Return the full name from a choice string.
-    # def self.full_name_for_choice(choice)
-    #   choice.split(':').first
-    # end
 
   end
 
@@ -219,16 +206,7 @@ class WebRI
     def self.choice(path)
       class_name, method_name = path.split('.html#method-c-')
       class_name.gsub!('/', '::')
-      "#{class_name}::#{method_name}"
-    end
-
-    # Return path string parsed out of choice string.
-    def self.path(choice)
-      path = choice.split(': ').last
-      a = path.split('::')
-      method_name = a.pop
-      class_path = a.join('/')
-      "#{class_path}.html#method-c-#{method_name}"
+      "::#{method_name} (in #{class_name})"
     end
 
   end
@@ -269,7 +247,7 @@ class WebRI
       selected_choices = ClassEntry.choices(candidate_entries)
       choice = selected_choices.keys.first
       path = selected_choices.values.first
-      puts "Found one class or module name starting with '#{name}'\n  #{choice}"
+      puts "Found one class or module name starting with '#{name}':\n  #{choice}"
       full_name = FileEntry.full_name_for_choice(choice)
       if name != full_name
         message = "Open page #{path}?"
@@ -364,11 +342,15 @@ class WebRI
     case selected_paths.size
     when 1
       selected_choices = MethodEntry.choices(selected_entries)
-      found_name = selected_entries.keys.first
-      puts "Found one singleton method name starting with '#{name}'\n  #{found_name}"
-      full_name = MethodEntry.full_name_for_choice(choice)
+      p selected_paths
+      p selected_entries
+      p selected_choices
+      full_name = selected_entries.keys.first
+      path = selected_choices.values.first
+      puts "Found one singleton method name starting with '#{name}'\n  #{full_name}"
       if name != full_name
-        message = "Open page #{path}?"
+        uri = URI.parse(path)
+        message = "Open page #{uri.path} at method #{full_name}?"
         return unless get_boolean_answer(message)
       end
       path
@@ -376,10 +358,9 @@ class WebRI
       puts "Found no singleton method name starting with '#{name}'."
       message = "Show names of all #{all_choices.size} singleton methods?"
       return unless get_boolean_answer(message)
-      choice_index = get_choice(all_choices)
-      return if choice_index.nil?
-      choice = choices[choice_index]
-      path = MethodEntry.path(choice)
+      choice = get_choice(all_choices.keys)
+      return if choice.nil?
+      path = all_choices[choice]
     else
       puts "Found #{selected_paths.size} singleton method names starting with '#{name}'."
       message = "Show names?'"
@@ -512,8 +493,12 @@ class WebRI
                         message = "Unrecognized host OS: '#{host_os}'."
                         raise RuntimeError.new(message)
                       end
-    url = File.join(DocSite, doc_release, target_url)
-    puts "Web page:\n  #{url}"
+    uri = URI.parse(File.join(DocSite, doc_release, target_url))
+    url = uri.to_s
+    message = "Opening web page #{url}"
+    fragment = uri.fragment
+    message += " to method #{fragment}" if fragment
+    puts message
     command = "#{executable_name} #{url}"
     if noop
       puts "Command: '#{command}'"
