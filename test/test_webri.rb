@@ -102,7 +102,7 @@ class TestWebRI < Minitest::Test
     end
   end
 
-  def test_file_name_ambiguous_multiple_paths
+  def test_file_ambiguous_partial_name
     short_name = 'c'
     name = "ruby:#{short_name}" # Should offer multiple choices and open chosen page.
     webri_session(name) do |stdin, stdout, stderr|
@@ -115,7 +115,7 @@ class TestWebRI < Minitest::Test
     end
   end
 
-  def test_file_name_unambiguous_multiple_paths
+  def test_file_unambiguous_partial_name_with_multiple_paths
     short_name = 'method'
     name = "ruby:#{short_name}" # Should offer multiple choices and open chosen page.
     webri_session(name) do |stdin, stdout, stderr|
@@ -129,6 +129,18 @@ class TestWebRI < Minitest::Test
       assert_match(/Found \d+ file names starting with '#{short_name}'./, output)
       check_choices(stdin, stdout, output)
       writeln(stdin, '0')
+      output = read(stdout)
+      check_web_page(name, output)
+    end
+  end
+
+  def test_file_unambiguous_partial_name_with_one_path
+    short_name = 'option_dum' # Should offer one choice and open page if requested.
+    name = "ruby:#{short_name}"
+    webri_session(name) do |stdin, stdout, stderr|
+      output = read(stdout)
+      assert_match(/Found one file name starting with '#{short_name}'./, output)
+      writeln(stdin, 'y')
       output = read(stdout)
       check_web_page(name, output)
     end
