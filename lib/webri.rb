@@ -271,7 +271,7 @@ class WebRI
       path = selected_choices[key]
     end
     uri = Entry.uri(path)
-    open_url(uri.path.gsub('::', '/'))
+    open_url(name, uri.path.gsub('::', '/'))
   end
 
   # Show file.
@@ -320,7 +320,7 @@ class WebRI
       path = selected_choices[key]
     end
     uri = Entry.uri(path)
-    open_url(uri)
+    open_url(name, uri)
   end
 
   # Show singleton method.
@@ -480,7 +480,7 @@ class WebRI
   end
 
   # Open URL in browser.
-  def open_url(target_url)
+  def open_url(name, target_url)
     host_os = RbConfig::CONFIG['host_os']
     executable_name = case host_os
                       when /linux|bsd/

@@ -31,17 +31,17 @@ class TestWebRI < Minitest::Test
 
   # Classes and modules.
 
-  def test_class_no_choice
-    name = 'Array'
+  def test_class_exact_name
+    name = 'Array' # Should open page.
     webri_session(name) do |stdin, stdout, stderr|
       output = read(stdout)
       assert_match(/Found one class or module name starting with '#{name}'./, output)
-      check_web_page(output)
+      check_web_page(name, output)
     end
   end
 
-  def test_class_all_choices
-    name = 'Nosuch' # Should offer all choices and open chosen page.
+  def test_class_nosuch_name
+    name = 'Nosuch' # Should offer all choices; open chosen page.
     webri_session(name) do |stdin, stdout, stderr|
       output = read(stdout)
       assert_match(/Found no class or module name starting with '#{name}'./, output)
@@ -49,48 +49,48 @@ class TestWebRI < Minitest::Test
       check_choices(stdin, stdout, output)
       writeln(stdin, '0')
       output = read(stdout)
-      check_web_page(output)
+      check_web_page(name, output)
     end
   end
 
-  def test_class_multiple_choices
-    name = 'Ar'
+  def test_class_partial_name_ambiguous
+    name = 'Ar' # Should offer multiple choices; open chosen choice.
     webri_session(name) do |stdin, stdout, stderr|
       output = read(stdout)
       assert_match(/Found \d+ class and module names starting with '#{name}'./, output)
       check_choices(stdin, stdout, output)
       writeln(stdin, '0')
       output = read(stdout)
-      check_web_page(output)
+      check_web_page(name, output)
     end
   end
 
-  def test_class_one_choice
-    name = 'Arr'
+  def test_class_partial_name_unambiguous
+    name = 'Arr' # Should offer one choice; open if yes.
     webri_session(name) do |stdin, stdout, stderr|
       output = read(stdout)
       assert_match(/Found one class or module name starting with '#{name}'./, output)
       writeln(stdin, 'y')
       output = read(stdout)
-      check_web_page(output)
+      check_web_page(name, output)
     end
   end
 
   # Files.
 
-  def test_file_no_choice
-    short_name = 'yjit'
-    name = "ruby:#{short_name}" # Should offer no choices and open page immediately.
+  def test_file_exact_name
+    short_name = 'yjit' # Should open page.
+    name = "ruby:#{short_name}"
     webri_session(name) do |stdin, stdout, stderr|
       output = read(stdout)
       assert_match(/Found one file name starting with '#{short_name}'./, output)
-      check_web_page(output)
+      check_web_page(name, output)
     end
   end
 
-  def test_file_all_choices
-    short_name = 'nosuch'
-    name = "ruby:#{short_name}" # Should offer all choices and open chosen page.
+  def test_file_nosuch_name
+    short_name = 'nosuch'  # Should offer all choices; open chosen page.
+    name = "ruby:#{short_name}"
     webri_session(name) do |stdin, stdout, stderr|
       output = read(stdout)
       assert_match(/Found no file name starting with '#{short_name}'./, output)
@@ -98,11 +98,11 @@ class TestWebRI < Minitest::Test
       check_choices(stdin, stdout, output)
       writeln(stdin, '0')
       output = read(stdout)
-      check_web_page(output)
+      check_web_page(name, output)
     end
   end
 
-  def test_file_multiple_choices_multiple_entries
+  def test_file_name_ambiguous_multiple_paths
     short_name = 'c'
     name = "ruby:#{short_name}" # Should offer multiple choices and open chosen page.
     webri_session(name) do |stdin, stdout, stderr|
@@ -111,11 +111,11 @@ class TestWebRI < Minitest::Test
       check_choices(stdin, stdout, output)
       writeln(stdin, '0')
       output = read(stdout)
-      check_web_page(output)
+      check_web_page(name, output)
     end
   end
 
-  def test_file_multiple_choices_one_entry_multiple_choices
+  def test_file_name_unambiguous_multiple_paths
     short_name = 'method'
     name = "ruby:#{short_name}" # Should offer multiple choices and open chosen page.
     webri_session(name) do |stdin, stdout, stderr|
@@ -130,19 +130,19 @@ class TestWebRI < Minitest::Test
       check_choices(stdin, stdout, output)
       writeln(stdin, '0')
       output = read(stdout)
-      check_web_page(output)
+      check_web_page(name, output)
     end
   end
 
-  def test_file_one_choice
-    short_name = 'yji'
+  def test_file_partial_name_unambiguous
+    short_name = 'yji'  # Should offer one choice; open if yes.
     name = "ruby:#{short_name}" # Should offer one choice and open page if requested.
     webri_session(name) do |stdin, stdout, stderr|
       output = read(stdout)
       assert_match(/Found one file name starting with '#{short_name}'./, output)
       writeln(stdin, 'y')
       output = read(stdout)
-      check_web_page(output)
+      check_web_page(name, output)
     end
   end
 
@@ -174,28 +174,28 @@ class TestWebRI < Minitest::Test
     assert_match(/^Choose/, output)
   end
 
-  def check_web_page(output)
+  def check_web_page(name, output)
     lines = output.split("\n")
     case lines.size
-    when 5
+    when 4
       # Two extra lines: 'Found', and what was found.
       found_line = lines.shift
       assert_match(/Found/, found_line)
-      page_line = lines.shift
-      assert_match(/\.html/, page_line)
-    when 3
-    else
-      assert(false, 'Trailing line count not 3 or 5.')
+      name_line = lines.shift
       return
+      assert_match(name, name_line)
+    when 2
+      # No extra lines.
+    else
+      assert(false, "Trailing line count was #{lines.size}; not 2 or 4.")
     end
     web_line = lines.shift
-    assert_match(/Web page:/, web_line)
+    assert_match(/Opening web page /, web_line)
     url_line = lines.shift
-    returned_value = URI.open(url_line.chomp.strip)
+    url = url_line.split(' ').last.sub("'", '')
+    returned_value = URI.open(url)
     classes = [Tempfile, StringIO]
     assert(classes.include?(returned_value.class))
-    command_line = lines.shift
-    assert_match(/Command:/, command_line)
   end
 
   def read(stdout)
