@@ -342,9 +342,6 @@ class WebRI
     case selected_paths.size
     when 1
       selected_choices = MethodEntry.choices(selected_entries)
-      p selected_paths
-      p selected_entries
-      p selected_choices
       full_name = selected_entries.keys.first
       path = selected_choices.values.first
       puts "Found one singleton method name starting with '#{name}'\n  #{full_name}"
@@ -388,7 +385,7 @@ class WebRI
       end
     end
     uri = Entry.uri(path)
-    open_url(uri)
+    open_url(name, uri)
   end
 
   # Show instance method.

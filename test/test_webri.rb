@@ -158,6 +158,30 @@ class TestWebRI < Minitest::Test
     end
   end
 
+  # Singleton methods.
+
+  def test_singleton_method_exact_name
+    name = '::write_binary' # Should open page.
+    webri_session(name) do |stdin, stdout, stderr|
+      output = read(stdout)
+      assert_match(/Found one singleton method name starting with '#{name}'./, output)
+      check_web_page(name, output)
+    end
+  end
+
+  def test_singleton_method_nosuch_name
+    name = '::nosuch'  # Should offer all choices; open chosen page.
+    webri_session(name) do |stdin, stdout, stderr|
+      output = read(stdout)
+      assert_match(/Found no singleton method name starting with '#{name}'./, output)
+      assert_match(/Show names of all \d+ singleton methods?/, output)
+      check_choices(stdin, stdout, output)
+      writeln(stdin, '0')
+      output = read(stdout)
+      check_web_page(name, output)
+    end
+  end
+
   # Infrastructure.
 
   # Open a webri session and yield its IO streams.
