@@ -339,9 +339,9 @@ class WebRI
         selected_paths.push(path)
       end
     end
+    selected_choices = MethodEntry.choices(selected_entries)
     case selected_paths.size
     when 1
-      selected_choices = MethodEntry.choices(selected_entries)
       full_name = selected_entries.keys.first
       path = selected_choices.values.first
       puts "Found one singleton method name starting with '#{name}'\n  #{full_name}"
@@ -362,27 +362,9 @@ class WebRI
       puts "Found #{selected_paths.size} singleton method names starting with '#{name}'."
       message = "Show names?'"
       return unless get_boolean_answer(message)
-      choices =
-      names = hrefs.map {|href| href[0] }
-      choices = []
-      hrefs.each do |href|
-        next
-        class_name = href[1].split('.', 2).first
-        choices.push(class_name + name)
-      end
-      puts choices
-      choice_index = get_choice_index(choices)
-      method_name = names[choice_index]
-      hrefs = hrefs[method_name].sort
-      methods = hrefs.map do|href|
-        href.split('.html').first + method_name
-      end
-      if methods.size == 1
-        href = hrefs.first
-      else
-        method_index = get_choice_index(methods)
-        href = hrefs[method_index]
-      end
+      choice = get_choice(selected_choices.keys)
+      return if choice.nil?
+      path = all_choices[choice]
     end
     uri = Entry.uri(path)
     open_url(name, uri)
@@ -390,65 +372,49 @@ class WebRI
 
   # Show instance method.
   def show_instance_method(name, instance_method_index)
-    hrefs = instance_method_index.select do |method_name|
-      method_name.start_with?(name)
+    # Target page is an instance method such as #to_s.
+    all_entries = index_for_type[:instance_method]
+    all_choices = MethodEntry.choices(all_entries)
+    # Find entries whose names that start with name.
+    selected_entries = all_entries.select do |key, value|
+      key.start_with?(name)
     end
-    case hrefs.size
+    # Find paths for selected_choices
+    selected_paths = []
+    selected_entries.each_pair do |name, entry|
+      entry.paths.each do |path|
+        selected_paths.push(path)
+      end
+    end
+    selected_choices = MethodEntry.choices(selected_entries)
+    case selected_paths.size
     when 1
-      href = hrefs.first.last
-      open_url(href)
+      full_name = selected_entries.keys.first
+      path = selected_choices.values.first
+      puts "Found one instance method name starting with '#{name}'\n  #{full_name}"
+      if name != full_name
+        uri = URI.parse(path)
+        message = "Open page #{uri.path} at method #{full_name}?"
+        return unless get_boolean_answer(message)
+      end
+      path
     when 0
-      puts "Nothing known about #{name}."
+      puts "Found no instance method name starting with '#{name}'."
+      message = "Show names of all #{all_choices.size} instance methods?"
+      return unless get_boolean_answer(message)
+      choice = get_choice(all_choices.keys)
+      return if choice.nil?
+      path = all_choices[choice]
     else
-      names = hrefs.map {|href| href[0] }
-      choice_index = get_choice_index(names)
-      method_name = names[choice_index]
-      hrefs = hrefs[method_name].sort
-      methods = hrefs.map do|href|
-        href.split('.html').first + method_name
-      end
-      if methods.size == 1
-        href = hrefs.first
-        open_url(href)
-      else
-        method_index = get_choice_index(methods)
-        href = hrefs[method_index]
-        open_url(href)
-      end
+      puts "Found #{selected_paths.size} instance method names starting with '#{name}'."
+      message = "Show names?'"
+      return unless get_boolean_answer(message)
+      choice = get_choice(selected_choices.keys)
+      return if choice.nil?
+      path = all_choices[choice]
     end
-  end
-
-  # Show singleton or instance method.
-  def show_method(name, singleton_method_index, instance_method_index)
-    singleton_name = name.sub('.', '::')
-    instance_name = name.sub('.', '#')
-    hrefs = index_for_type[:method].select do |method_name|
-      method_name.start_with?(singleton_name) ||
-        method_name.start_with?(instance_name)
-    end
-    case hrefs.size
-    when 1
-      href = hrefs.first.last
-      open_url(href)
-    when 0
-      puts "Nothing known about #{name}."
-    else
-      names = hrefs.map {|href| href[0] }
-      choice_index = get_choice_index(names)
-      method_name = names[choice_index]
-      hrefs = hrefs[method_name].sort
-      methods = hrefs.map do|href|
-        href.split('.html').first + method_name
-      end
-      if methods.size == 1
-        href = hrefs.first
-        open_url(href)
-      else
-        method_index = get_choice_index(methods)
-        href = hrefs[method_index]
-        open_url(href)
-      end
-    end
+    uri = Entry.uri(path)
+    open_url(name, uri)
   end
 
   # Present choices; return choice.
