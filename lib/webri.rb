@@ -158,7 +158,7 @@ class WebRI
       self.paths = []
     end
 
-    # Return array of choice strings for entries.
+    # Return hash of choice strings for entries.
     def self.choices(entries)
       choices = {}
       entries.each_pair do |name, entry|
@@ -190,7 +190,7 @@ class WebRI
 
   class MethodEntry < MultiplePathEntry
 
-    # Return array of choice strings for entries.
+    # Return hash of choice strings for entries.
     def self.choices(entries)
       choices = {}
       entries.each_pair do |name, entry|
