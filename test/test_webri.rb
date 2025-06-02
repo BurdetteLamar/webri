@@ -54,7 +54,7 @@ class TestWebRI < Minitest::Test
   end
 
   def test_class_partial_name_ambiguous
-    name = 'Ar' # Should offer multiple choices; open chosen choice.
+    name = @@test_names[:class][:abbrev_multi] # Should offer multiple choices; open chosen choice.
     webri_session(name) do |stdin, stdout, stderr|
       output = read(stdout)
       assert_match(/Found \d+ class and module names starting with '#{name}'./, output)
@@ -66,7 +66,7 @@ class TestWebRI < Minitest::Test
   end
 
   def test_class_partial_name_unambiguous
-    name = 'Arr' # Should offer one choice; open if yes.
+    name = @@test_names[:class][:abbrev_unique] # Should offer one choice; open if yes.
     webri_session(name) do |stdin, stdout, stderr|
       output = read(stdout)
       assert_match(/Found one class or module name starting with '#{name}'./, output)
