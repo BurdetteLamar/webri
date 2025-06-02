@@ -41,7 +41,7 @@ class TestWebRI < Minitest::Test
   end
 
   def test_class_nosuch_name
-    name = 'Nosuch' # Should offer all choices; open chosen page.
+    name = @@test_names[:class][:nosuch] # Should offer all choices; open chosen page.
     webri_session(name) do |stdin, stdout, stderr|
       output = read(stdout)
       assert_match(/Found no class or module name starting with '#{name}'./, output)
