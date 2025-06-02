@@ -349,10 +349,14 @@ class TestWebRI < Minitest::Test
     @@test_names = {
       class: {
         nosuch: 'NoSuChClAsS',
+        full_unique: nil,
+        abbrev_unique: nil,
+        abbrev_multi: nil,
+        abbrev_unique: nil,
       },
       singleton_method: {},
       instance_method: {},
-      page: {}
+      page: {},
     }
 
     # Get test names for classes.
@@ -377,25 +381,43 @@ class TestWebRI < Minitest::Test
           name.start_with?(name_to_try)
         end
         if selected_names.size == 1
-          @@test_names[:class][:unique] = name_to_try
+          @@test_names[:class][:full_unique] = name_to_try
           break
         end
       end
-      # Get a partial class name that some other class names start with.
+      # Get abbreviated class name matching only one name.
       class_names.each do |class_name|
-        @@test_names[:class][:abbrev]
+        found = false
+        (3..4).each do |len|
+          abbrev = class_name[0..len]
+          selected_names = class_names.select do |name|
+            name.start_with?(abbrev) && name.size != abbrev.size
+          end
+          if selected_names.size == 1
+            @@test_names[:class][:abbrev_unique] = abbrev
+            found = true
+            break
+          end
+          break if found
+        end
+        break if found
+      end
+      # Get abbreviated class name matching multiple names.
+      class_names.each do |class_name|
+        found = false
         (3..4).each do |len|
           abbrev = class_name[0..len]
           selected_names = class_names.select do |name|
             name.start_with?(abbrev)
           end
           if (5..7).include?(selected_names.size)
-            @@test_names[:class][:abbrev] = abbrev
+            @@test_names[:class][:abbrev_multi] = abbrev
+            found = true
             break
           end
-          break if @@test_names[:class][:abbrev]
+          break if found
         end
-        break if @@test_names[:class][:abbrev]
+        break if found
       end
       p @@test_names
 
