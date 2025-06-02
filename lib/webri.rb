@@ -2,6 +2,8 @@
 require 'rbconfig'
 require 'open-uri'
 
+# TODO: Push to gem; test on Linux.
+# TODO: Make sure webri is on $PATH.
 # TODO: Update help text.
 # TODO: Add --release option.
 # TODO: Test all releases.
