@@ -195,8 +195,6 @@ class WebRI
 
     # Return a choice for a path.
     def self.choice(name, path)
-      a = path.split('/')
-      a.pop.sub('_md', '').sub('_rdoc', '').sub('.html', '') + ' ' + path
       "#{name}: (#{path})"
     end
 
@@ -223,7 +221,7 @@ class WebRI
 
     # Return a choice string for a path.
     def self.choice(full_name, path)
-      class_name, method_name = path.split('.html#method-c-')
+      class_name, _ = path.split('.html#method-c-')
       class_name.gsub!('/', '::')
       "#{full_name} (in #{class_name})"
     end
@@ -246,7 +244,7 @@ class WebRI
 
     # Return a choice string for a path.
     def self.choice(full_name, path)
-      class_name, method_name = path.split('.html#method-i-')
+      class_name, _ = path.split('.html#method-i-')
       class_name.gsub!('/', '::')
       "#{full_name} (in #{class_name})"
     end
