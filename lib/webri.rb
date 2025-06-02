@@ -499,12 +499,15 @@ class WebRI
                         raise RuntimeError.new(message)
                       end
     uri = URI.parse(File.join(DocSite, doc_release, target_url))
-    url = uri.to_s
+    full_url = uri.to_s
+    url, fragment = full_url.split('#')
     message = "Opening web page #{url}"
-    fragment = uri.fragment
-    message += " to method #{fragment}" if fragment
+    if fragment
+      message += " at method #{name}"
+    end
+    message += '.'
     puts message
-    command = "#{executable_name} #{url}"
+    command = "#{executable_name} #{full_url}"
     if noop
       puts "Command: '#{command}'"
     else
