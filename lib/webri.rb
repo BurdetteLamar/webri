@@ -94,7 +94,7 @@ class WebRI
           if index.include?(full_name)
             entry = index[full_name]
           else
-            entry = MethodEntry.new(full_name)
+            entry = SingletonMethodEntry.new(full_name)
             index[full_name] = entry
           end
           entry.paths.push(path)
@@ -103,7 +103,7 @@ class WebRI
           if index.include?(full_name)
             entry = index[full_name]
           else
-            entry = MethodEntry.new(full_name)
+            entry = InstanceMethodEntry.new(full_name)
             index[full_name] = entry
           end
           entry.paths.push(path)
@@ -190,7 +190,7 @@ class WebRI
 
   end
 
-  class MethodEntry < MultiplePathEntry
+  class SingletonMethodEntry < MultiplePathEntry
 
     # Return hash of choice strings for entries.
     def self.choices(entries)
@@ -209,6 +209,29 @@ class WebRI
       class_name, method_name = path.split('.html#method-c-')
       class_name.gsub!('/', '::')
       "::#{method_name} (in #{class_name})"
+    end
+
+  end
+
+  class InstanceMethodEntry < MultiplePathEntry
+
+    # Return hash of choice strings for entries.
+    def self.choices(entries)
+      choices = {}
+      entries.each_pair do |name, entry|
+        entry.paths.each do |path|
+          choice = self.choice(path)
+          choices[choice] = path
+        end
+      end
+      Hash[choices.sort]
+    end
+
+    # Return a choice string for a path.
+    def self.choice(path)
+      class_name, method_name = path.split('.html#method-i-')
+      class_name.gsub!('/', '::')
+      "##{method_name} (in #{class_name})"
     end
 
   end
@@ -329,7 +352,7 @@ class WebRI
   def show_singleton_method(name, singleton_method_index)
     # Target page is a singleton method such as ::new.
     all_entries = index_for_type[:singleton_method]
-    all_choices = MethodEntry.choices(all_entries)
+    all_choices = SingletonMethodEntry.choices(all_entries)
     # Find entries whose names that start with name.
     selected_entries = all_entries.select do |key, value|
       key.start_with?(name)
@@ -341,7 +364,7 @@ class WebRI
         selected_paths.push(path)
       end
     end
-    selected_choices = MethodEntry.choices(selected_entries)
+    selected_choices = SingletonMethodEntry.choices(selected_entries)
     case selected_paths.size
     when 1
       full_name = selected_entries.keys.first
@@ -376,7 +399,7 @@ class WebRI
   def show_instance_method(name, instance_method_index)
     # Target page is an instance method such as #to_s.
     all_entries = index_for_type[:instance_method]
-    all_choices = MethodEntry.choices(all_entries)
+    all_choices = SingletonMethodEntry.choices(all_entries)
     # Find entries whose names that start with name.
     selected_entries = all_entries.select do |key, value|
       key.start_with?(name)
@@ -388,7 +411,7 @@ class WebRI
         selected_paths.push(path)
       end
     end
-    selected_choices = MethodEntry.choices(selected_entries)
+    selected_choices = SingletonMethodEntry.choices(selected_entries)
     case selected_paths.size
     when 1
       full_name = selected_entries.keys.first
