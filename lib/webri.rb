@@ -1,20 +1,33 @@
 # frozen_string_literal: true
+
 require 'rbconfig'
 require 'open-uri'
 
+# TODO: Update README.md.
+# TODO: Update help text.
+
+# TODO: Make it work for naked method (parse) or dotted method (.parse).
+
 # TODO: Push to gem; test on Linux.
 # TODO: Make sure webri is on $PATH.
-# TODO: Update help text.
+
+# TODO: Check whether we're using the release of the installed Ruby.
+
 # TODO: Add --release option.
+# TODO: Show all release numbers; allow choice.
+
 # TODO: Test all releases.
 # TODO: Test options.
 # TODO: Test all pages(?).
-# TODO: Show all release numbers; allow choice.
-# TODO: Test whether there are multi-path entries in files, methods.
+
 # TODO: Support interactive mode (remain in app).
+
 # TODO: Support pager.
-# TODO: Update README.md.
+
 # TODO: Support .webrirc.
+# TODO: Make it save options to .webrirc.
+# TODO: Make it show .webrirc.
+
 # TODO: Review RI docs, options, and help.
 # TODO: Review RDoc docs, options, and help.
 
