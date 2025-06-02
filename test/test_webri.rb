@@ -235,6 +235,18 @@ class TestWebRI < Minitest::Test
     end
   end
 
+  def test_instance_method_partial_name_ambiguous
+    name = '#pars' # Should offer multiple choices and open chosen page.
+    webri_session(name) do |stdin, stdout, stderr|
+      output = read(stdout)
+      assert_match(/Found \d+ instance method names starting with '#{name}'./, output)
+      check_choices(stdin, stdout, output)
+      writeln(stdin, '0')
+      output = read(stdout)
+      check_web_page(name, output)
+    end
+  end
+
   # Infrastructure.
 
   # Open a webri session and yield its IO streams.
