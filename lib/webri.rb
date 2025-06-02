@@ -3,6 +3,7 @@
 require 'rbconfig'
 require 'open-uri'
 
+# TODO: Make each test find the appropriate name; population differs among platforms.
 # TODO: Test options.
 # TODO: Test on Linux.
 
