@@ -342,4 +342,63 @@ class TestWebRI < Minitest::Test
   def writeln(stdin, s)
     stdin.write(s + "\n")
   end
+
+  def setup
+    return if defined?(@@setup)
+    @@setup = true
+    @@test_names = {
+      class: {
+        nosuch: 'NoSuChClAsS',
+      },
+      singleton_method: {},
+      instance_method: {},
+      page: {}
+    }
+
+    # Get test names for classes.
+    name = @@test_names[:class][:nosuch]
+    webri_session(name) do |stdin, stdout, stderr|
+      # Get the count of classes.
+      lines = read(stdout).split("\n")
+      lines.last.match(/(\d+)/)
+      count = $1.to_s.to_i
+      # Get the class names
+      writeln(stdin, 'y')
+      class_names = []
+      i = 0
+      stdout.each_line do |line|
+        class_names.push(line.split(' ').last.chomp)
+        i += 1
+        break if i == count
+      end
+      # Get a full class name that no other class name starts with.
+      class_names.each do |name_to_try|
+        selected_names = class_names.select do |name|
+          name.start_with?(name_to_try)
+        end
+        if selected_names.size == 1
+          @@test_names[:class][:unique] = name_to_try
+          break
+        end
+      end
+      # Get a partial class name that some other class names start with.
+      class_names.each do |class_name|
+        @@test_names[:class][:abbrev]
+        (3..4).each do |len|
+          abbrev = class_name[0..len]
+          selected_names = class_names.select do |name|
+            name.start_with?(abbrev)
+          end
+          if (5..7).include?(selected_names.size)
+            @@test_names[:class][:abbrev] = abbrev
+            break
+          end
+          break if @@test_names[:class][:abbrev]
+        end
+        break if @@test_names[:class][:abbrev]
+      end
+      p @@test_names
+
+    end
+  end
 end
