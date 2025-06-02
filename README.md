@@ -1,8 +1,81 @@
-# Webri
+# WebRI
 
-TODO: Delete this and the text below, and describe your gem
+WebRI is a command-line utility for displaying Ruby documentation.
 
-Welcome to your new gem! In this directory, you'll find the files you need to be able to package up your Ruby library into a gem. Put your Ruby code in the file `lib/webri`. To experiment with that code, run `bin/console` for an interactive prompt.
+It is in some ways similar to [Ruby's RI utility](https://ruby.github.io/rdoc/RI_md.html),
+but differs mainly in that:
+
+- RI displays text-only documentation the the user's command window.
+- WebRI opens documentation web pages
+  from [Ruby official on-line documentation](https://docs.ruby-lang.org/en)
+  in the user's default web browser.
+
+WebRI displays documentation for:
+
+- A class or module: opens its web page.
+- A method: opens the web page for its class/module _scrolled to the method's documentation_.
+- A Ruby 'topics': opens a free-standing web page.
+
+## Examples
+
+### Class or Module
+
+```
+# Class or module by full name.
+$ webri Array
+Found one class or module name starting with 'Array':
+  Array
+Opening web page https://docs.ruby-lang.org/en/3.4/Array.html
+```
+
+```
+# Class or module by partial name (one match).
+$ webri Arr
+Found one class or module name starting with 'Arr':
+  Array
+Open page Array.html? (y or n):  y
+Opening web page https://docs.ruby-lang.org/en/3.4/Array.html
+```
+
+```
+# Class or module by partial name (multiple matches).
+$ webri Ar
+Found 2 class and module names starting with 'Ar'.
+Show names?' (y or n):  y
+       0:  ArgumentError
+       1:  Array
+Choose (0..1):  0
+Opening web page https://docs.ruby-lang.org/en/3.4/ArgumentError.html
+```
+
+```
+# Class or module that does not exist.
+$ webri Foo
+Found no class or module name starting with 'Foo'.
+Show names of all 1364 classes and modules? (y or n):  n
+```
+
+### Singleton Methods
+
+```
+# Singleton method full name (one match).
+$ webri ::write_binary
+Found one singleton method name starting with '::write_binary'
+  ::write_binary
+Opening web page https://docs.ruby-lang.org/en/3.4/Gem.html#method-c-write_binary.
+```
+
+````
+# Singleton method full name (multiple matches).
+$ webri ::wrap
+Found 3 singleton method names starting with '::wrap'.
+Show names?' (y or n):  y
+       0:  ::wrap (in Gem::Package::DigestIO)
+       1:  ::wrap (in JSON::JSONError)
+       2:  ::wrap (in Zlib::GzipFile)
+Choose (0..2):  1
+Opening web page https://docs.ruby-lang.org/en/3.4/JSON/JSONError.html#method-c-wrap.
+````
 
 ## Installation
 
