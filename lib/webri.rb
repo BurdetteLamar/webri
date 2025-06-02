@@ -3,14 +3,14 @@
 require 'rbconfig'
 require 'open-uri'
 
-# TODO: Test fragments.
 # TODO: Fix listed methods.
-# TODO: Check whether we're using the release of the installed Ruby.
+# TODO: Test fragments.
+# TODO: Test options.
 # TODO: Test on Linux.
-
 
 # TODO: Update README.md.
 # TODO: Update help text.
+
 # TODO: Update webri.gemspec.
 
 # TODO: Make it work for naked method (parse) or dotted method (.parse).
@@ -22,7 +22,6 @@ require 'open-uri'
 # TODO: Show all release numbers; allow choice.
 
 # TODO: Test all releases.
-# TODO: Test options.
 # TODO: Test all pages(?).
 
 # TODO: Support interactive mode (remain in app).
