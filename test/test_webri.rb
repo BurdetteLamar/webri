@@ -322,10 +322,17 @@ class TestWebRI < Minitest::Test
     web_line = lines.shift
     assert_match(/Opening web page /, web_line)
     url_line = lines.shift
+    # Get the page.
     url = url_line.split(' ').last.sub("'", '')
-    returned_value = URI.open(url)
+    io = URI.open(url)
     classes = [Tempfile, StringIO]
-    assert(classes.include?(returned_value.class))
+    assert(classes.include?(io.class))
+    # Check that the method is on the page.
+    url, fragment = url.split('#')
+    if fragment
+      html = io.read
+      assert_match(fragment, html)
+    end
   end
 
   def read(stdout)

@@ -3,8 +3,6 @@
 require 'rbconfig'
 require 'open-uri'
 
-# TODO: Fix listed methods.
-# TODO: Test fragments.
 # TODO: Test options.
 # TODO: Test on Linux.
 
