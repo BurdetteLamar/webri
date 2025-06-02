@@ -265,6 +265,17 @@ class TestWebRI < Minitest::Test
     end
   end
 
+  def test_instance_method_partial_name_unambiguous_one_path
+    name = '#user_inst' # Should offer one choice; open if yes.
+    webri_session(name) do |stdin, stdout, stderr|
+      output = read(stdout)
+      assert_match(/Found one instance method name starting with '#{name}'./, output)
+      writeln(stdin, 'y')
+      output = read(stdout)
+      check_web_page(name, output)
+    end
+  end
+
   # Infrastructure.
 
   # Open a webri session and yield its IO streams.
