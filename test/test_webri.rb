@@ -182,6 +182,35 @@ class TestWebRI < Minitest::Test
     end
   end
 
+  def test_singleton_method_partial_name_unambiguous_multiple_paths
+    name = '::wra'
+    webri_session(name) do |stdin, stdout, stderr|
+      output = read(stdout)
+      output.match(/(\d+)/)
+      # This test is for a singleton method name that has multiple paths.
+      # Check whether it's so for the given singleton method name.
+      # If not, we need to change the singleton method name for this test.
+      choice_count = $1.to_i
+      assert_operator(choice_count, :>, 1, 'Single method name should have multiple paths.')
+      assert_match(/Found \d+ singleton method names starting with '#{name}'./, output)
+      check_choices(stdin, stdout, output)
+      writeln(stdin, '0')
+      output = read(stdout)
+      check_web_page(name, output)
+    end
+  end
+
+  def test_singleton_method_partial_name_unambiguous_one_path
+    name = '::write_b'
+    webri_session(name) do |stdin, stdout, stderr|
+      output = read(stdout)
+      assert_match(/Found one singleton method name starting with '#{name}'./, output)
+      writeln(stdin, 'y')
+      output = read(stdout)
+      check_web_page(name, output)
+    end
+  end
+
   # Infrastructure.
 
   # Open a webri session and yield its IO streams.
