@@ -222,6 +222,19 @@ class TestWebRI < Minitest::Test
     end
   end
 
+  def test_instance_method_nosuch_name
+    name = '#nosuch'  # Should offer all choices; open chosen page.
+    webri_session(name) do |stdin, stdout, stderr|
+      output = read(stdout)
+      assert_match(/Found no instance method name starting with '#{name}'./, output)
+      assert_match(/Show names of all \d+ instance methods?/, output)
+      check_choices(stdin, stdout, output)
+      writeln(stdin, '0')
+      output = read(stdout)
+      check_web_page(name, output)
+    end
+  end
+
   # Infrastructure.
 
   # Open a webri session and yield its IO streams.
