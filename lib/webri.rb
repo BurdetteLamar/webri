@@ -3,15 +3,20 @@
 require 'rbconfig'
 require 'open-uri'
 
+# TODO: Test fragments.
+# TODO: Fix listed methods.
+# TODO: Check whether we're using the release of the installed Ruby.
+# TODO: Test on Linux.
+
+
 # TODO: Update README.md.
 # TODO: Update help text.
+# TODO: Update webri.gemspec.
 
 # TODO: Make it work for naked method (parse) or dotted method (.parse).
 
-# TODO: Push to gem; test on Linux.
+# TODO: Push to gem.
 # TODO: Make sure webri is on $PATH.
-
-# TODO: Check whether we're using the release of the installed Ruby.
 
 # TODO: Add --release option.
 # TODO: Show all release numbers; allow choice.
