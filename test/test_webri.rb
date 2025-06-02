@@ -211,6 +211,17 @@ class TestWebRI < Minitest::Test
     end
   end
 
+  # Instance methods.
+
+  def test_instance_method_exact_name
+    name = '#yield_self' # Should open page.
+    webri_session(name) do |stdin, stdout, stderr|
+      output = read(stdout)
+      assert_match(/Found one instance method name starting with '#{name}'./, output)
+      check_web_page(name, output)
+    end
+  end
+
   # Infrastructure.
 
   # Open a webri session and yield its IO streams.
