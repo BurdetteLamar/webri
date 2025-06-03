@@ -83,7 +83,8 @@ class TestWebRI < Minitest::Test
   # Files.
 
   def test_file_exact_name
-    short_name = 'yjit' # Should open page.
+    short_name = @@test_names[:file][:full_unique_single_path] # Should open page.
+    refute_nil(short_name)
     name = "ruby:#{short_name}"
     webri_session(name) do |stdin, stdout, stderr|
       output = read(stdout)
