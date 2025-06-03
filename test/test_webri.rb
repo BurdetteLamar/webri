@@ -159,7 +159,8 @@ class TestWebRI < Minitest::Test
   # Singleton methods.
 
   def test_singleton_method_exact_name
-    name = '::write_binary' # Should open page.
+    name = @@test_names[:singleton_method][:full_unique_single_path] # Should open page.
+    refute_nil(name)
     webri_session(name) do |stdin, stdout, stderr|
       output = read(stdout)
       assert_match(/Found one singleton method name starting with '#{name}'./, output)
@@ -182,7 +183,8 @@ class TestWebRI < Minitest::Test
   end
 
   def test_singleton_method_partial_name_ambiguous
-    name = '::parse' # Should offer multiple choices and open chosen page.
+    name = @@test_names[:singleton_method][:abbrev_unique_multi_path] # Should offer multiple choices and open chosen page.
+    refute_nil(name)
     webri_session(name) do |stdin, stdout, stderr|
       output = read(stdout)
       assert_match(/Found \d+ singleton method names starting with '#{name}'./, output)
@@ -194,7 +196,7 @@ class TestWebRI < Minitest::Test
   end
 
   def test_singleton_method_partial_name_unambiguous_multiple_paths
-    name = '::wra' # Should offer multiple choices and open chosen page.
+    name = @@test_names[:singleton_method][:abbrev_unique_multi_path] # Should offer multiple choices and open chosen page.
     webri_session(name) do |stdin, stdout, stderr|
       output = read(stdout)
       output.match(/(\d+)/)
