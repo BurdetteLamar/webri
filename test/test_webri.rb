@@ -367,13 +367,13 @@ class TestWebRI < Minitest::Test
         nosuch: '#nOsUcHmEtHoD'
       },
       file: {
-        nosuch: 'nOsUcHfIlE',
+        nosuch: 'ruby:nOsUcHfIlE',
       },
     }
     # Get test names for classes.
     @@test_names[:class][:nosuch] = 'NoSuChClAsS'
     class_items = get_all_items(:class)
-    class_names = class_items.map {|item| item.split(' ').last }
+    class_names = class_items.keys
     # Find a full class name that no other class name starts with.
     class_names.each do |name_to_try|
       selected_names = class_names.select do |name|
@@ -426,22 +426,27 @@ class TestWebRI < Minitest::Test
 
   def get_all_items(type)
     name = @@test_names[type][:nosuch]
-    names = []
+    items = {}
     webri_session(name) do |stdin, stdout, stderr|
-      # Get the count of names.
+      # Get the count of items.
       lines = read(stdout).split("\n")
       lines.last.match(/(\d+)/)
       count = $1.to_s.to_i
-      # Get the names
+      # Get the items
       writeln(stdin, 'y')
       i = 0
       stdout.each_line do |line|
-        names.push(line.chomp)
+        line.chomp!
+        index_pattern = /^\s*\d+\s*:\s*/
+        line.sub!(index_pattern, '')
+        name, location = line.split(' ')
+        items[name] = [] unless items[name]
+        items[name].push(location)
         i += 1
         break if i == count
       end
     end
-    names
+    items
   end
 
 end
