@@ -123,6 +123,8 @@ class TestWebRI < Minitest::Test
   end
 
   def test_file_partial_name_unambiguous_multiple_paths
+    short_name = @@test_names[:file][:abbrev_unique_multi_path] # Should offer multiple choices and open chosen page.
+    refute_nil(short_name)
     short_name = 'method' # Should offer multiple choices and open chosen page.
     name = "ruby:#{short_name}"
     webri_session(name) do |stdin, stdout, stderr|
@@ -142,7 +144,8 @@ class TestWebRI < Minitest::Test
   end
 
   def test_file_partial_name_unambiguous_one_path
-    short_name = 'yji' # Should offer one choice; open if yes.
+    short_name = @@test_names[:file][:abbrev_unique_single_path] # Should offer one choice; open if yes.
+    refute_nil(short_name)
     name = "ruby:#{short_name}"
     webri_session(name) do |stdin, stdout, stderr|
       output = read(stdout)
