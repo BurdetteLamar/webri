@@ -452,23 +452,23 @@ class TestWebRI < Minitest::Test
   end
 
   def get_test_names_for_files
-    file_locations = get_item_locations(:file)
-    file_names = file_locations.keys
+    locations = get_item_locations(:file)
+    names = locations.keys
     found_names = @@test_names[:file]
-    # Find full file names matching only one name,
+    # Find full names matching only one name,
     # one with single path and one with multiple paths.
     names_to_find = {
       single_path: :full_unique_single_path,
       multi_path: :full_unique_multi_path,
     }
-    find_full_names(file_locations, found_names, names_to_find)
+    find_full_names(locations, found_names, names_to_find)
     # Find abbreviated file names matching only one name,
     # one with single path and one with multiple paths.
     names_to_find = {
       single_path: :abbrev_unique_single_path,
       multi_path: :abbrev_unique_multi_path,
     }
-    find_abbrev_names(file_locations, found_names, names_to_find)
+    find_abbrev_names(locations, found_names, names_to_find)
   end
 
   def find_full_names(locations, found_names, names_to_find)
