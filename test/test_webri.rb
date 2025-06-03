@@ -417,21 +417,6 @@ class TestWebRI < Minitest::Test
     # Get test names for files.
     file_locations = get_item_locations(:file)
     file_names = file_locations.keys
-    # # Find full class names that no other class name starts with,
-    # # one with single path and one with multiple paths.
-    # file_names.each do |name_to_try|
-    #   selected_names = file_names.select do |name|
-    #     name.start_with?(name_to_try)
-    #   end
-    #   if selected_names.size == 1
-    #     name = selected_names.first
-    #     locations = file_locations[name]
-    #     if locations.size == 1
-    #       @@test_names[:file][:full_unique] = name_to_try
-    #       break
-    #     end
-    #   end
-    # end
     # Find full file names matching only one name,
     # one with single path and one with multiple paths.
     found_names = @@test_names[:file]
@@ -447,26 +432,7 @@ class TestWebRI < Minitest::Test
       single_path: :abbrev_unique_single_path,
       multi_path: :abbrev_unique_multi_path,
     }
-    file_names.each do |file_name|
-      (3..4).each do |len|
-        abbrev = file_name[0..len]
-        selected_names = file_names.select do |name|
-          name.start_with?(abbrev) && name.size != abbrev.size
-        end
-        if selected_names.size == 1
-          name = selected_names.first
-          locations = file_locations[name]
-          if locations.size == 1
-            found_names[names_to_find[:single_path]] = abbrev
-          else
-            found_names[names_to_find[:multi_path]] = abbrev
-          end
-          break if names_found?(found_names, names_to_find)
-        end
-        break if names_found?(found_names, names_to_find)
-      end
-      break if names_found?(found_names, names_to_find)
-    end
+    find_abbrev_names(file_locations, found_names, names_to_find)
     p @@test_names[:class]
     p @@test_names[:singleton_method]
     p @@test_names[:instance_method]
@@ -497,6 +463,31 @@ class TestWebRI < Minitest::Test
       end
     end
     items
+  end
+
+  def find_abbrev_names(locations, found_names, names_to_find)
+    names = locations.keys
+    names.each do |file_name|
+      (3..4).each do |len|
+        abbrev = file_name[0..len]
+        selected_names = names.select do |name|
+          name.start_with?(abbrev) && name.size != abbrev.size
+        end
+        if selected_names.size == 1
+          name = selected_names.first
+          locations_ = locations[name]
+          if locations_.size == 1
+            found_names[names_to_find[:single_path]] = abbrev
+          else
+            found_names[names_to_find[:multi_path]] = abbrev
+          end
+          break if names_found?(found_names, names_to_find)
+        end
+        break if names_found?(found_names, names_to_find)
+      end
+      break if names_found?(found_names, names_to_find)
+    end
+
   end
 
   def find_full_names(locations, found_names, names_to_find)
