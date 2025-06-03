@@ -322,29 +322,15 @@ class TestWebRI < Minitest::Test
 
   def check_web_page(name, output)
     lines = output.split("\n")
-    case lines.size
-    when 4
-      # Two extra lines: 'Found', and what was found.
-      found_line = lines.shift
-      assert_match(/Found/, found_line)
-      name_line = lines.shift
-      return
-      assert_match(name, name_line)
-    when 2
-      # No extra lines.
-    else
-      assert(false, "Trailing line count was #{lines.size}; not 2 or 4.")
-    end
-    web_line = lines.shift
-    assert_match(/Opening web page /, web_line)
-    url_line = lines.shift
+    command_line_no = lines.index {|line| line.match('Command') }
+    command_line = lines[command_line_no]
     # Get the page.
-    url = url_line.split(' ').last.sub("'", '')
+    url = command_line.split(' ').last.sub("'", '')
     io = URI.open(url)
     classes = [Tempfile, StringIO]
     assert(classes.include?(io.class))
     # Check that the method is on the page.
-    url, fragment = url.split('#')
+    _, fragment = url.split('#')
     if fragment
       html = io.read
       assert_match(fragment, html)
@@ -464,7 +450,6 @@ class TestWebRI < Minitest::Test
 
   def get_test_names(type)
     locations = get_item_locations(type)
-    names = locations.keys
     found_names = @@test_names[type]
     # Find full names matching only one name,
     # one with single path and one with multiple paths.

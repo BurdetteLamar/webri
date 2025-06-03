@@ -3,6 +3,8 @@
 require 'rbconfig'
 require 'open-uri'
 
+# TODO: Fix 'Opening' remark -- has wrong fragment.
+
 # TODO: Make each test find the appropriate name; population differs among platforms.
 # TODO: Test options.
 # TODO: Test on Linux.
