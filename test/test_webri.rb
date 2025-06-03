@@ -355,7 +355,7 @@ class TestWebRI < Minitest::Test
     @@setup = true
     @@test_names = {
       class: {
-        nosuch: nil,
+        nosuch: 'NoSuChClAsS',
         full_unique: nil,
         abbrev_multi: nil,
         abbrev_unique: nil,
@@ -371,7 +371,6 @@ class TestWebRI < Minitest::Test
       },
     }
     # Get test names for classes.
-    @@test_names[:class][:nosuch] = 'NoSuChClAsS'
     class_items = get_all_items(:class)
     class_names = class_items.keys
     # Find a full class name that no other class name starts with.
