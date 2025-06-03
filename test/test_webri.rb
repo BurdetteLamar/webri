@@ -372,69 +372,76 @@ class TestWebRI < Minitest::Test
     }
 
     # Get test names for classes.
-    name = @@test_names[:class][:nosuch]
+    class_items = get_all_items(:class)
+    class_names = class_items.map {|item| item.split(' ').last }
+    # Get a full class name that no other class name starts with.
+    class_names.each do |name_to_try|
+      selected_names = class_names.select do |name|
+        name.start_with?(name_to_try)
+      end
+      if selected_names.size == 1
+        @@test_names[:class][:full_unique] = name_to_try
+        break
+      end
+    end
+    # Get abbreviated class name matching only one name.
+    class_names.each do |class_name|
+      found = false
+      (3..4).each do |len|
+        abbrev = class_name[0..len]
+        selected_names = class_names.select do |name|
+          name.start_with?(abbrev) && name.size != abbrev.size
+        end
+        if selected_names.size == 1
+          @@test_names[:class][:abbrev_unique] = abbrev
+          found = true
+          break
+        end
+        break if found
+      end
+      break if found
+    end
+    # Get abbreviated class name matching multiple names.
+    class_names.each do |class_name|
+      found = false
+      (3..4).each do |len|
+        abbrev = class_name[0..len]
+        selected_names = class_names.select do |name|
+          name.start_with?(abbrev)
+        end
+        if (5..7).include?(selected_names.size)
+          @@test_names[:class][:abbrev_multi] = abbrev
+          found = true
+          break
+        end
+        break if found
+      end
+      break if found
+    end
+    p @@test_names[:class]
+    p @@test_names[:singleton_method]
+    p @@test_names[:instance_method]
+    p @@test_names[:file]
+  end
+
+  def get_all_items(type)
+    name = @@test_names[type][:nosuch]
+    names = []
     webri_session(name) do |stdin, stdout, stderr|
-      # Get the count of classes.
+      # Get the count of names.
       lines = read(stdout).split("\n")
       lines.last.match(/(\d+)/)
       count = $1.to_s.to_i
-      # Get the class names
+      # Get the names
       writeln(stdin, 'y')
-      class_names = []
       i = 0
       stdout.each_line do |line|
-        class_names.push(line.split(' ').last.chomp)
+        names.push(line.chomp)
         i += 1
         break if i == count
       end
-      # Get a full class name that no other class name starts with.
-      class_names.each do |name_to_try|
-        selected_names = class_names.select do |name|
-          name.start_with?(name_to_try)
-        end
-        if selected_names.size == 1
-          @@test_names[:class][:full_unique] = name_to_try
-          break
-        end
-      end
-      # Get abbreviated class name matching only one name.
-      class_names.each do |class_name|
-        found = false
-        (3..4).each do |len|
-          abbrev = class_name[0..len]
-          selected_names = class_names.select do |name|
-            name.start_with?(abbrev) && name.size != abbrev.size
-          end
-          if selected_names.size == 1
-            @@test_names[:class][:abbrev_unique] = abbrev
-            found = true
-            break
-          end
-          break if found
-        end
-        break if found
-      end
-      # Get abbreviated class name matching multiple names.
-      class_names.each do |class_name|
-        found = false
-        (3..4).each do |len|
-          abbrev = class_name[0..len]
-          selected_names = class_names.select do |name|
-            name.start_with?(abbrev)
-          end
-          if (5..7).include?(selected_names.size)
-            @@test_names[:class][:abbrev_multi] = abbrev
-            found = true
-            break
-          end
-          break if found
-        end
-        break if found
-      end
-      p @@test_names[:class]
-      p @@test_names[:singleton_method]
-      p @@test_names[:instance_method]
-      p @@test_names[:file]
     end
+    names
   end
+
 end
