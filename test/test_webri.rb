@@ -109,7 +109,8 @@ class TestWebRI < Minitest::Test
   end
 
   def test_file_partial_name_ambiguous
-    short_name = 'c' # Should offer multiple choices and open chosen page.
+    short_name = @@test_names[:file][:abbrev_unique_multi_path] # Should offer multiple choices and open chosen page.
+    refute_nil(short_name)
     name = "ruby:#{short_name}"
     webri_session(name) do |stdin, stdout, stderr|
       output = read(stdout)
