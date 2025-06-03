@@ -254,7 +254,7 @@ class WebRI
   def show(name)
     # Figure out what's asked for.
     case
-    when name.match(/^[A-Z]/)
+    when name.match(/^[A-Z]/), name == 'fatal'
       show_class(name, index_for_type[:class])
     when name.start_with?('ruby:')
       show_file(name, index_for_type[:file])
