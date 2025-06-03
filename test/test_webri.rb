@@ -465,6 +465,25 @@ class TestWebRI < Minitest::Test
     items
   end
 
+  def find_full_names(locations, found_names, names_to_find)
+    names = locations.keys
+    names.each do |name_to_try|
+      selected_names = names.select do |name|
+        name.start_with?(name_to_try) && name != name_to_try
+      end
+      if selected_names.size == 0
+        locations_ = locations[name_to_try]
+        if locations_.size == 1
+          found_names[names_to_find[:single_path]] = name_to_try
+        else
+          found_names[names_to_find[:multi_path]] = name_to_try
+        end
+        break if names_found?(found_names, names_to_find)
+      end
+      break if names_found?(found_names, names_to_find)
+    end
+  end
+
   def find_abbrev_names(locations, found_names, names_to_find)
     names = locations.keys
     names.each do |file_name|
@@ -487,27 +506,6 @@ class TestWebRI < Minitest::Test
       end
       break if names_found?(found_names, names_to_find)
     end
-
-  end
-
-  def find_full_names(locations, found_names, names_to_find)
-    names = locations.keys
-    names.each do |name_to_try|
-      selected_names = names.select do |name|
-        name.start_with?(name_to_try) && name != name_to_try
-      end
-      if selected_names.size == 0
-        locations_ = locations[name_to_try]
-        if locations_.size == 1
-          found_names[names_to_find[:single_path]] = name_to_try
-        else
-          found_names[names_to_find[:multi_path]] = name_to_try
-        end
-        break if names_found?(found_names, names_to_find)
-      end
-      break if names_found?(found_names, names_to_find)
-    end
-
   end
 
   def names_found?(found_names, names_to_find)
