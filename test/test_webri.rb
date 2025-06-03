@@ -356,9 +356,6 @@ class TestWebRI < Minitest::Test
     @@test_names = {
       class: {
         nosuch: 'NoSuChClAsS',
-        full_unique: nil,
-        abbrev_multi: nil,
-        abbrev_unique: nil,
       },
       singleton_method: {
         nosuch: '::nOsUcHmEtHoD'
@@ -371,8 +368,8 @@ class TestWebRI < Minitest::Test
       },
     }
     # Get test names for classes.
-    class_items = get_all_items(:class)
-    class_names = class_items.keys
+    class_locations = get_item_locations(:class)
+    class_names = class_locations.keys # A class does not have a location; just use the names.
     # Find a full class name that no other class name starts with.
     class_names.each do |name_to_try|
       selected_names = class_names.select do |name|
@@ -417,13 +414,56 @@ class TestWebRI < Minitest::Test
       end
       break if found
     end
+    # Get test names for files.
+    file_locations = get_item_locations(:file)
+    # Find full class names that no other class name starts with,
+    # one with single path and one with multiple paths.
+    file_names = file_locations.keys
+    file_names.each do |name_to_try|
+      selected_names = file_names.select do |name|
+        name.start_with?(name_to_try)
+      end
+      if selected_names.size == 1
+        name = selected_names.first
+        locations = file_locations[name]
+        if locations.size == 1
+          @@test_names[:file][:full_unique] = name_to_try
+          break
+        end
+      end
+    end
+    # Find abbreviated file names matching only one name,
+    # one with single path and one with multiple paths.
+    file_names.each do |file_name|
+      (3..4).each do |len|
+        abbrev = file_name[0..len]
+        selected_names = file_names.select do |name|
+          name.start_with?(abbrev) && name.size != abbrev.size
+        end
+        if selected_names.size == 1
+          name = selected_names.first
+          locations = file_locations[name]
+          if locations.size == 1
+            @@test_names[:file][:abbrev_unique_single_path] = abbrev
+          else
+            @@test_names[:file][:abbrev_unique_multi_path] = abbrev
+          end
+          break if @@test_names[:file][:abbrev_unique_multi_path] &&
+            @@test_names[:file][:abbrev_unique_single_path]
+        end
+        break if @@test_names[:file][:abbrev_unique_multi_path] &&
+          @@test_names[:file][:abbrev_unique_single_path]
+      end
+      break if @@test_names[:file][:abbrev_unique_multi_path] &&
+        @@test_names[:file][:abbrev_unique_single_path]
+    end
     p @@test_names[:class]
     p @@test_names[:singleton_method]
     p @@test_names[:instance_method]
     p @@test_names[:file]
   end
 
-  def get_all_items(type)
+  def get_item_locations(type)
     name = @@test_names[type][:nosuch]
     items = {}
     webri_session(name) do |stdin, stdout, stderr|
