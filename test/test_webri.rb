@@ -416,22 +416,22 @@ class TestWebRI < Minitest::Test
     end
     # Get test names for files.
     file_locations = get_item_locations(:file)
-    # Find full class names that no other class name starts with,
-    # one with single path and one with multiple paths.
     file_names = file_locations.keys
-    file_names.each do |name_to_try|
-      selected_names = file_names.select do |name|
-        name.start_with?(name_to_try)
-      end
-      if selected_names.size == 1
-        name = selected_names.first
-        locations = file_locations[name]
-        if locations.size == 1
-          @@test_names[:file][:full_unique] = name_to_try
-          break
-        end
-      end
-    end
+    # # Find full class names that no other class name starts with,
+    # # one with single path and one with multiple paths.
+    # file_names.each do |name_to_try|
+    #   selected_names = file_names.select do |name|
+    #     name.start_with?(name_to_try)
+    #   end
+    #   if selected_names.size == 1
+    #     name = selected_names.first
+    #     locations = file_locations[name]
+    #     if locations.size == 1
+    #       @@test_names[:file][:full_unique] = name_to_try
+    #       break
+    #     end
+    #   end
+    # end
     # Find full file names matching only one name,
     # one with single path and one with multiple paths.
     found_names = @@test_names[:file]
@@ -444,8 +444,8 @@ class TestWebRI < Minitest::Test
     # one with single path and one with multiple paths.
     found_names = @@test_names[:file]
     names_to_find = {
-      single_path: :full_unique_single_path,
-      multi_path: :full_unique_multi_path,
+      single_path: :abbrev_unique_single_path,
+      multi_path: :abbrev_unique_multi_path,
     }
     file_names.each do |file_name|
       (3..4).each do |len|
