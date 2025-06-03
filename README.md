@@ -18,8 +18,8 @@ WebRI displays documentation for:
 
 ## Usage
 
-```
-$webri name options
+```bash
+$ webri name options
 ```
 
 The `webri` command takes a single argument `name`,
@@ -39,7 +39,7 @@ For one match:
 - For a full name,
   reports the found name and opens its web page:
 
-    ```
+    ```bash
     $ webri Array
     Found one class or module name starting with 'Array':
       Array
@@ -49,7 +49,7 @@ For one match:
 - For a partial name,
   reports the found name and asks whether to open its page:
 
-    ```
+    ```bash
     $ webri Arr
     Found one class or module name starting with 'Arr':
       Array
@@ -60,7 +60,7 @@ For one match:
 For multiple matches,
 reports the count of matches and asks whether to list them:
 
-```
+```bash
 $ webri Ar
 Found 2 class and module names starting with 'Ar'.
 Show names?' (y or n):  y
@@ -73,8 +73,7 @@ Opening web page https://docs.ruby-lang.org/en/3.4/ArgumentError.html
 For no matches,
 reports that finding and asks whether to list all names:
 
-```
-# Class or module that does not exist.
+```bash
 $ webri Foo
 Found no class or module name starting with 'Foo'.
 Show names of all 1364 classes and modules? (y or n):  n
@@ -118,13 +117,13 @@ For no matches:
 Install the gem and add to the application's Gemfile by executing:
 
 ```bash
-bundle add webri
+$ bundle add webri
 ```
 
 If bundler is not being used to manage dependencies, install the gem by executing:
 
 ```bash
-gem install webri
+$ gem install webri
 ```
 
 ## Development
