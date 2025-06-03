@@ -435,7 +435,10 @@ class TestWebRI < Minitest::Test
     # Find full file names matching only one name,
     # one with single path and one with multiple paths.
     found_names = @@test_names[:file]
-    names_to_find = [:full_unique_single_path, :full_unique_multi_path]
+    names_to_find = {
+      single_path: :full_unique_single_path,
+      multi_path: :full_unique_multi_path,
+    }
     file_names.each do |name_to_try|
       selected_names = file_names.select do |name|
         name.start_with?(name_to_try) && name != name_to_try
@@ -443,9 +446,9 @@ class TestWebRI < Minitest::Test
       if selected_names.size == 0
         locations = file_locations[name_to_try]
         if locations.size == 1
-          found_names[:full_unique_single_path] = name_to_try
+          found_names[names_to_find[:single_path]] = name_to_try
         else
-          found_names[:full_unique_multi_path] = name_to_try
+          found_names[names_to_find[:multi_path]] = name_to_try
         end
         break if names_found?(found_names, names_to_find)
       end
@@ -454,7 +457,10 @@ class TestWebRI < Minitest::Test
     # Find abbreviated file names matching only one name,
     # one with single path and one with multiple paths.
     found_names = @@test_names[:file]
-    names_to_find = [:abbrev_unique_single_path, :abbrev_unique_multi_path]
+    names_to_find = {
+      single_path: :full_unique_single_path,
+      multi_path: :full_unique_multi_path,
+    }
     file_names.each do |file_name|
       (3..4).each do |len|
         abbrev = file_name[0..len]
@@ -465,9 +471,9 @@ class TestWebRI < Minitest::Test
           name = selected_names.first
           locations = file_locations[name]
           if locations.size == 1
-            found_names[:abbrev_unique_single_path] = abbrev
+            found_names[names_to_find[:single_path]] = abbrev
           else
-            found_names[:abbrev_unique_multi_path] = abbrev
+            found_names[names_to_find[:multi_path]] = abbrev
           end
           break if names_found?(found_names, names_to_find)
         end
@@ -508,6 +514,7 @@ class TestWebRI < Minitest::Test
   end
 
   def names_found?(found_names, names_to_find)
-    found_names.keys.intersection(names_to_find) == names_to_find
+    found_names.keys.intersection(names_to_find.values) == names_to_find
   end
+
 end
