@@ -32,7 +32,8 @@ class TestWebRI < Minitest::Test
   # Classes and modules.
 
   def test_class_exact_name
-    name = 'Array' # Should open page.
+    name = @@test_names[:class][:full_unique] # Should open page.
+    refute_nil(name)
     webri_session(name) do |stdin, stdout, stderr|
       output = read(stdout)
       assert_match(/Found one class or module name starting with '#{name}'./, output)
@@ -42,6 +43,7 @@ class TestWebRI < Minitest::Test
 
   def test_class_nosuch_name
     name = @@test_names[:class][:nosuch] # Should offer all choices; open chosen page.
+    refute_nil(name)
     webri_session(name) do |stdin, stdout, stderr|
       output = read(stdout)
       assert_match(/Found no class or module name starting with '#{name}'./, output)
@@ -55,6 +57,7 @@ class TestWebRI < Minitest::Test
 
   def test_class_partial_name_ambiguous
     name = @@test_names[:class][:abbrev_multi] # Should offer multiple choices; open chosen choice.
+    refute_nil(name)
     webri_session(name) do |stdin, stdout, stderr|
       output = read(stdout)
       assert_match(/Found \d+ class and module names starting with '#{name}'./, output)
@@ -67,6 +70,7 @@ class TestWebRI < Minitest::Test
 
   def test_class_partial_name_unambiguous
     name = @@test_names[:class][:abbrev_unique] # Should offer one choice; open if yes.
+    refute_nil(name)
     webri_session(name) do |stdin, stdout, stderr|
       output = read(stdout)
       assert_match(/Found one class or module name starting with '#{name}'./, output)
@@ -89,7 +93,8 @@ class TestWebRI < Minitest::Test
   end
 
   def test_file_nosuch_name
-    short_name = 'nosuch'  # Should offer all choices; open chosen page.
+    short_name = @@test_names[:file][:nosuch]  # Should offer all choices; open chosen page.
+    refute_nil(short_name)
     name = "ruby:#{short_name}"
     webri_session(name) do |stdin, stdout, stderr|
       output = read(stdout)
@@ -158,7 +163,8 @@ class TestWebRI < Minitest::Test
   end
 
   def test_singleton_method_nosuch_name
-    name = '::nosuch'  # Should offer all choices; open chosen page.
+    name = @@test_names[:singleton_method][:nosuch]  # Should offer all choices; open chosen page.
+    refute_nil(name)
     webri_session(name) do |stdin, stdout, stderr|
       output = read(stdout)
       assert_match(/Found no singleton method name starting with '#{name}'./, output)
@@ -223,7 +229,8 @@ class TestWebRI < Minitest::Test
   end
 
   def test_instance_method_nosuch_name
-    name = '#nosuch'  # Should offer all choices; open chosen page.
+    name = @@test_names[:instance_method][:nosuch]  # Should offer all choices; open chosen page.
+    refute_nil(name)
     webri_session(name) do |stdin, stdout, stderr|
       output = read(stdout)
       assert_match(/Found no instance method name starting with '#{name}'./, output)
@@ -350,13 +357,18 @@ class TestWebRI < Minitest::Test
       class: {
         nosuch: 'NoSuChClAsS',
         full_unique: nil,
-        abbrev_unique: nil,
         abbrev_multi: nil,
         abbrev_unique: nil,
       },
-      singleton_method: {},
-      instance_method: {},
-      page: {},
+      singleton_method: {
+        nosuch: '::nOsUcHmEtHoD'
+      },
+      instance_method: {
+        nosuch: '#nOsUcHmEtHoD'
+      },
+      file: {
+        nosuch: 'nOsUcHfIlE',
+      },
     }
 
     # Get test names for classes.
@@ -419,8 +431,10 @@ class TestWebRI < Minitest::Test
         end
         break if found
       end
-      p @@test_names
-
+      p @@test_names[:class]
+      p @@test_names[:singleton_method]
+      p @@test_names[:instance_method]
+      p @@test_names[:file]
     end
   end
 end
