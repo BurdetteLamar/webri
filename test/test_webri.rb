@@ -432,8 +432,29 @@ class TestWebRI < Minitest::Test
         end
       end
     end
+    # Find full file names matching only one name,
+    # one with single path and one with multiple paths.
+    found_names = @@test_names[:file]
+    names_to_find = [:full_unique_single_path, :full_unique_multi_path]
+    file_names.each do |name_to_try|
+      selected_names = file_names.select do |name|
+        name.start_with?(name_to_try) && name != name_to_try
+      end
+      if selected_names.size == 0
+        locations = file_locations[name_to_try]
+        if locations.size == 1
+          found_names[:full_unique_single_path] = name_to_try
+        else
+          found_names[:full_unique_multi_path] = name_to_try
+        end
+        break if names_found?(found_names, names_to_find)
+      end
+      break if names_found?(found_names, names_to_find)
+    end
     # Find abbreviated file names matching only one name,
     # one with single path and one with multiple paths.
+    found_names = @@test_names[:file]
+    names_to_find = [:abbrev_unique_single_path, :abbrev_unique_multi_path]
     file_names.each do |file_name|
       (3..4).each do |len|
         abbrev = file_name[0..len]
@@ -444,18 +465,15 @@ class TestWebRI < Minitest::Test
           name = selected_names.first
           locations = file_locations[name]
           if locations.size == 1
-            @@test_names[:file][:abbrev_unique_single_path] = abbrev
+            found_names[:abbrev_unique_single_path] = abbrev
           else
-            @@test_names[:file][:abbrev_unique_multi_path] = abbrev
+            found_names[:abbrev_unique_multi_path] = abbrev
           end
-          break if @@test_names[:file][:abbrev_unique_multi_path] &&
-            @@test_names[:file][:abbrev_unique_single_path]
+          break if names_found?(found_names, names_to_find)
         end
-        break if @@test_names[:file][:abbrev_unique_multi_path] &&
-          @@test_names[:file][:abbrev_unique_single_path]
+        break if names_found?(found_names, names_to_find)
       end
-      break if @@test_names[:file][:abbrev_unique_multi_path] &&
-        @@test_names[:file][:abbrev_unique_single_path]
+      break if names_found?(found_names, names_to_find)
     end
     p @@test_names[:class]
     p @@test_names[:singleton_method]
@@ -479,6 +497,7 @@ class TestWebRI < Minitest::Test
         index_pattern = /^\s*\d+\s*:\s*/
         line.sub!(index_pattern, '')
         name, location = line.split(' ')
+        name.gsub(/:$/, '')
         items[name] = [] unless items[name]
         items[name].push(location)
         i += 1
@@ -488,4 +507,7 @@ class TestWebRI < Minitest::Test
     items
   end
 
+  def names_found?(found_names, names_to_find)
+    found_names.keys.intersection(names_to_find) == names_to_find
+  end
 end
