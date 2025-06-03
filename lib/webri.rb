@@ -482,7 +482,7 @@ class WebRI
   end
 
   # Open URL in browser.
-  def open_url(name, target_url)
+  def open_url(name, target_uri)
     host_os = RbConfig::CONFIG['host_os']
     executable_name = case host_os
                       when /linux|bsd/
@@ -495,7 +495,7 @@ class WebRI
                         message = "Unrecognized host OS: '#{host_os}'."
                         raise RuntimeError.new(message)
                       end
-    uri = URI.parse(File.join(DocSite, doc_release, target_url))
+    uri = URI.parse(File.join(DocSite, doc_release, target_uri.to_s))
     full_url = uri.to_s
     url, fragment = full_url.split('#')
     message = "Opening web page #{url}"
