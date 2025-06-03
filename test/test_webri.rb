@@ -439,21 +439,7 @@ class TestWebRI < Minitest::Test
       single_path: :full_unique_single_path,
       multi_path: :full_unique_multi_path,
     }
-    file_names.each do |name_to_try|
-      selected_names = file_names.select do |name|
-        name.start_with?(name_to_try) && name != name_to_try
-      end
-      if selected_names.size == 0
-        locations = file_locations[name_to_try]
-        if locations.size == 1
-          found_names[names_to_find[:single_path]] = name_to_try
-        else
-          found_names[names_to_find[:multi_path]] = name_to_try
-        end
-        break if names_found?(found_names, names_to_find)
-      end
-      break if names_found?(found_names, names_to_find)
-    end
+    find_full_names(file_locations, found_names, names_to_find)
     # Find abbreviated file names matching only one name,
     # one with single path and one with multiple paths.
     found_names = @@test_names[:file]
@@ -511,6 +497,26 @@ class TestWebRI < Minitest::Test
       end
     end
     items
+  end
+
+  def find_full_names(locations, found_names, names_to_find)
+    names = locations.keys
+    names.each do |name_to_try|
+      selected_names = names.select do |name|
+        name.start_with?(name_to_try) && name != name_to_try
+      end
+      if selected_names.size == 0
+        locations_ = locations[name_to_try]
+        if locations_.size == 1
+          found_names[names_to_find[:single_path]] = name_to_try
+        else
+          found_names[names_to_find[:multi_path]] = name_to_try
+        end
+        break if names_found?(found_names, names_to_find)
+      end
+      break if names_found?(found_names, names_to_find)
+    end
+
   end
 
   def names_found?(found_names, names_to_find)
