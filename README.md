@@ -1,16 +1,16 @@
-# \WebRI
+# WebRI
 
-\WebRI is a command-line utility for displaying Ruby documentation.
+WebRI is a command-line utility for displaying Ruby documentation.
 
 It is in some ways similar to [Ruby's RI utility](https://ruby.github.io/rdoc/RI_md.html),
 but differs mainly in that:
 
 - RI displays text-only documentation the the user's command window.
-- \WebRI opens documentation web pages
+- WebRI opens documentation web pages
   from [Ruby official on-line documentation](https://docs.ruby-lang.org/en)
   in the user's default web browser.
 
-\WebRI displays documentation for:
+WebRI displays documentation for:
 
 - A class or module: opens its web page.
 - A method: opens the web page for its class/module _scrolled to the method's documentation_.
@@ -31,7 +31,7 @@ or the first part of such a name.
 #### Class or Module
 
 For a `name` beginning with a capital letter,
-\WebRI finds the names of classes and modules beginning
+WebRI finds the names of classes and modules beginning
 with that name.
 
 For one match:
@@ -83,7 +83,7 @@ Show names of all 1364 classes and modules? (y or n):  n
 #### Singleton Method
 
 For a `name` beginning with `::`,
-\WebRI finds the names of singleton methods beginning
+WebRI finds the names of singleton methods beginning
 with that `name`.
 
 For one match:
