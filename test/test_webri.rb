@@ -355,7 +355,7 @@ class TestWebRI < Minitest::Test
     @@setup = true
     @@test_names = {
       class: {
-        nosuch: 'NoSuChClAsS',
+        nosuch: nil,
         full_unique: nil,
         abbrev_multi: nil,
         abbrev_unique: nil,
@@ -370,11 +370,11 @@ class TestWebRI < Minitest::Test
         nosuch: 'nOsUcHfIlE',
       },
     }
-
     # Get test names for classes.
+    @@test_names[:class][:nosuch] = 'NoSuChClAsS'
     class_items = get_all_items(:class)
     class_names = class_items.map {|item| item.split(' ').last }
-    # Get a full class name that no other class name starts with.
+    # Find a full class name that no other class name starts with.
     class_names.each do |name_to_try|
       selected_names = class_names.select do |name|
         name.start_with?(name_to_try)
@@ -384,7 +384,7 @@ class TestWebRI < Minitest::Test
         break
       end
     end
-    # Get abbreviated class name matching only one name.
+    # Find an abbreviated class name matching only one name.
     class_names.each do |class_name|
       found = false
       (3..4).each do |len|
@@ -401,7 +401,7 @@ class TestWebRI < Minitest::Test
       end
       break if found
     end
-    # Get abbreviated class name matching multiple names.
+    # Find an abbreviated class name matching multiple names.
     class_names.each do |class_name|
       found = false
       (3..4).each do |len|
