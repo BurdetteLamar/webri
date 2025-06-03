@@ -197,6 +197,7 @@ class TestWebRI < Minitest::Test
 
   def test_singleton_method_partial_name_unambiguous_multiple_paths
     name = @@test_names[:singleton_method][:abbrev_unique_multi_path] # Should offer multiple choices and open chosen page.
+    refute_nil(name)
     webri_session(name) do |stdin, stdout, stderr|
       output = read(stdout)
       output.match(/(\d+)/)
@@ -214,7 +215,8 @@ class TestWebRI < Minitest::Test
   end
 
   def test_singleton_method_partial_name_unambiguous_one_path
-    name = '::write_b' # Should offer one choice; open if yes.
+    name = @@test_names[:singleton_method][:abbrev_unique_single_path] # Should offer one choice; open if yes.
+    refute_nil(name)
     webri_session(name) do |stdin, stdout, stderr|
       output = read(stdout)
       assert_match(/Found one singleton method name starting with '#{name}'./, output)
