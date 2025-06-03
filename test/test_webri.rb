@@ -368,7 +368,9 @@ class TestWebRI < Minitest::Test
       },
     }
     get_test_names_for_classes
-    get_test_names_for_files
+    get_test_names(:file)
+    get_test_names(:singleton_method)
+    get_test_names(:instance_method)
     p @@test_names[:class]
     p @@test_names[:singleton_method]
     p @@test_names[:instance_method]
@@ -451,10 +453,10 @@ class TestWebRI < Minitest::Test
     end
   end
 
-  def get_test_names_for_files
-    locations = get_item_locations(:file)
+  def get_test_names(type)
+    locations = get_item_locations(type)
     names = locations.keys
-    found_names = @@test_names[:file]
+    found_names = @@test_names[type]
     # Find full names matching only one name,
     # one with single path and one with multiple paths.
     names_to_find = {
@@ -462,7 +464,7 @@ class TestWebRI < Minitest::Test
       multi_path: :full_unique_multi_path,
     }
     find_full_names(locations, found_names, names_to_find)
-    # Find abbreviated file names matching only one name,
+    # Find abbreviated names matching only one name,
     # one with single path and one with multiple paths.
     names_to_find = {
       single_path: :abbrev_unique_single_path,
