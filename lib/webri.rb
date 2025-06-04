@@ -48,7 +48,10 @@ class WebRI
   def initialize(options = {})
     capture_options(options)
     get_toc_html
+    build_indexes
+  end
 
+  def build_indexes
     # Index for each type of entry.
     # Each index has a hash; key is name, value is array of URIs.
     @index_for_type = {
