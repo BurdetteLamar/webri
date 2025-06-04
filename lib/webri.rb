@@ -46,7 +46,7 @@ class WebRI
   # Get the info from the Ruby doc site's table of contents
   # and build our @index_for_type.
   def initialize(options = {})
-    @noop = options[:noop]
+    capture_options(options)
     # Construct the doc release; e.g., '3.4'.
     a = RUBY_VERSION.split('.')
     @doc_release = a[0..1].join('.')
@@ -131,6 +131,10 @@ class WebRI
         fail class_attr_val
       end
     end
+  end
+
+  def capture_options(options)
+    @noop = options[:noop]
   end
 
   class Entry
