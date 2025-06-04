@@ -209,18 +209,6 @@ class WebRI
 
   class SingletonMethodEntry < Entry
 
-    # Return hash of choice strings for entries.
-    def self.choices(entries)
-      choices = {}
-      entries.each_pair do |name, entry|
-        entry.paths.each do |path|
-          choice = self.choice(entry.full_name, path)
-          choices[choice] = path
-        end
-      end
-      Hash[choices.sort]
-    end
-
     # Return a choice string for a path.
     def self.choice(full_name, path)
       class_name, _ = path.split('.html#method-c-')
@@ -231,18 +219,6 @@ class WebRI
   end
 
   class InstanceMethodEntry < Entry
-
-    # Return hash of choice strings for entries.
-    def self.choices(entries)
-      choices = {}
-      entries.each_pair do |name, entry|
-        entry.paths.each do |path|
-          choice = self.choice(entry.full_name, path)
-          choices[choice] = path
-        end
-      end
-      Hash[choices.sort]
-    end
 
     # Return a choice string for a path.
     def self.choice(full_name, path)
