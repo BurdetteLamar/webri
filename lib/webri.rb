@@ -147,10 +147,23 @@ class WebRI
 
   class Entry
 
-    attr_accessor :full_name
+    attr_accessor :full_name, :paths
 
     def initialize(full_name)
       self.full_name = full_name
+      self.paths = []
+    end
+
+    # Return hash of choice strings for entries.
+    def self.choices(entries)
+      choices = {}
+      entries.each_pair do |name, entry|
+        entry.paths.each do |path|
+          choice = self.choice(name, path)
+          choices[choice] = path
+        end
+      end
+      Hash[choices.sort]
     end
 
     def self.uri(path)
@@ -185,30 +198,7 @@ class WebRI
 
   end
 
-  class MultiplePathEntry < Entry
-
-    attr_accessor :paths
-
-    def initialize(full_name)
-      super(full_name)
-      self.paths = []
-    end
-
-    # Return hash of choice strings for entries.
-    def self.choices(entries)
-      choices = {}
-      entries.each_pair do |name, entry|
-        entry.paths.each do |path|
-          choice = self.choice(name, path)
-          choices[choice] = path
-        end
-      end
-      Hash[choices.sort]
-    end
-
-  end
-
-  class FileEntry < MultiplePathEntry
+  class FileEntry < Entry
 
     # Return a choice for a path.
     def self.choice(name, path)
@@ -217,7 +207,7 @@ class WebRI
 
   end
 
-  class SingletonMethodEntry < MultiplePathEntry
+  class SingletonMethodEntry < Entry
 
     # Return hash of choice strings for entries.
     def self.choices(entries)
@@ -240,7 +230,7 @@ class WebRI
 
   end
 
-  class InstanceMethodEntry < MultiplePathEntry
+  class InstanceMethodEntry < Entry
 
     # Return hash of choice strings for entries.
     def self.choices(entries)
