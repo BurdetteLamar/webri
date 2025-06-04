@@ -43,12 +43,12 @@ class WebRI
   # Site of the official documentation.
   DocSite = 'https://docs.ruby-lang.org/en/'
 
-  attr_accessor :index_for_type, :noop
+  attr_accessor :index_for_type
 
   # Get the info from the Ruby doc site's table of contents
   # and build our index_for_type.
   def initialize(options = {})
-    self.noop = options[:noop]
+    @noop = options[:noop]
     # Construct the doc release; e.g., '3.4'.
     a = RUBY_VERSION.split('.')
     @doc_release = a[0..1].join('.')
@@ -512,7 +512,7 @@ class WebRI
     message += '.'
     puts message
     command = "#{executable_name} #{full_url}"
-    if noop
+    if @noop
       puts "Command: '#{command}'"
     else
       system(command)
