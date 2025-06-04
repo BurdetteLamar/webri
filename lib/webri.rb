@@ -278,7 +278,7 @@ class WebRI
     # Target is a class or module.
     # Find class and module names that start with name.
     all_entries = index_for_type[:class]
-    choices = ClassEntry.choices(all_entries)
+    all_choices = ClassEntry.choices(all_entries)
     # Find entries whose names that start with name.
     candidate_entries = all_entries.select do |key, value|
       key.start_with?(name)
@@ -297,11 +297,11 @@ class WebRI
       path
     when 0
       puts "Found no class or module name starting with '#{name}'."
-      message = "Show names of all #{choices.size} classes and modules?"
+      message = "Show names of all #{all_choices.size} classes and modules?"
       return unless get_boolean_answer(message)
-      key = get_choice(choices.keys)
+      key = get_choice(all_choices.keys)
       return if key.nil?
-      path = choices[key]
+      path = all_choices[key]
     else
       selected_choices = ClassEntry.choices(candidate_entries)
       puts "Found #{selected_choices.size} class and module names starting with '#{name}'."
