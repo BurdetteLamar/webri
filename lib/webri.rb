@@ -37,13 +37,13 @@ require 'open-uri'
 # TODO: Review RI docs, options, and help.
 # TODO: Review RDoc docs, options, and help.
 
-# A class to display Ruby HTML documentation.
+# A class to display Ruby online HTML documentation.
 class WebRI
 
-  # Where the official web pages are.
+  # Site of the official documentation.
   DocSite = 'https://docs.ruby-lang.org/en/'
 
-  attr_accessor :doc_release, :index_for_type, :noop
+  attr_accessor :index_for_type, :noop
 
   # Get the info from the Ruby doc site's table of contents
   # and build our index_for_type.
@@ -51,9 +51,9 @@ class WebRI
     self.noop = options[:noop]
     # Construct the doc release; e.g., '3.4'.
     a = RUBY_VERSION.split('.')
-    self.doc_release = a[0..1].join('.')
+    @doc_release = a[0..1].join('.')
     # Get the doc table of contents as a temp file.
-    toc_url = DocSite + self.doc_release + '/table_of_contents.html'
+    toc_url = DocSite + @doc_release + '/table_of_contents.html'
     begin
       toc_file = URI.open(toc_url)
     rescue Socket::ResolutionError => x
@@ -502,7 +502,7 @@ class WebRI
                         message = "Unrecognized host OS: '#{host_os}'."
                         raise RuntimeError.new(message)
                       end
-    uri = URI.parse(File.join(DocSite, doc_release, target_uri.to_s))
+    uri = URI.parse(File.join(DocSite, @doc_release, target_uri.to_s))
     full_url = uri.to_s
     url, fragment = full_url.split('#')
     message = "Opening web page #{url}"
