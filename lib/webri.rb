@@ -3,9 +3,8 @@
 require 'rbconfig'
 require 'open-uri'
 
-# TODO: Fix 'Opening' remark -- has wrong fragment.
-# TODO: Change assert_match to assert_start_with? when possible.
 # TODO: Subroutinize.
+# TODO: Change assert_match to assert_start_with? when possible.
 
 # TODO: Make each test find the appropriate name; population differs among platforms.
 # TODO: Test options.
@@ -400,7 +399,7 @@ class WebRI
       return unless get_boolean_answer(message)
       choice = get_choice(all_choices.keys)
       return if choice.nil?
-      full_name = Entry.full_name_for_choice(choice)
+      full_name = SingletonMethodEntry.full_name_for_choice(choice)
       path = all_choices[choice]
     else
       puts "Found #{selected_paths.size} singleton method names starting with '#{name}'."
@@ -408,7 +407,7 @@ class WebRI
       return unless get_boolean_answer(message)
       choice = get_choice(selected_choices.keys)
       return if choice.nil?
-      full_name = Entry.full_name_for_choice(choice)
+      full_name = SingletonMethodEntry.full_name_for_choice(choice)
       path = all_choices[choice]
     end
     uri = Entry.uri(path)
@@ -450,7 +449,7 @@ class WebRI
       choice = get_choice(all_choices.keys)
       return if choice.nil?
       path = all_choices[choice]
-      full_name = Entry.full_name_for_choice(choice)
+      full_name = InstanceMethodEntry.full_name_for_choice(choice)
     else
       puts "Found #{selected_paths.size} instance method names starting with '#{name}'."
       message = "Show names?'"
@@ -458,7 +457,7 @@ class WebRI
       choice = get_choice(selected_choices.keys)
       return if choice.nil?
       path = all_choices[choice]
-      full_name = Entry.full_name_for_choice(choice)
+      full_name = InstanceMethodEntry.full_name_for_choice(choice)
     end
     uri = Entry.uri(path)
     open_url(full_name, uri)
