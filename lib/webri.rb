@@ -150,7 +150,7 @@ class WebRI
 
     # Return the full name from a choice string.
     def self.full_name_for_choice(choice)
-      choice.split(' ').first
+      choice.split(' ').first.sub(/:$/, '')
     end
 
   end
