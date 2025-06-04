@@ -47,7 +47,7 @@ class WebRI
   # and build our @index_for_type.
   def initialize(options = {})
     capture_options(options)
-    get_toc_file
+    get_toc_html
 
     # Index for each type of entry.
     # Each index has a hash; key is name, value is array of URIs.
@@ -58,7 +58,7 @@ class WebRI
       instance_method: {},
     }
     # Iterate over the lines of the TOC page.
-    lines = @toc_file.readlines
+    lines = @toc_html.split("\n")
     i = 0
     while i < lines.count
       item_line = lines[i]
@@ -126,14 +126,15 @@ class WebRI
     @noop = options[:noop]
   end
 
-  def get_toc_file
+  def get_toc_html
     # Construct the doc release; e.g., '3.4'.
     a = RUBY_VERSION.split('.')
     @doc_release = a[0..1].join('.')
     # Get the doc table of contents as a temp file.
     toc_url = DocSite + @doc_release + '/table_of_contents.html'
     begin
-      @toc_file = URI.open(toc_url)
+      toc_file = URI.open(toc_url)
+      @toc_html = toc_file.read
     rescue Socket::ResolutionError => x
       message = "#{x.class}: #{x.message}\nPossibly not connected to internet."
       $stderr.puts(message)
