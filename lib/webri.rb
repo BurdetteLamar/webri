@@ -300,9 +300,9 @@ class WebRI
       puts "Found no class or module name starting with '#{name}'."
       message = "Show names of all #{all_choices.size} classes and modules?"
       return unless get_boolean_answer(message)
-      key = get_choice(all_choices.keys)
-      return if key.nil?
-      path = all_choices[key]
+      name = get_choice(all_choices.keys)
+      return if name.nil?
+      path = all_choices[name]
     else
       selected_choices = ClassEntry.choices(candidate_entries)
       puts "Found #{selected_choices.size} class and module names starting with '#{name}'."
