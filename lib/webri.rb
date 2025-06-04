@@ -43,10 +43,8 @@ class WebRI
   # Site of the official documentation.
   DocSite = 'https://docs.ruby-lang.org/en/'
 
-  attr_accessor :index_for_type
-
   # Get the info from the Ruby doc site's table of contents
-  # and build our index_for_type.
+  # and build our @index_for_type.
   def initialize(options = {})
     @noop = options[:noop]
     # Construct the doc release; e.g., '3.4'.
@@ -64,7 +62,7 @@ class WebRI
 
     # Index for each type of entry.
     # Each index has a hash; key is name, value is array of URIs.
-    self.index_for_type = {
+    @index_for_type = {
       class: {}, # Has both classes and modules.
       file: {},
       singleton_method: {},
@@ -94,11 +92,11 @@ class WebRI
       full_name = rest.split(/<|>/)[1]
       case type
       when 'class', 'module'
-        index = self.index_for_type[:class]
+        index = @index_for_type[:class]
         entry = ClassEntry.new(full_name, path)
         index[full_name] = entry
       when 'file'
-        index = self.index_for_type[:file]
+        index = @index_for_type[:file]
         if index.include?(full_name)
           entry = index[full_name]
         else
@@ -109,7 +107,7 @@ class WebRI
       when 'method'
         case anchor_line
         when /method-c-/
-          index = self.index_for_type[:singleton_method]
+          index = @index_for_type[:singleton_method]
           if index.include?(full_name)
             entry = index[full_name]
           else
@@ -118,7 +116,7 @@ class WebRI
           end
           entry.paths.push(path)
         when /method-i-/
-          index = self.index_for_type[:instance_method]
+          index = @index_for_type[:instance_method]
           if index.include?(full_name)
             entry = index[full_name]
           else
@@ -258,17 +256,17 @@ class WebRI
     # Figure out what's asked for.
     case
     when name.match(/^[A-Z]/), name == 'fatal'
-      show_class(name, index_for_type[:class])
+      show_class(name, @index_for_type[:class])
     when name.start_with?('ruby:')
-      show_file(name, index_for_type[:file])
+      show_file(name, @index_for_type[:file])
     when name.start_with?('::')
-      show_singleton_method(name, index_for_type[:singleton_method])
+      show_singleton_method(name, @index_for_type[:singleton_method])
     when name.start_with?('#')
-      show_instance_method(name, index_for_type[:instance_method])
+      show_instance_method(name, @index_for_type[:instance_method])
     when name.start_with?('.')
-      show_method(name, index_for_type[:singleton_method], index_for_type[:instance_method])
+      show_method(name, @index_for_type[:singleton_method], @index_for_type[:instance_method])
     when name.match(/^[a-z]/)
-      show_method(name, index_for_type[:singleton_method], index_for_type[:instance_method])
+      show_method(name, @index_for_type[:singleton_method], @index_for_type[:instance_method])
     else
       fail name
     end
@@ -278,7 +276,7 @@ class WebRI
   def show_class(name, class_index)
     # Target is a class or module.
     # Find class and module names that start with name.
-    all_entries = index_for_type[:class]
+    all_entries = @index_for_type[:class]
     all_choices = ClassEntry.choices(all_entries)
     # Find entries whose names that start with name.
     candidate_entries = all_entries.select do |key, value|
@@ -320,7 +318,7 @@ class WebRI
   def show_file(name, file_index)
     # Target page is a free-standing page such as 'COPYING'.
     name = name.sub(/^ruby:/, '') # Discard leading 'ruby:'
-    all_entries = index_for_type[:file]
+    all_entries = @index_for_type[:file]
     all_choices = FileEntry.choices(all_entries)
     # Find entries whose names that start with name.
     selected_entries = all_entries.select do |key, value|
@@ -368,7 +366,7 @@ class WebRI
   # Show singleton method.
   def show_singleton_method(name, singleton_method_index)
     # Target page is a singleton method such as ::new.
-    all_entries = index_for_type[:singleton_method]
+    all_entries = @index_for_type[:singleton_method]
     all_choices = SingletonMethodEntry.choices(all_entries)
     # Find entries whose names that start with name.
     selected_entries = all_entries.select do |key, value|
@@ -417,7 +415,7 @@ class WebRI
   # Show instance method.
   def show_instance_method(name, instance_method_index)
     # Target page is an instance method such as #to_s.
-    all_entries = index_for_type[:instance_method]
+    all_entries = @index_for_type[:instance_method]
     all_choices = InstanceMethodEntry.choices(all_entries)
     # Find entries whose names that start with name.
     selected_entries = all_entries.select do |key, value|
