@@ -35,11 +35,10 @@ class TestWebRI < Minitest::Test
     name = @@test_names.dig(:class, :full_unique_single_path)
     refute_nil(name)
     webri_session(name) do |stdin, stdout, stderr|
-      found_line, name_line, opening_line, command_line = stdout.readlines
-      assert_found_line(1, :class, name, found_line)
-      assert_name_line(name, name_line)
-      assert_opening_line(name, opening_line)
-      assert_command_line(name, command_line)
+      assert_found_line(stdout,1, :class, name)
+      assert_name_line(stdout, name)
+      assert_opening_line(stdout, name)
+      assert_command_line(stdout, name)
     end
   end
 
@@ -525,7 +524,8 @@ class TestWebRI < Minitest::Test
     singleton_method: 'singleton method',
     instance_method: 'instance method',
   }
-  def assert_found_line(count, type, name, found_line)
+  def assert_found_line(stdout, count, type, name)
+    found_line = stdout.readline
     assert_start_with('Found', found_line)
     pattern = case count
               when 0
@@ -540,17 +540,19 @@ class TestWebRI < Minitest::Test
     assert_match(name, found_line)
   end
 
-  def assert_name_line(name, name_line)
+  def assert_name_line(stdout, name)
+    name_line = stdout.readline
     assert_match(name, name_line)
   end
 
-  def assert_opening_line(name, opening_line)
+  def assert_opening_line(stdout, name)
+    opening_line = stdout.readline
     assert_start_with('Opening', opening_line)
     assert_match(name, opening_line)
   end
 
-  def assert_command_line(name, command_line)
-    # Get the page.
+  def assert_command_line(stdout, name)
+    command_line = stdout.readline
     command_word, start_word, url = command_line.split(' ')
     assert_equal('Command', command_word.sub(':', ''))
     assert_equal('start', start_word.sub("'", ''))
@@ -559,7 +561,6 @@ class TestWebRI < Minitest::Test
     io = URI.open(url)
     classes = [Tempfile, StringIO]
     assert(classes.include?(io.class))
-    # Check that the method is on the page.
     _, fragment = url.split('#')
     if fragment
       html = io.read
