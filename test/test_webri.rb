@@ -42,17 +42,14 @@ class TestWebRI < Minitest::Test
     end
   end
 
-  def zzz_test_class_nosuch_name
-    name = @@test_names[:class][:nosuch] # Should offer all choices; open chosen page.
+  def test_class_nosuch_name
+    name = @@test_names.dig(:class, :nosuch)
     refute_nil(name)
-    webri_session(name) do |stdin, stdout, stderr|
-      output = read(stdout)
-      assert_match(/Found no class\/module name starting with '#{name}'./, output)
-      assert_match(/Show names of all \d+ classes\/modules?/, output)
-      check_choices(stdin, stdout, output)
-      writeln(stdin, '0')
-      output = read(stdout)
-      check_web_page(name, output)
+    [true, false].each do |show|
+      webri_session(name) do |stdin, stdout, stderr|
+        assert_found_line(stdout,0, :class, name)
+        assert_show(stdout, stdin, :class, name, show)
+      end
     end
   end
 
@@ -568,5 +565,44 @@ class TestWebRI < Minitest::Test
     end
   end
 
+  def assert_show_line(stdout, type)
+    # Cannot use readline for this because it has no trailing newline.
+    show_line = read(stdout)
+    assert_start_with('Show', show_line)
+    show_line.match(/(\d+)/)
+    choice_count = $1.to_i
+    assert_instance_of(Integer, choice_count)
+    assert_operator(choice_count, :>, 1)
+    choice_count
+  end
+
+  def assert_choose_line(stdout, choice_count)
+    # Cannot use readline for this because it has no trailing newline.
+    choose_line = read(stdout)
+    assert_start_with('Choose', choose_line)
+    assert_match((0..choice_count - 1).to_s, choose_line)
+  end
+
+  def assert_show(stdout, stdin, type, name, show)
+    choice_count = assert_show_line(stdout, type)
+    writeln(stdin, show ? 'y' : 'n')
+    return unless show
+    # Verify the choices.
+    # Each choice line ends with newline, so use readline.
+    choices = []
+    (0...choice_count).each do |i|
+      choice_line = stdout.readline
+      choice_index, choice = choice_line.split(':', 2)
+      choice = choice.split(': ').first.strip
+      choices.push(choice)
+      assert_match("#{i}", choice_index)
+    end
+    assert_choose_line(stdout, choice_count)
+    index = 0
+    writeln(stdin, index.to_s)
+    target_path = choices[index].gsub('::', '/')
+    assert_opening_line(stdout, target_path)
+    assert_command_line(stdout, target_path)
+  end
 
 end
