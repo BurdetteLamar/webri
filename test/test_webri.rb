@@ -345,8 +345,7 @@ class TestWebRI < Minitest::Test
   end
 
   def setup
-    return if defined?(@@setup)
-    @@setup = true
+    return if defined?(@@test_names)
     @@test_names = {
       class: {
         nosuch: 'NoSuChClAsS',
