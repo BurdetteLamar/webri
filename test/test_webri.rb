@@ -447,7 +447,7 @@ class TestWebRI < Minitest::Test
     end
   end
 
-  def get_test_names(type)0
+  def get_test_names(type)
     locations = get_item_locations(type)
     found_names = @@test_names[type]
     # Find full names matching only one name,
