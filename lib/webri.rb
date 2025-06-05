@@ -3,10 +3,10 @@
 require 'rbconfig'
 require 'open-uri'
 
+# TODO: Gather :abbrev_multi
 # TODO: Subroutinize.
 # TODO: Change assert_match to assert_start_with? when possible.
 
-# TODO: Make each test find the appropriate name; population differs among platforms.
 # TODO: Test options.
 # TODO: Test on Linux.
 
