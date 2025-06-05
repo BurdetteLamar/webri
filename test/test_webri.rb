@@ -35,15 +35,11 @@ class TestWebRI < Minitest::Test
     name = @@test_names.dig(:class, :full_unique_single_path)
     refute_nil(name)
     webri_session(name) do |stdin, stdout, stderr|
-      line = stdout.readline
-      assert_start_with("Found one class/module name starting with '#{name}", line)
-      line = stdout.readline
-      assert_match(name, line)
-      line = stdout.readline
-      assert_start_with('Opening', line)
-      assert_match(name, line)
-      line = stdout.readline
-      assert_command(name, line)
+      found_line, name_line, opening_line, command_line = stdout.readlines
+      assert_found_line(1, :class, name, found_line)
+      assert_name_line(name, name_line)
+      assert_opening_line(name, opening_line)
+      assert_command_line(name, command_line)
     end
   end
 
@@ -325,22 +321,22 @@ class TestWebRI < Minitest::Test
     assert_match(/^Choose/, output)
   end
 
-  def check_web_page(name, output)
-    lines = output.split("\n")
-    command_line_no = lines.index {|line| line.match('Command') }
-    command_line = lines[command_line_no]
-    # Get the page.
-    url = command_line.split(' ').last.sub("'", '')
-    io = URI.open(url)
-    classes = [Tempfile, StringIO]
-    assert(classes.include?(io.class))
-    # Check that the method is on the page.
-    _, fragment = url.split('#')
-    if fragment
-      html = io.read
-      assert_match(fragment, html)
-    end
-  end
+  # def check_web_page(name, output)
+  #   lines = output.split("\n")
+  #   command_line_no = lines.index {|line| line.match('Command') }
+  #   command_line = lines[command_line_no]
+  #   # Get the page.
+  #   url = command_line.split(' ').last.sub("'", '')
+  #   io = URI.open(url)
+  #   classes = [Tempfile, StringIO]
+  #   assert(classes.include?(io.class))
+  #   # Check that the method is on the page.
+  #   _, fragment = url.split('#')
+  #   if fragment
+  #     html = io.read
+  #     assert_match(fragment, html)
+  #   end
+  # end
 
   def read(stdout)
     stdout.readpartial(4096)
@@ -523,10 +519,41 @@ class TestWebRI < Minitest::Test
     assert(actual.start_with?(expected), message)
   end
 
-  def assert_command(name, command_line)
+  TypeWord = {
+    class: 'class/module',
+    file: 'file',
+    singleton_method: 'singleton method',
+    instance_method: 'instance method',
+  }
+  def assert_found_line(count, type, name, found_line)
+    assert_start_with('Found', found_line)
+    pattern = case count
+              when 0
+                'no'
+              when 1
+                'one'
+              else
+                /\d+/
+              end
+    assert_match(pattern, found_line)
+    assert_match(TypeWord[type], found_line)
+    assert_match(name, found_line)
+  end
+
+  def assert_name_line(name, name_line)
+    assert_match(name, name_line)
+  end
+
+  def assert_opening_line(name, opening_line)
+    assert_start_with('Opening', opening_line)
+    assert_match(name, opening_line)
+  end
+
+  def assert_command_line(name, command_line)
     # Get the page.
-    command_word, url = command_line.split(': ')
-    assert_equal('Command', command_word)
+    command_word, start_word, url = command_line.split(' ')
+    assert_equal('Command', command_word.sub(':', ''))
+    assert_equal('start', start_word.sub("'", ''))
     url.gsub!("'", '')
     assert_match(name, url)
     io = URI.open(url)
