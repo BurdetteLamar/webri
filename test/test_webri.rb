@@ -125,7 +125,6 @@ class TestWebRI < Minitest::Test
   def test_file_partial_name_unambiguous_multiple_paths
     short_name = @@test_names[:file][:abbrev_unique_multi_path] # Should offer multiple choices and open chosen page.
     refute_nil(short_name)
-    short_name = 'method' # Should offer multiple choices and open chosen page.
     name = "ruby:#{short_name}"
     webri_session(name) do |stdin, stdout, stderr|
       output = read(stdout)
@@ -229,7 +228,7 @@ class TestWebRI < Minitest::Test
   # Instance methods.
 
   def test_instance_method_exact_name
-    name = '#yield_self' # Should open page.
+    name = @@test_names[:instance_method][:full_unique_single_path] # Should open page.
     webri_session(name) do |stdin, stdout, stderr|
       output = read(stdout)
       assert_match(/Found one instance method name starting with '#{name}'./, output)
@@ -252,7 +251,7 @@ class TestWebRI < Minitest::Test
   end
 
   def test_instance_method_partial_name_ambiguous
-    name = '#pars' # Should offer multiple choices and open chosen page.
+    name = @@test_names[:instance_method][:abbrev_unique_multi_path] # Should offer multiple choices and open chosen page.
     webri_session(name) do |stdin, stdout, stderr|
       output = read(stdout)
       assert_match(/Found \d+ instance method names starting with '#{name}'./, output)
@@ -264,7 +263,7 @@ class TestWebRI < Minitest::Test
   end
 
   def test_instance_method_partial_name_unambiguous_multiple_paths
-    name = '#zip' # Should offer multiple choices and open chosen page.
+    name = @@test_names[:instance_method][:abbrev_unique_multi_path] # Should offer multiple choices and open chosen page.
     webri_session(name) do |stdin, stdout, stderr|
       output = read(stdout)
       output.match(/(\d+)/)
@@ -282,7 +281,7 @@ class TestWebRI < Minitest::Test
   end
 
   def test_instance_method_partial_name_unambiguous_one_path
-    name = '#user_inst' # Should offer one choice; open if yes.
+    name = @@test_names[:instance_method][:abbrev_unique_single_path] # Should offer one choice; open if yes.
     webri_session(name) do |stdin, stdout, stderr|
       output = read(stdout)
       assert_match(/Found one instance method name starting with '#{name}'./, output)
