@@ -10,8 +10,8 @@ class TestWebRI < Minitest::Test
 
   def test_help
     webri_session('', '--help') do |stdin, stdout, stderr|
-      output = read(stdout)
-      assert_match('Usage: webri [options] name', output)
+      lines = stdout.readlines
+      assert_start_with('Usage: webri [options] name', lines[2])
     end
   end
 
@@ -512,4 +512,8 @@ class TestWebRI < Minitest::Test
     found_names.keys.intersection(names_to_find.values) == names_to_find
   end
 
+  def assert_start_with(expected, actual)
+    message = "'#{actual}' should start with '#{expected}'."
+    assert(actual.start_with?(expected), message)
+  end
 end
