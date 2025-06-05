@@ -85,8 +85,13 @@ class WebRI
       case type
       when 'class', 'module'
         index = @index_for_type[:class]
-        entry = ClassEntry.new(full_name, path)
-        index[full_name] = entry
+        if index.include?(full_name)
+          entry = index[full_name]
+        else
+          entry = ClassEntry.new(full_name)
+          index[full_name] = entry
+        end
+        entry.paths.push(path)
       when 'file'
         index = @index_for_type[:file]
         if index.include?(full_name)
@@ -179,21 +184,9 @@ class WebRI
 
   class ClassEntry < Entry
 
-    attr_accessor :path
-
-    def initialize(full_name, path)
-      super(full_name)
-      self.path = path
-    end
-
-    # Return hash of name/path pairs for entries.
-    def self.choices(entries)
-      choices = {}
-      entries.each_pair do |name, entry|
-        path = entry.path
-        choices[name] = path
-      end
-      choices
+    # Return a choice for a path.
+    def self.choice(name, path)
+      "#{name}: (#{path})"
     end
 
   end
@@ -233,7 +226,7 @@ class WebRI
   def show(name)
     # Figure out what's asked for.
     case
-    when name.match(/^[A-Z]/), name == 'fatal'
+    when name.match(/^[A-Z]/), %w[fatal fata fat fa f].include?(name)
       show_class(name, @index_for_type[:class])
     when name.start_with?('ruby:')
       show_file(name, @index_for_type[:file])
@@ -252,36 +245,41 @@ class WebRI
 
   # Show class.
   def show_class(name, class_index)
-    # Target is a class or module.
-    # Find class and module names that start with name.
-    all_entries = @index_for_type[:class]
+        all_entries = @index_for_type[:class]
     all_choices = ClassEntry.choices(all_entries)
     # Find entries whose names that start with name.
-    candidate_entries = all_entries.select do |key, value|
+    selected_entries = all_entries.select do |key, value|
       key.start_with?(name)
     end
-    case candidate_entries.size
+    # Find paths for selected_choices
+    selected_paths = []
+    selected_entries.each_pair do |name, entry|
+      entry.paths.each do |path|
+        selected_paths.push(path)
+      end
+    end
+    case selected_paths.size
     when 1
-      selected_choices = ClassEntry.choices(candidate_entries)
+      selected_choices = ClassEntry.choices(selected_entries)
       choice = selected_choices.keys.first
       path = selected_choices.values.first
-      puts "Found one class or module name starting with '#{name}':\n  #{choice}"
-      full_name = FileEntry.full_name_for_choice(choice)
+      puts "Found one class/module name starting with '#{name}'\n  #{choice}"
+      full_name = ClassEntry.full_name_for_choice(choice)
       if name != full_name
         message = "Open page #{path}?"
         return unless get_boolean_answer(message)
       end
       path
     when 0
-      puts "Found no class or module name starting with '#{name}'."
-      message = "Show names of all #{all_choices.size} classes and modules?"
+      puts "Found no class/module name starting with '#{name}'."
+      message = "Show names of all #{all_choices.size} classes/modules?"
       return unless get_boolean_answer(message)
-      name = get_choice(all_choices.keys)
-      return if name.nil?
-      path = all_choices[name]
+      key = get_choice(all_choices.keys)
+      return if key.nil?
+      path = all_choices[key]
     else
-      selected_choices = ClassEntry.choices(candidate_entries)
-      puts "Found #{selected_choices.size} class and module names starting with '#{name}'."
+      selected_choices = ClassEntry.choices(selected_entries)
+      puts "Found #{selected_choices.size} class/module names starting with '#{name}'."
       message = "Show names?'"
       return unless get_boolean_answer(message)
       key = get_choice(selected_choices.keys)
@@ -289,7 +287,7 @@ class WebRI
       path = selected_choices[key]
     end
     uri = Entry.uri(path)
-    open_url(name, uri.path.gsub('::', '/'))
+    open_url(name, uri)
   end
 
   # Show file.

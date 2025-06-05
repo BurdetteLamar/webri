@@ -32,11 +32,11 @@ class TestWebRI < Minitest::Test
   # Classes and modules.
 
   def test_class_exact_name
-    name = @@test_names[:class][:full_unique] # Should open page.
+    name = @@test_names[:class][:full_unique_single_path] # Should open page.
     refute_nil(name)
     webri_session(name) do |stdin, stdout, stderr|
       output = read(stdout)
-      assert_match(/Found one class or module name starting with '#{name}'./, output)
+      assert_match(/Found one class\/module name starting with '#{name}'./, output)
       check_web_page(name, output)
     end
   end
@@ -46,8 +46,8 @@ class TestWebRI < Minitest::Test
     refute_nil(name)
     webri_session(name) do |stdin, stdout, stderr|
       output = read(stdout)
-      assert_match(/Found no class or module name starting with '#{name}'./, output)
-      assert_match(/Show names of all \d+ classes and modules?/, output)
+      assert_match(/Found no class\/module name starting with '#{name}'./, output)
+      assert_match(/Show names of all \d+ classes\/modules?/, output)
       check_choices(stdin, stdout, output)
       writeln(stdin, '0')
       output = read(stdout)
@@ -60,7 +60,7 @@ class TestWebRI < Minitest::Test
     refute_nil(name)
     webri_session(name) do |stdin, stdout, stderr|
       output = read(stdout)
-      assert_match(/Found \d+ class and module names starting with '#{name}'./, output)
+      assert_match(/Found \d+ class\/module names starting with '#{name}'./, output)
       check_choices(stdin, stdout, output)
       writeln(stdin, '0')
       output = read(stdout)
@@ -69,11 +69,11 @@ class TestWebRI < Minitest::Test
   end
 
   def test_class_partial_name_unambiguous
-    name = @@test_names[:class][:abbrev_unique] # Should offer one choice; open if yes.
+    name = @@test_names[:class][:abbrev_unique_single_path] # Should offer one choice; open if yes.
     refute_nil(name)
     webri_session(name) do |stdin, stdout, stderr|
       output = read(stdout)
-      assert_match(/Found one class or module name starting with '#{name}'./, output)
+      assert_match(/Found one class\/module name starting with '#{name}'./, output)
       writeln(stdin, 'y')
       output = read(stdout)
       check_web_page(name, output)
@@ -362,7 +362,7 @@ class TestWebRI < Minitest::Test
         nosuch: 'ruby:nOsUcHfIlE',
       },
     }
-    get_test_names_for_classes
+    get_test_names(:class)
     get_test_names(:file)
     get_test_names(:singleton_method)
     get_test_names(:instance_method)
