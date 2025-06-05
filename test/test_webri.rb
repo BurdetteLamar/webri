@@ -448,26 +448,22 @@ class TestWebRI < Minitest::Test
     end
   end
 
-  def get_test_names(type)
+  def get_test_names(type)0
     locations = get_item_locations(type)
     found_names = @@test_names[type]
     # Find full names matching only one name,
     # one with single path and one with multiple paths.
+    find_full_names(locations, found_names)
+    # Find abbreviated names matching only one name,
+    # one with single path and one with multiple paths.
+    find_abbrev_names(locations, found_names)
+  end
+
+  def find_full_names(locations, found_names)
     names_to_find = {
       single_path: :full_unique_single_path,
       multi_path: :full_unique_multi_path,
     }
-    find_full_names(locations, found_names, names_to_find)
-    # Find abbreviated names matching only one name,
-    # one with single path and one with multiple paths.
-    names_to_find = {
-      single_path: :abbrev_unique_single_path,
-      multi_path: :abbrev_unique_multi_path,
-    }
-    find_abbrev_names(locations, found_names, names_to_find)
-  end
-
-  def find_full_names(locations, found_names, names_to_find)
     names = locations.keys
     names.each do |name_to_try|
       selected_names = names.select do |name|
@@ -486,7 +482,11 @@ class TestWebRI < Minitest::Test
     end
   end
 
-  def find_abbrev_names(locations, found_names, names_to_find)
+  def find_abbrev_names(locations, found_names)
+    names_to_find = {
+      single_path: :abbrev_unique_single_path,
+      multi_path: :abbrev_unique_multi_path,
+    }
     names = locations.keys
     names.each do |file_name|
       (3..4).each do |len|
