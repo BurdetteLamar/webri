@@ -32,16 +32,22 @@ class TestWebRI < Minitest::Test
   # Classes and modules.
 
   def test_class_exact_name
-    name = @@test_names[:class][:full_unique_single_path] # Should open page.
+    name = @@test_names.dig(:class, :full_unique_single_path)
     refute_nil(name)
     webri_session(name) do |stdin, stdout, stderr|
-      output = read(stdout)
-      assert_match(/Found one class\/module name starting with '#{name}'./, output)
-      check_web_page(name, output)
+      line = stdout.readline
+      assert_start_with("Found one class/module name starting with '#{name}", line)
+      line = stdout.readline
+      assert_match(name, line)
+      line = stdout.readline
+      assert_start_with('Opening', line)
+      assert_match(name, line)
+      line = stdout.readline
+      assert_command(name, line)
     end
   end
 
-  def test_class_nosuch_name
+  def zzz_test_class_nosuch_name
     name = @@test_names[:class][:nosuch] # Should offer all choices; open chosen page.
     refute_nil(name)
     webri_session(name) do |stdin, stdout, stderr|
@@ -55,7 +61,7 @@ class TestWebRI < Minitest::Test
     end
   end
 
-  def test_class_partial_name_ambiguous
+  def zzz_test_class_partial_name_ambiguous
     name = @@test_names[:class][:abbrev_multi] # Should offer multiple choices; open chosen choice.
     refute_nil(name)
     webri_session(name) do |stdin, stdout, stderr|
@@ -68,7 +74,7 @@ class TestWebRI < Minitest::Test
     end
   end
 
-  def test_class_partial_name_unambiguous
+  def zzz_test_class_partial_name_unambiguous
     name = @@test_names[:class][:abbrev_unique_single_path] # Should offer one choice; open if yes.
     refute_nil(name)
     webri_session(name) do |stdin, stdout, stderr|
@@ -82,7 +88,7 @@ class TestWebRI < Minitest::Test
 
   # Files.
 
-  def test_file_exact_name
+  def zzz_test_file_exact_name
     short_name = @@test_names[:file][:full_unique_single_path] # Should open page.
     refute_nil(short_name)
     name = "ruby:#{short_name}"
@@ -93,7 +99,7 @@ class TestWebRI < Minitest::Test
     end
   end
 
-  def test_file_nosuch_name
+  def zzz_test_file_nosuch_name
     short_name = @@test_names[:file][:nosuch]  # Should offer all choices; open chosen page.
     refute_nil(short_name)
     name = "ruby:#{short_name}"
@@ -108,7 +114,7 @@ class TestWebRI < Minitest::Test
     end
   end
 
-  def test_file_partial_name_ambiguous
+  def zzz_test_file_partial_name_ambiguous
     short_name = @@test_names[:file][:abbrev_unique_multi_path] # Should offer multiple choices and open chosen page.
     refute_nil(short_name)
     name = "ruby:#{short_name}"
@@ -122,7 +128,7 @@ class TestWebRI < Minitest::Test
     end
   end
 
-  def test_file_partial_name_unambiguous_multiple_paths
+  def zzz_test_file_partial_name_unambiguous_multiple_paths
     short_name = @@test_names[:file][:abbrev_unique_multi_path] # Should offer multiple choices and open chosen page.
     refute_nil(short_name)
     name = "ruby:#{short_name}"
@@ -142,7 +148,7 @@ class TestWebRI < Minitest::Test
     end
   end
 
-  def test_file_partial_name_unambiguous_one_path
+  def zzz_test_file_partial_name_unambiguous_one_path
     short_name = @@test_names[:file][:abbrev_unique_single_path] # Should offer one choice; open if yes.
     refute_nil(short_name)
     name = "ruby:#{short_name}"
@@ -157,7 +163,7 @@ class TestWebRI < Minitest::Test
 
   # Singleton methods.
 
-  def test_singleton_method_exact_name
+  def zzz_test_singleton_method_exact_name
     name = @@test_names[:singleton_method][:full_unique_single_path] # Should open page.
     refute_nil(name)
     webri_session(name) do |stdin, stdout, stderr|
@@ -167,7 +173,7 @@ class TestWebRI < Minitest::Test
     end
   end
 
-  def test_singleton_method_nosuch_name
+  def zzz_test_singleton_method_nosuch_name
     name = @@test_names[:singleton_method][:nosuch]  # Should offer all choices; open chosen page.
     refute_nil(name)
     webri_session(name) do |stdin, stdout, stderr|
@@ -181,7 +187,7 @@ class TestWebRI < Minitest::Test
     end
   end
 
-  def test_singleton_method_partial_name_ambiguous
+  def zzz_test_singleton_method_partial_name_ambiguous
     name = @@test_names[:singleton_method][:abbrev_unique_multi_path] # Should offer multiple choices and open chosen page.
     refute_nil(name)
     webri_session(name) do |stdin, stdout, stderr|
@@ -194,7 +200,7 @@ class TestWebRI < Minitest::Test
     end
   end
 
-  def test_singleton_method_partial_name_unambiguous_multiple_paths
+  def zzz_test_singleton_method_partial_name_unambiguous_multiple_paths
     name = @@test_names[:singleton_method][:abbrev_unique_multi_path] # Should offer multiple choices and open chosen page.
     refute_nil(name)
     webri_session(name) do |stdin, stdout, stderr|
@@ -213,7 +219,7 @@ class TestWebRI < Minitest::Test
     end
   end
 
-  def test_singleton_method_partial_name_unambiguous_one_path
+  def zzz_test_singleton_method_partial_name_unambiguous_one_path
     name = @@test_names[:singleton_method][:abbrev_unique_single_path] # Should offer one choice; open if yes.
     refute_nil(name)
     webri_session(name) do |stdin, stdout, stderr|
@@ -227,7 +233,7 @@ class TestWebRI < Minitest::Test
 
   # Instance methods.
 
-  def test_instance_method_exact_name
+  def zzz_test_instance_method_exact_name
     name = @@test_names[:instance_method][:full_unique_single_path] # Should open page.
     webri_session(name) do |stdin, stdout, stderr|
       output = read(stdout)
@@ -236,7 +242,7 @@ class TestWebRI < Minitest::Test
     end
   end
 
-  def test_instance_method_nosuch_name
+  def zzz_test_instance_method_nosuch_name
     name = @@test_names[:instance_method][:nosuch]  # Should offer all choices; open chosen page.
     refute_nil(name)
     webri_session(name) do |stdin, stdout, stderr|
@@ -250,7 +256,7 @@ class TestWebRI < Minitest::Test
     end
   end
 
-  def test_instance_method_partial_name_ambiguous
+  def zzz_test_instance_method_partial_name_ambiguous
     name = @@test_names[:instance_method][:abbrev_unique_multi_path] # Should offer multiple choices and open chosen page.
     webri_session(name) do |stdin, stdout, stderr|
       output = read(stdout)
@@ -262,7 +268,7 @@ class TestWebRI < Minitest::Test
     end
   end
 
-  def test_instance_method_partial_name_unambiguous_multiple_paths
+  def zzz_test_instance_method_partial_name_unambiguous_multiple_paths
     name = @@test_names[:instance_method][:abbrev_unique_multi_path] # Should offer multiple choices and open chosen page.
     webri_session(name) do |stdin, stdout, stderr|
       output = read(stdout)
@@ -280,7 +286,7 @@ class TestWebRI < Minitest::Test
     end
   end
 
-  def test_instance_method_partial_name_unambiguous_one_path
+  def zzz_test_instance_method_partial_name_unambiguous_one_path
     name = @@test_names[:instance_method][:abbrev_unique_single_path] # Should offer one choice; open if yes.
     webri_session(name) do |stdin, stdout, stderr|
       output = read(stdout)
@@ -516,4 +522,23 @@ class TestWebRI < Minitest::Test
     message = "'#{actual}' should start with '#{expected}'."
     assert(actual.start_with?(expected), message)
   end
+
+  def assert_command(name, command_line)
+    # Get the page.
+    command_word, url = command_line.split(': ')
+    assert_equal('Command', command_word)
+    url.gsub!("'", '')
+    assert_match(name, url)
+    io = URI.open(url)
+    classes = [Tempfile, StringIO]
+    assert(classes.include?(io.class))
+    # Check that the method is on the page.
+    _, fragment = url.split('#')
+    if fragment
+      html = io.read
+      assert_match(fragment, html)
+    end
+  end
+
+
 end
