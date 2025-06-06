@@ -273,7 +273,7 @@ class WebRI
       path
     when 0
       puts "Found no class/module name starting with '#{name}'."
-      message = "Show names of all #{all_choices.size} classes/modules?"
+      message = "Show #{all_choices.size} class/module names?"
       return unless get_boolean_answer(message)
       key = get_choice(all_choices.keys)
       return if key.nil?
@@ -281,7 +281,7 @@ class WebRI
     else
       selected_choices = ClassEntry.choices(selected_entries)
       puts "Found #{selected_choices.size} class/module names starting with '#{name}'."
-      message = "Show names?'"
+      message = "Show #{selected_choices.size} class/module names?'"
       return unless get_boolean_answer(message)
       key = get_choice(selected_choices.keys)
       return if key.nil?
