@@ -32,13 +32,7 @@ class TestWebRI < Minitest::Test
   # Classes and modules.
 
   def test_class_nosuch_name
-    name = NoSuchName[:class]
-    # Name must not be even part of a class name.
-    names = @@test_names[:class].keys.select do |name_|
-      name_.start_with?(name) && name_ != name
-    end
-    assert_empty(names)
-    refute(@@test_names[:class].keys.include?(name))
+    name = get_nosuch_name(:class)
     webri_session(name) do |stdin, stdout, stderr|
       assert_found_line(stdout,0, :class, name)
       assert_show(stdout, stdin, :class, name, yes: true)
@@ -73,47 +67,16 @@ class TestWebRI < Minitest::Test
     end
   end
 
-
-
-  # Classes and modules.
-
-  def zzz_test_class_nosuch_name
-    name = @@test_names.dig(:class, :nosuch)
-    refute_nil(name)
-    [true, false].each do |show|
-      webri_session(name) do |stdin, stdout, stderr|
-        assert_found_line(stdout,0, :class, name)
-        assert_show(stdout, stdin, :class, name, show)
-      end
-    end
-  end
-
-  def zzz_test_class_partial_name_ambiguous
-    name = @@test_names[:class][:abbrev_multi] # Should offer multiple choices; open chosen choice.
-    refute_nil(name)
-    webri_session(name) do |stdin, stdout, stderr|
-      output = read(stdout)
-      assert_match(/Found \d+ class\/module names starting with '#{name}'./, output)
-      check_choices(stdin, stdout, output)
-      writeln(stdin, '0')
-      output = read(stdout)
-      check_web_page(name, output)
-    end
-  end
-
-  def zzz_test_class_partial_name_unambiguous
-    name = @@test_names[:class][:abbrev_unique_single_path] # Should offer one choice; open if yes.
-    refute_nil(name)
-    webri_session(name) do |stdin, stdout, stderr|
-      output = read(stdout)
-      assert_match(/Found one class\/module name starting with '#{name}'./, output)
-      writeln(stdin, 'y')
-      output = read(stdout)
-      check_web_page(name, output)
-    end
-  end
-
   # Files.
+
+  def zzz_test_file_nosuch_name
+    name = get_nosuch_name(:file)
+    short_name = name.sub('ruby:', '')
+    webri_session(name) do |stdin, stdout, stderr|
+      assert_found_line(stdout,0, :file, short_name)
+      assert_show(stdout, stdin, :file, name, yes: true)
+    end
+  end
 
   def zzz_test_file_exact_name
     short_name = @@test_names[:file][:full_unique_single_path] # Should open page.
@@ -122,21 +85,6 @@ class TestWebRI < Minitest::Test
     webri_session(name) do |stdin, stdout, stderr|
       output = read(stdout)
       assert_match(/Found one file name starting with '#{short_name}'./, output)
-      check_web_page(name, output)
-    end
-  end
-
-  def zzz_test_file_nosuch_name
-    short_name = @@test_names[:file][:nosuch]  # Should offer all choices; open chosen page.
-    refute_nil(short_name)
-    name = "ruby:#{short_name}"
-    webri_session(name) do |stdin, stdout, stderr|
-      output = read(stdout)
-      assert_match(/Found no file name starting with '#{short_name}'./, output)
-      assert_match(/Show names of all \d+ files?/, output)
-      check_choices(stdin, stdout, output)
-      writeln(stdin, '0')
-      output = read(stdout)
       check_web_page(name, output)
     end
   end
@@ -709,6 +657,16 @@ class TestWebRI < Minitest::Test
     target_path = choices[index].gsub('::', '/')
     assert_opening_line(stdout, target_path)
     assert_command_line(stdout, target_path)
+  end
+
+  def get_nosuch_name(type)
+    name = NoSuchName[type]
+    # Name must not be even part of a class name.
+    names = @@test_names[type].keys.select do |name_|
+      name_.start_with?(name)
+    end
+    assert_empty(names)
+    name
   end
 
 end
