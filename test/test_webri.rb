@@ -114,8 +114,13 @@ class TestWebRI < Minitest::Test
   end
 
   def test_file_partial_name_unambiguous_multiple_paths
-    name = 'method'
-    assert_partial_name_unambiguous(:file , name, multiple_paths: true)
+    short_name = 'method'
+    assert_partial_name_unambiguous(:file , short_name, multiple_paths: true)
+    name = "ruby:#{short_name}"
+    webri_session(name) do |stdin, stdout, stderr|
+      assert_found_line(stdout,2, :file, short_name)
+      assert_show(stdout, stdin, :file, yes: true)
+    end
   end
 
   # Singleton methods.
