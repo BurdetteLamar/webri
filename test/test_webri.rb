@@ -61,7 +61,7 @@ class TestWebRI < Minitest::Test
 
   def test_class_partial_name_unambiguous
     name =  'ZeroDivision'
-    assert_partial_name_unambiguous(:class, name)
+    assert_partial_name_unambiguous(:class, name, multiple_paths: false)
     webri_session(name) do |stdin, stdout, stderr|
       assert_found_line(stdout,1, :class, name)
       assert_name_line(stdout, name)
@@ -103,11 +103,19 @@ class TestWebRI < Minitest::Test
   end
 
   def test_file_partial_name_unambiguous_one_path
-
+    short_name =  'maintainer'
+    assert_partial_name_unambiguous(:file , short_name, multiple_paths: false)
+    name = "ruby:#{short_name}"
+    webri_session(name) do |stdin, stdout, stderr|
+      assert_found_line(stdout,1, :file, short_name)
+      assert_name_line(stdout, short_name)
+      assert_open_line(stdin, stdout, short_name, yes: true)
+    end
   end
 
   def test_file_partial_name_unambiguous_multiple_paths
-
+    name = 'method'
+    assert_partial_name_unambiguous(:file , name, multiple_paths: true)
   end
 
   # Singleton methods.
@@ -677,12 +685,16 @@ class TestWebRI < Minitest::Test
     assert_operator(names.size, :>, 1)
   end
 
-  def assert_partial_name_unambiguous(type, name)
+  def assert_partial_name_unambiguous(type, name, multiple_paths:)
     # Name must be a partial for one name.
     names = @@test_names[type].keys.select do |name_|
       name_.start_with?(name) && name_ != name
     end
     assert_operator(names.size, :==, 1)
+    return unless multiple_paths
+    name = names.first
+    paths = @@test_names[type][name]
+    assert_operator(paths.size, :>, 1)
   end
 
 end
