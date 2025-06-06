@@ -611,7 +611,7 @@ class TestWebRI < Minitest::Test
     return unless yes
     stdin.puts('y')
     assert_opening_line(stdout, name)
-    # assert_command_line(stdout, name)
+    assert_command_line(stdout, name)
   end
 
   def assert_choose_line(stdout, choice_count)
