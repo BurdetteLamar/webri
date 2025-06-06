@@ -59,6 +59,16 @@ class TestWebRI < Minitest::Test
     end
   end
 
+  def test_class_partial_name_unambiguous
+    name =  'ZeroDivision'
+    assert_partial_name_unambiguous(:class, name)
+    webri_session(name) do |stdin, stdout, stderr|
+      assert_found_line(stdout,1, :class, name)
+      assert_name_line(stdout, name)
+      assert_open_line(stdin, stdout, name, yes: true)
+    end
+  end
+
   # Files.
 
   def test_file_nosuch_name
@@ -92,37 +102,12 @@ class TestWebRI < Minitest::Test
     end
   end
 
-  def zzz_test_file_partial_name_unambiguous_multiple_paths
-    short_name = @@test_names[:file][:abbrev_unique_multi_path] # Should offer multiple choices and open chosen page.
-    refute_nil(short_name)
-    name = "ruby:#{short_name}"
-    webri_session(name) do |stdin, stdout, stderr|
-      output = read(stdout)
-      output.match(/(\d+)/)
-      # This test is for a file name that has multiple paths.
-      # Check whether it's so for the given file name.
-      # If not, we need to change the file name for this test.
-      choice_count = $1.to_i
-      assert_operator(choice_count, :>, 1, 'File name should have multiple paths.')
-      assert_match(/Found \d+ file names starting with '#{short_name}'./, output)
-      check_choices(stdin, stdout, output)
-      writeln(stdin, '0')
-      output = read(stdout)
-      check_web_page(name, output)
-    end
+  def test_file_partial_name_unambiguous_one_path
+
   end
 
-  def zzz_test_file_partial_name_unambiguous_one_path
-    short_name = @@test_names[:file][:abbrev_unique_single_path] # Should offer one choice; open if yes.
-    refute_nil(short_name)
-    name = "ruby:#{short_name}"
-    webri_session(name) do |stdin, stdout, stderr|
-      output = read(stdout)
-      assert_match(/Found one file name starting with '#{short_name}'./, output)
-      writeln(stdin, 'y')
-      output = read(stdout)
-      check_web_page(name, output)
-    end
+  def test_file_partial_name_unambiguous_multiple_paths
+
   end
 
   # Singleton methods.
@@ -619,6 +604,16 @@ class TestWebRI < Minitest::Test
     assert_command_line(stdout, name)
   end
 
+  def assert_open_line(stdin, stdout, name, yes:)
+    # Cannot use readline for this because it has no trailing newline.
+    open_line = read(stdout)
+    assert_start_with('Open', open_line)
+    return unless yes
+    stdin.puts('y')
+    assert_opening_line(stdout, name)
+    # assert_command_line(stdout, name)
+  end
+
   def assert_choose_line(stdout, choice_count)
     # Cannot use readline for this because it has no trailing newline.
     choose_line = read(stdout)
@@ -671,7 +666,7 @@ class TestWebRI < Minitest::Test
     names = @@test_names[type].keys.select do |name_|
       name_.start_with?(name)
     end
-    assert_equal([name], names)
+    assert_operator(names.size, :==, 1)
   end
 
   def assert_partial_name_ambiguous(type, name)
@@ -680,6 +675,14 @@ class TestWebRI < Minitest::Test
       name_.start_with?(name) && name_ != name
     end
     assert_operator(names.size, :>, 1)
+  end
+
+  def assert_partial_name_unambiguous(type, name)
+    # Name must be a partial for one name.
+    names = @@test_names[type].keys.select do |name_|
+      name_.start_with?(name) && name_ != name
+    end
+    assert_operator(names.size, :==, 1)
   end
 
 end
