@@ -8,21 +8,21 @@ class TestWebRI < Minitest::Test
 
   # Housekeeping.
 
-  def test_help
+  def test_option_help
     webri_session('', '--help') do |stdin, stdout, stderr|
       lines = stdout.readlines
       assert_start_with('Usage: webri [options] name', lines[2])
     end
   end
 
-  def test_version
+  def test_option_version
     version = WebRI::VERSION
     assert_match(/\d+\.\d+\.\d+/, version)
   end
 
   # Errors.
 
-  def test_no_name
+  def test_name_missing
     webri_session('') do |stdin, stdout, stderr|
       err = stderr.readpartial(4096)
       assert_match('No name given.', err)
@@ -31,9 +31,27 @@ class TestWebRI < Minitest::Test
 
   # Classes and modules.
 
+  def test_class_nosuch_name
+    name = NoSuchName[:class]
+    # Name must not be even part of a class name.
+    names = @@test_names[:class].keys.select do |name_|
+      name_.start_with?(name) && name_ != name
+    end
+    assert_empty(names)
+    refute(@@test_names[:class].keys.include?(name))
+    webri_session(name) do |stdin, stdout, stderr|
+      assert_found_line(stdout,0, :class, name)
+      assert_show(stdout, stdin, :class, name, yes: true)
+    end
+  end
+
   def test_class_exact_name
-    name = @@test_names.dig(:class, :full_unique_single_path)
-    refute_nil(name)
+    name = 'ArgumentError'
+    # Name must be a class name and not a partial of any other class name.
+    names = @@test_names[:class].keys.select do |name_|
+      name_.start_with?(name)
+    end
+    assert_equal([name], names)
     webri_session(name) do |stdin, stdout, stderr|
       assert_found_line(stdout,1, :class, name)
       assert_name_line(stdout, name)
@@ -42,7 +60,24 @@ class TestWebRI < Minitest::Test
     end
   end
 
-  def test_class_nosuch_name
+  def test_class_partial_name_ambiguous
+    name = 'Dat'
+    # Name must be a partial for multiple class names.
+    names = @@test_names[:class].keys.select do |name_|
+      name_.start_with?(name) && name_ != name
+    end
+    assert_operator(names.size, :>, 1)
+    webri_session(name) do |stdin, stdout, stderr|
+      assert_found_line(stdout,2, :class, name)
+      assert_show(stdout, stdin, :class, name, yes: true)
+    end
+  end
+
+
+
+  # Classes and modules.
+
+  def zzz_test_class_nosuch_name
     name = @@test_names.dig(:class, :nosuch)
     refute_nil(name)
     [true, false].each do |show|
@@ -342,35 +377,77 @@ class TestWebRI < Minitest::Test
     stdin.write(s + "\n")
   end
 
+  NoSuchName = {
+    class:            'NoSuChClAsS',
+    singleton_method: '::nOsUcHmEtHoD',
+    instance_method:  '#nOsUcHmEtHoD',
+    file:             'ruby:nOsUcHfIlE',
+  }
+
   def setup
     return if defined?(@@test_names)
-    @@test_names = {
-      class: {
-        nosuch: 'NoSuChClAsS',
-      },
-      singleton_method: {
-        nosuch: '::nOsUcHmEtHoD'
-      },
-      instance_method: {
-        nosuch: '#nOsUcHmEtHoD'
-      },
-      file: {
-        nosuch: 'ruby:nOsUcHfIlE',
-      },
-    }
-    get_test_names(:class)
-    get_test_names(:file)
-    get_test_names(:singleton_method)
-    get_test_names(:instance_method)
-    p @@test_names[:class]
-    p @@test_names[:singleton_method]
-    p @@test_names[:instance_method]
-    p @@test_names[:file]
+    @@test_names = {}
+    build_test_class_names
+    build_test_file_names
+    build_test_singleton_method_names
+    build_test_instance_method_names
   end
 
-  def get_item_locations(type)
-    name = @@test_names[type][:nosuch]
-    items = {}
+  def build_test_class_names
+    @@test_names[:class] = {}
+    names = @@test_names[:class]
+    name = NoSuchName[:class]
+    lines = get_name_lines(name)
+    lines.each do |line|
+      _, _, name, path = line.split(/\s+/)
+      name.sub!(/:$/, '')
+      path.gsub!(/[()]/, '')
+      names[name] = path
+    end
+  end
+
+  def build_test_file_names
+    @@test_names[:file] = {}
+    names = @@test_names[:file]
+    name = NoSuchName[:file]
+    lines = get_name_lines(name)
+    lines.each do |line|
+      _, _, name, path = line.split(/\s+/)
+      name.sub!(/:$/, '')
+      path.gsub!(/[()]/, '')
+      names[name] = [] unless names.include?(name)
+      names[name].push(path)
+    end
+  end
+
+  def build_test_singleton_method_names
+    @@test_names[:singleton_method] = {}
+    names = @@test_names[:singleton_method]
+    name = NoSuchName[:singleton_method]
+    lines = get_name_lines(name)
+    lines.each do |line|
+      _, _, name, _, class_name = line.split(/\s+/)
+      class_name.gsub!(/[()]/, '')
+      names[name] = [] unless names.include?(name)
+      names[name].push(class_name)
+    end
+  end
+
+  def build_test_instance_method_names
+    @@test_names[:instance_method] = {}
+    names = @@test_names[:instance_method]
+    name = NoSuchName[:instance_method]
+    lines = get_name_lines(name)
+    lines.each do |line|
+      _, _, name, _, class_name = line.split(/\s+/)
+      class_name.gsub!(/[()]/, '')
+      names[name] = [] unless names.include?(name)
+      names[name].push(class_name)
+    end
+  end
+
+  def get_name_lines(name)
+    name_lines = []
     webri_session(name) do |stdin, stdout, stderr|
       # Get the count of items.
       lines = read(stdout).split("\n")
@@ -378,82 +455,100 @@ class TestWebRI < Minitest::Test
       count = $1.to_s.to_i
       # Get the items
       writeln(stdin, 'y')
-      i = 0
-      stdout.each_line do |line|
-        line.chomp!
-        index_pattern = /^\s*\d+\s*:\s*/
-        line.sub!(index_pattern, '')
-        name, location = line.split(' ')
-        name.sub!(/:$/, '')
-        items[name] = [] unless items[name]
-        items[name].push(location)
-        i += 1
-        break if i == count
+      (0..count - 1).each do
+        line = stdout.readline.chomp
+        name_lines.push(line)
       end
     end
-    items
+    name_lines
   end
 
-  def get_test_names_for_classes
-    # Get test names for classes.
-    class_locations = get_item_locations(:class)
-    class_names = class_locations.keys # A class does not have a location; just use the names.
-    # Find a full class name that no other class name starts with.
-    class_names.each do |name_to_try|
-      selected_names = class_names.select do |name|
-        name.start_with?(name_to_try)
-      end
-      if selected_names.size == 1
-        @@test_names[:class][:full_unique] = name_to_try
-        break
-      end
-    end
-    # Find an abbreviated class name matching only one name.
-    class_names.each do |class_name|
-      found = false
-      (3..4).each do |len|
-        abbrev = class_name[0..len]
-        selected_names = class_names.select do |name|
-          name.start_with?(abbrev) && name.size != abbrev.size
-        end
-        if selected_names.size == 1
-          @@test_names[:class][:abbrev_unique] = abbrev
-          found = true
-          break
-        end
-        break if found
-      end
-      break if found
-    end
-    # Find an abbreviated class name matching multiple names.
-    class_names.each do |class_name|
-      found = false
-      (3..4).each do |len|
-        abbrev = class_name[0..len]
-        selected_names = class_names.select do |name|
-          name.start_with?(abbrev)
-        end
-        if (5..7).include?(selected_names.size)
-          @@test_names[:class][:abbrev_multi] = abbrev
-          found = true
-          break
-        end
-        break if found
-      end
-      break if found
-    end
-  end
+  # def get_item_locations(type)
+  #   name = @@test_names[type][:nosuch]
+  #   items = {}
+  #   webri_session(name) do |stdin, stdout, stderr|
+  #     # Get the count of items.
+  #     lines = read(stdout).split("\n")
+  #     lines.last.match(/(\d+)/)
+  #     count = $1.to_s.to_i
+  #     # Get the items
+  #     writeln(stdin, 'y')
+  #     i = 0
+  #     stdout.each_line do |line|
+  #       line.chomp!
+  #       index_pattern = /^\s*\d+\s*:\s*/
+  #       line.sub!(index_pattern, '')
+  #       name, location = line.split(' ')
+  #       name.sub!(/:$/, '')
+  #       items[name] = [] unless items[name]
+  #       items[name].push(location)
+  #       i += 1
+  #       break if i == count
+  #     end
+  #   end
+  #   items
+  # end
 
-  def get_test_names(type)
-    locations = get_item_locations(type)
-    found_names = @@test_names[type]
-    # Find full names matching only one name,
-    # one with single path and one with multiple paths.
-    find_full_names(locations, found_names)
-    # Find abbreviated names matching only one name,
-    # one with single path and one with multiple paths.
-    find_abbrev_names(locations, found_names)
-  end
+  # def get_test_names_for_classes
+  #   # Get test names for classes.
+  #   class_locations = get_item_locations(:class)
+  #   class_names = class_locations.keys # A class does not have a location; just use the names.
+  #   # Find a full class name that no other class name starts with.
+  #   class_names.each do |name_to_try|
+  #     selected_names = class_names.select do |name|
+  #       name.start_with?(name_to_try)
+  #     end
+  #     if selected_names.size == 1
+  #       @@test_names[:class][:full_unique] = name_to_try
+  #       break
+  #     end
+  #   end
+  #   # Find an abbreviated class name matching only one name.
+  #   class_names.each do |class_name|
+  #     found = false
+  #     (3..4).each do |len|
+  #       abbrev = class_name[0..len]
+  #       selected_names = class_names.select do |name|
+  #         name.start_with?(abbrev) && name.size != abbrev.size
+  #       end
+  #       if selected_names.size == 1
+  #         @@test_names[:class][:abbrev_unique] = abbrev
+  #         found = true
+  #         break
+  #       end
+  #       break if found
+  #     end
+  #     break if found
+  #   end
+  #   # Find an abbreviated class name matching multiple names.
+  #   class_names.each do |class_name|
+  #     found = false
+  #     (3..4).each do |len|
+  #       abbrev = class_name[0..len]
+  #       selected_names = class_names.select do |name|
+  #         name.start_with?(abbrev)
+  #       end
+  #       if (5..7).include?(selected_names.size)
+  #         @@test_names[:class][:abbrev_multi] = abbrev
+  #         found = true
+  #         break
+  #       end
+  #       break if found
+  #     end
+  #     break if found
+  #   end
+  # end
+
+  # def get_test_names(type)
+  #   locations = get_item_locations(type)
+  #   found_names = @@test_names[type]
+  #   # Find full names matching only one name,
+  #   # one with single path and one with multiple paths.
+  #   find_full_names(locations, found_names)
+  #   # Find abbreviated names matching only one name,
+  #   # one with single path and one with multiple paths.
+  #   find_abbrev_names(locations, found_names)
+  # end
 
   def find_full_names(locations, found_names)
     names_to_find = {
@@ -544,7 +639,7 @@ class TestWebRI < Minitest::Test
 
   def assert_opening_line(stdout, name)
     opening_line = stdout.readline
-    assert_start_with('Opening', opening_line)
+    assert_start_with('Opening ', opening_line)
     assert_match(name, opening_line)
   end
 
@@ -565,15 +660,26 @@ class TestWebRI < Minitest::Test
     end
   end
 
-  def assert_show_line(stdout, type)
+  def assert_show_line(stdout)
     # Cannot use readline for this because it has no trailing newline.
     show_line = read(stdout)
-    assert_start_with('Show', show_line)
+    assert_start_with('Show ', show_line)
     show_line.match(/(\d+)/)
     choice_count = $1.to_i
     assert_instance_of(Integer, choice_count)
     assert_operator(choice_count, :>, 1)
     choice_count
+  end
+
+  def assert_open_lines(stdin, stdout, name, yes:)
+    # Cannot use readline for this because it has no trailing newline.
+    open_line = read(stdout)
+    assert_start_with('Open ', open_line)
+    answer = yes ? 'y' : 'n'
+    stdin.puts(answer)
+    return unless yes
+    assert_opening_line(stdout, name)
+    assert_command_line(stdout, name)
   end
 
   def assert_choose_line(stdout, choice_count)
@@ -583,10 +689,10 @@ class TestWebRI < Minitest::Test
     assert_match((0..choice_count - 1).to_s, choose_line)
   end
 
-  def assert_show(stdout, stdin, type, name, show)
-    choice_count = assert_show_line(stdout, type)
-    writeln(stdin, show ? 'y' : 'n')
-    return unless show
+  def assert_show(stdout, stdin, type, name, yes: true)
+    choice_count = assert_show_line(stdout)
+    writeln(stdin, yes ? 'y' : 'n')
+    return unless yes
     # Verify the choices.
     # Each choice line ends with newline, so use readline.
     choices = []
