@@ -35,13 +35,13 @@ class TestWebRI < Minitest::Test
     name = get_nosuch_name(:class)
     webri_session(name) do |stdin, stdout, stderr|
       assert_found_line(stdout,0, :class, name)
-      assert_show(stdout, stdin, :class, name, yes: true)
+      assert_show(stdout, stdin, :class, yes: true)
     end
   end
 
   def test_class_exact_name
     name = 'ArgumentError'
-    verify_exact_name(:class, name)
+    assert_exact_name(:class, name)
     webri_session(name) do |stdin, stdout, stderr|
       assert_found_line(stdout,1, :class, name)
       assert_name_line(stdout, name)
@@ -59,7 +59,7 @@ class TestWebRI < Minitest::Test
     assert_operator(names.size, :>, 1)
     webri_session(name) do |stdin, stdout, stderr|
       assert_found_line(stdout,2, :class, name)
-      assert_show(stdout, stdin, :class, name, yes: true)
+      assert_show(stdout, stdin, :class, yes: true)
     end
   end
 
@@ -70,21 +70,19 @@ class TestWebRI < Minitest::Test
     short_name = name.sub('ruby:', '')
     webri_session(name) do |stdin, stdout, stderr|
       assert_found_line(stdout,0, :file, short_name)
-      assert_show(stdout, stdin, :file, name, yes: true)
+      assert_show(stdout, stdin, :file, yes: true)
     end
   end
 
   def test_file_exact_name
-    name = 'literals'
-    verify_exact_name(:file, name)
-    return
-    short_name = @@test_names[:file][:full_unique_single_path] # Should open page.
-    refute_nil(short_name)
+    short_name = 'literals'
+    assert_exact_name(:file, short_name)
     name = "ruby:#{short_name}"
     webri_session(name) do |stdin, stdout, stderr|
-      output = read(stdout)
-      assert_match(/Found one file name starting with '#{short_name}'./, output)
-      check_web_page(name, output)
+      assert_found_line(stdout,1, :file, short_name)
+      assert_name_line(stdout, short_name)
+      assert_opening_line(stdout, short_name)
+      assert_command_line(stdout, short_name)
     end
   end
 
@@ -636,7 +634,7 @@ class TestWebRI < Minitest::Test
     assert_match((0..choice_count - 1).to_s, choose_line)
   end
 
-  def assert_show(stdout, stdin, type, name, yes: true)
+  def assert_show(stdout, stdin, type, yes: true)
     choice_count = assert_show_line(stdout)
     writeln(stdin, yes ? 'y' : 'n')
     return unless yes
@@ -653,7 +651,15 @@ class TestWebRI < Minitest::Test
     assert_choose_line(stdout, choice_count)
     index = 0
     writeln(stdin, index.to_s)
-    target_path = choices[index].gsub('::', '/').split('.').first
+    choice = choices[index]
+    target_path = case type
+                  when :class
+                    choice.gsub('::', '/')
+                  when :file
+                    choice.split('.').first
+                  else
+                    choice
+    end
     assert_opening_line(stdout, target_path)
     assert_command_line(stdout, target_path)
   end
@@ -668,7 +674,7 @@ class TestWebRI < Minitest::Test
     name
   end
 
-  def verify_exact_name(type, name)
+  def assert_exact_name(type, name)
     # Name must be an name and not a partial of any other name.
     names = @@test_names[type].keys.select do |name_|
       name_.start_with?(name)
