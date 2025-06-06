@@ -69,7 +69,7 @@ class TestWebRI < Minitest::Test
 
   # Files.
 
-  def zzz_test_file_nosuch_name
+  def test_file_nosuch_name
     name = get_nosuch_name(:file)
     short_name = name.sub('ruby:', '')
     webri_session(name) do |stdin, stdout, stderr|
@@ -654,7 +654,7 @@ class TestWebRI < Minitest::Test
     assert_choose_line(stdout, choice_count)
     index = 0
     writeln(stdin, index.to_s)
-    target_path = choices[index].gsub('::', '/')
+    target_path = choices[index].gsub('::', '/').split('.').first
     assert_opening_line(stdout, target_path)
     assert_command_line(stdout, target_path)
   end
