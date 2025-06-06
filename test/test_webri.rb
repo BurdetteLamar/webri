@@ -41,11 +41,7 @@ class TestWebRI < Minitest::Test
 
   def test_class_exact_name
     name = 'ArgumentError'
-    # Name must be a class name and not a partial of any other class name.
-    names = @@test_names[:class].keys.select do |name_|
-      name_.start_with?(name)
-    end
-    assert_equal([name], names)
+    verify_exact_name(:class, name)
     webri_session(name) do |stdin, stdout, stderr|
       assert_found_line(stdout,1, :class, name)
       assert_name_line(stdout, name)
@@ -78,7 +74,10 @@ class TestWebRI < Minitest::Test
     end
   end
 
-  def zzz_test_file_exact_name
+  def test_file_exact_name
+    name = 'literals'
+    verify_exact_name(:file, name)
+    return
     short_name = @@test_names[:file][:full_unique_single_path] # Should open page.
     refute_nil(short_name)
     name = "ruby:#{short_name}"
@@ -669,4 +668,11 @@ class TestWebRI < Minitest::Test
     name
   end
 
+  def verify_exact_name(type, name)
+    # Name must be an name and not a partial of any other name.
+    names = @@test_names[type].keys.select do |name_|
+      name_.start_with?(name)
+    end
+    assert_equal([name], names)
+  end
 end
