@@ -330,7 +330,7 @@ class WebRI
     else
       selected_choices = FileEntry.choices(selected_entries)
       puts "Found #{selected_choices.size} file names starting with '#{name}'."
-      message = "Show names?'"
+      message = "Show #{selected_choices.size} names?'"
       return unless get_boolean_answer(message)
       key = get_choice(selected_choices.keys)
       return if key.nil?

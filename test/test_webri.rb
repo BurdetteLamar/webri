@@ -52,11 +52,7 @@ class TestWebRI < Minitest::Test
 
   def test_class_partial_name_ambiguous
     name = 'Dat'
-    # Name must be a partial for multiple class names.
-    names = @@test_names[:class].keys.select do |name_|
-      name_.start_with?(name) && name_ != name
-    end
-    assert_operator(names.size, :>, 1)
+    assert_partial_name_ambiguous(:class, name)
     webri_session(name) do |stdin, stdout, stderr|
       assert_found_line(stdout,2, :class, name)
       assert_show(stdout, stdin, :class, yes: true)
@@ -86,17 +82,13 @@ class TestWebRI < Minitest::Test
     end
   end
 
-  def zzz_test_file_partial_name_ambiguous
-    short_name = @@test_names[:file][:abbrev_unique_multi_path] # Should offer multiple choices and open chosen page.
-    refute_nil(short_name)
+  def test_file_partial_name_ambiguous
+    short_name = 'o'
+    assert_partial_name_ambiguous(:file, short_name)
     name = "ruby:#{short_name}"
     webri_session(name) do |stdin, stdout, stderr|
-      output = read(stdout)
-      assert_match(/Found \d+ file names starting with '#{short_name}'./, output)
-      check_choices(stdin, stdout, output)
-      writeln(stdin, '0')
-      output = read(stdout)
-      check_web_page(name, output)
+      assert_found_line(stdout,2, :file, short_name)
+      assert_show(stdout, stdin, :file, yes: true)
     end
   end
 
@@ -681,4 +673,13 @@ class TestWebRI < Minitest::Test
     end
     assert_equal([name], names)
   end
+
+  def assert_partial_name_ambiguous(type, name)
+    # Name must be a partial for multiple names.
+    names = @@test_names[type].keys.select do |name_|
+      name_.start_with?(name) && name_ != name
+    end
+    assert_operator(names.size, :>, 1)
+  end
+
 end
