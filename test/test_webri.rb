@@ -217,9 +217,9 @@ class TestWebRI < Minitest::Test
     end
   end
 
-  def zzz_test_instance_method_partial_name_ambiguous
+  def test_instance_method_partial_name_ambiguous
     type = :instance_method
-    name = '::wri'
+    name = '#wri'
     assert_partial_name_ambiguous(type, name)
     webri_session(name) do |stdin, stdout, stderr|
       assert_found_line(stdout,2, type, name)
@@ -670,7 +670,7 @@ class TestWebRI < Minitest::Test
                   when :file
                     choice.split('.').first
                   when :singleton_method, :instance_method
-                    method_name = choice.split(' ').first
+                    choice.split(' ').first
                   else
                     fail choice
                   end

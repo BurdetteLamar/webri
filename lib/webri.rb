@@ -103,7 +103,7 @@ class WebRI
           entry = ClassEntry.new(full_name)
           index[full_name] = entry
         end
-        entry.paths.push(path)
+        entry.paths.push(path) unless entry.paths.include?(path)
       when 'file'
         index = @index_for_type[:file]
         if index.include?(full_name)
@@ -112,7 +112,7 @@ class WebRI
           entry = FileEntry.new(full_name)
           index[full_name] = entry
         end
-        entry.paths.push(path)
+        entry.paths.push(path) unless entry.paths.include?(path)
       when 'method'
         case anchor_line
         when /method-c-/
@@ -123,7 +123,7 @@ class WebRI
             entry = SingletonMethodEntry.new(full_name)
             index[full_name] = entry
           end
-          entry.paths.push(path)
+          entry.paths.push(path) unless entry.paths.include?(path)
         when /method-i-/
           index = @index_for_type[:instance_method]
           if index.include?(full_name)
@@ -132,7 +132,7 @@ class WebRI
             entry = InstanceMethodEntry.new(full_name)
             index[full_name] = entry
           end
-          entry.paths.push(path)
+          entry.paths.push(path) unless entry.paths.include?(path)
         else
           fail anchor_line
         end
