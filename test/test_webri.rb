@@ -40,18 +40,20 @@ class TestWebRI < Minitest::Test
   # Classes and modules.
 
   def test_class_nosuch_name
-    name = get_nosuch_name(:class)
+    type = :class
+    name = get_nosuch_name(type)
     webri_session(name) do |stdin, stdout, stderr|
-      assert_found_line(stdout,0, :class, name)
-      assert_show(stdout, stdin, :class, yes: true)
+      assert_found_line(stdout,0, type, name)
+      assert_show(stdout, stdin, type, yes: true)
     end
   end
 
   def test_class_exact_name
+    type = :class
     name = 'ArgumentError'
-    assert_exact_name(:class, name)
+    assert_exact_name(type, name)
     webri_session(name) do |stdin, stdout, stderr|
-      assert_found_line(stdout,1, :class, name)
+      assert_found_line(stdout,1, type, name)
       assert_name_line(stdout, name)
       assert_opening_line(stdout, name)
       assert_command_line(stdout, name)
@@ -59,19 +61,21 @@ class TestWebRI < Minitest::Test
   end
 
   def test_class_partial_name_ambiguous
+    type = :class
     name = 'Dat'
-    assert_partial_name_ambiguous(:class, name)
+    assert_partial_name_ambiguous(type, name)
     webri_session(name) do |stdin, stdout, stderr|
-      assert_found_line(stdout,2, :class, name)
-      assert_show(stdout, stdin, :class, yes: true)
+      assert_found_line(stdout,2, type, name)
+      assert_show(stdout, stdin, type, yes: true)
     end
   end
 
   def test_class_partial_name_unambiguous
+    type = :class
     name =  'ZeroDivision'
-    assert_partial_name_unambiguous(:class, name, multiple_paths: false)
+    assert_partial_name_unambiguous(type, name, multiple_paths: false)
     webri_session(name) do |stdin, stdout, stderr|
-      assert_found_line(stdout,1, :class, name)
+      assert_found_line(stdout,1, type, name)
       assert_name_line(stdout, name)
       assert_open_line(stdin, stdout, name, yes: true)
     end
