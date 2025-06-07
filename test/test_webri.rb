@@ -142,13 +142,15 @@ class TestWebRI < Minitest::Test
     end
   end
 
-  def zzz_test_singleton_method_exact_name
-    name = @@test_names[:singleton_method][:full_unique_single_path] # Should open page.
-    refute_nil(name)
+  def test_singleton_method_exact_name
+    type = :singleton_method
+    name = '::umask'
+    assert_exact_name(type, name)
     webri_session(name) do |stdin, stdout, stderr|
-      output = read(stdout)
-      assert_match(/Found one singleton method name starting with '#{name}'./, output)
-      check_web_page(name, output)
+      assert_found_line(stdout,1, type, name)
+      assert_name_line(stdout, name)
+      assert_opening_line(stdout, name)
+      assert_command_line(stdout, name)
     end
   end
 
