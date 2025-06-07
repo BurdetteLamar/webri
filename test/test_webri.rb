@@ -205,9 +205,9 @@ class TestWebRI < Minitest::Test
     end
   end
 
-  def zzz_test_instance_method_exact_name
+  def test_instance_method_exact_name
     type = :instance_method
-    name = '::umask'
+    name = '#yield_self'
     assert_exact_name(type, name)
     webri_session(name) do |stdin, stdout, stderr|
       assert_found_line(stdout,1, type, name)
