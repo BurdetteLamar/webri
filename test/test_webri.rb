@@ -272,9 +272,13 @@ class TestWebRI < Minitest::Test
 
   def setup
     return if defined?(@@test_names)
+    webri_session('--info') do |stdin, stdout, stderr|
+      url_line = stdout.readline
+      url = url_line.split(' ').last
+      io = URI.open(url)
+      @toc_html = io.read
+    end
     @@test_names = {}
-    io = URI.open('https://docs.ruby-lang.org/en/master/table_of_contents.html')
-    @toc_html = io.read
     build_test_class_names
     build_test_file_names
     build_test_singleton_method_names
