@@ -7,7 +7,7 @@ require 'cgi'
 
 class TestWebRI < Minitest::Test
 
-  # Housekeeping.
+  # Test housekeeping.
 
   def test_option_help
     webri_session('', '--help') do |stdin, stdout, stderr|
@@ -21,7 +21,7 @@ class TestWebRI < Minitest::Test
     assert_match(/\d+\.\d+\.\d+/, version)
   end
 
-  # Errors.
+  # Test errors.
 
   def test_no_name
     webri_session('') do |stdin, stdout, stderr|
@@ -37,7 +37,7 @@ class TestWebRI < Minitest::Test
     end
   end
 
-  # Classes and modules.
+  # Test classes and modules.
 
   def test_class_nosuch_name
     type = :class
@@ -81,7 +81,7 @@ class TestWebRI < Minitest::Test
     end
   end
 
-  # Files.
+  # Test files.
 
   def test_file_nosuch_name
     type = :file
@@ -140,7 +140,7 @@ class TestWebRI < Minitest::Test
     end
   end
 
-  # Singleton methods.
+  # Test singleton methods.
 
   def test_singleton_method_nosuch_name
     type = :singleton_method
@@ -194,7 +194,7 @@ class TestWebRI < Minitest::Test
     end
   end
 
-  # Instance methods.
+  # Test instance methods.
 
   def test_instance_method_nosuch_name
     type = :instance_method
@@ -238,9 +238,9 @@ class TestWebRI < Minitest::Test
     end
   end
 
-  def zzz_test_instance_method_partial_name_unambiguous_multiple_paths
+  def test_instance_method_partial_name_unambiguous_multiple_paths
     type = :instance_method
-    name = '::wra'
+    name = '#yea'
     assert_partial_name_unambiguous(type , name, multiple_paths: true)
     webri_session(name) do |stdin, stdout, stderr|
       assert_found_line(stdout,2, type, name)
