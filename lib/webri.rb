@@ -400,7 +400,7 @@ class WebRI
       path = all_choices[choice]
     else
       puts "Found #{selected_paths.size} singleton method names starting with '#{name}'."
-      message = "Show names?'"
+      message = "Show #{selected_paths.size} names?'"
       return unless get_boolean_answer(message)
       choice = get_choice(selected_choices.keys)
       return if choice.nil?
@@ -449,7 +449,7 @@ class WebRI
       full_name = InstanceMethodEntry.full_name_for_choice(choice)
     else
       puts "Found #{selected_paths.size} instance method names starting with '#{name}'."
-      message = "Show names?'"
+      message = "Show #{selected_paths.size} names?'"
       return unless get_boolean_answer(message)
       choice = get_choice(selected_choices.keys)
       return if choice.nil?

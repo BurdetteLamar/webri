@@ -163,16 +163,13 @@ class TestWebRI < Minitest::Test
     end
   end
 
-  def zzz_test_singleton_method_partial_name_ambiguous
-    name = @@test_names[:singleton_method][:abbrev_unique_multi_path] # Should offer multiple choices and open chosen page.
-    refute_nil(name)
+  def test_singleton_method_partial_name_ambiguous
+    type = :singleton_method
+    name = '::wri'
+    assert_partial_name_ambiguous(type, name)
     webri_session(name) do |stdin, stdout, stderr|
-      output = read(stdout)
-      assert_match(/Found \d+ singleton method names starting with '#{name}'./, output)
-      check_choices(stdin, stdout, output)
-      writeln(stdin, '0')
-      output = read(stdout)
-      check_web_page(name, output)
+      assert_found_line(stdout,2, type, name)
+      assert_show(stdout, stdin, type, yes: true)
     end
   end
 
@@ -727,7 +724,7 @@ class TestWebRI < Minitest::Test
     names = @@test_names[type].keys.select do |name_|
       name_.start_with?(name) && name_ != name
     end
-    assert_operator(names.size, :>, 1)
+    assert_operator(names.size, :>, 1, names)
   end
 
   def assert_partial_name_unambiguous(type, name, multiple_paths:)
