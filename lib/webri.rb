@@ -3,6 +3,7 @@
 require 'rbconfig'
 require 'open-uri'
 
+# TODO: Verify the fragment in the command line.
 # TODO: Test %w[y n].
 # TODO: Subroutinize.
 # TODO: Change assert_match to assert_start_with? when possible.
@@ -50,6 +51,16 @@ class WebRI
     capture_options(options)
     get_toc_html
     build_indexes
+    print_info if @info
+  end
+
+  def print_info
+    puts "Ruby documentation home: #{@toc_url}"
+    puts "Items:"
+    @index_for_type.each_pair do |type, items|
+      puts format("  %5d %s items", items.count, type)
+    end
+    exit
   end
 
   def build_indexes
@@ -133,6 +144,7 @@ class WebRI
 
   def capture_options(options)
     @noop = options[:noop]
+    @info = options[:info]
   end
 
   def get_toc_html
@@ -140,9 +152,9 @@ class WebRI
     a = RUBY_VERSION.split('.')
     @doc_release = a[0..1].join('.')
     # Get the doc table of contents as a temp file.
-    toc_url = DocSite + @doc_release + '/table_of_contents.html'
+    @toc_url = DocSite + @doc_release + '/table_of_contents.html'
     begin
-      toc_file = URI.open(toc_url)
+      toc_file = URI.open(@toc_url)
       @toc_html = toc_file.read
     rescue Socket::ResolutionError => x
       message = "#{x.class}: #{x.message}\nPossibly not connected to internet."
@@ -224,7 +236,17 @@ class WebRI
   end
 
   # Show a page of Ruby documentation.
-  def show(name)
+  def show(args)
+    case args.size
+    when 0
+      puts "No name given."
+      exit
+    when 1
+      name = args.first
+    else
+      puts "Multiple names given; please do one at at time."
+      exit
+    end
     # Figure out what's asked for.
     case
     when name.match(/^[A-Z]/), %w[fatal fata fat fa f].include?(name)
@@ -246,7 +268,7 @@ class WebRI
 
   # Show class.
   def show_class(name, class_index)
-        all_entries = @index_for_type[:class]
+    all_entries = @index_for_type[:class]
     all_choices = ClassEntry.choices(all_entries)
     # Find entries whose names that start with name.
     selected_entries = all_entries.select do |key, value|
@@ -449,7 +471,7 @@ class WebRI
       end
       print "Choose (#{range}):  "
       $stdout.flush
-      response = gets
+      response = $stdin.gets
       index = response.match(/^\d+$/) ? response.to_i : -1
       return if index == -1
     end
@@ -460,7 +482,7 @@ class WebRI
   def get_boolean_answer(question)
     print "#{question} (y or n):  "
     $stdout.flush
-    gets.match(/y/i) ? true : false
+    $stdin.gets.match(/y/i) ? true : false
   end
 
   # Open URL in browser.

@@ -39,24 +39,14 @@ parser.on('-v', '--version', 'Prints the version of webri.') do
   puts WebRI::VERSION
   exit
 end
+parser.on('-i', '--info', 'Prints information about webri.') do
+  options[:info] = true
+end
 parser.on('-n', '--noop', 'Do not open web page.') do |value|
   options[:noop] = true
 end
 
-
 parser.parse!
 
-error_message = case ARGV.size
-when 0
-  'No name given.'
-when 1
-  nil
-else
-  'Multiple names given.'
-end
-raise ArgumentError.new(error_message) if error_message
-
-argument = ARGV.shift
-
 web_ri = WebRI.new(options)
-web_ri.show(argument)
+web_ri.show(ARGV.to_a)

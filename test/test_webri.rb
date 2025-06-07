@@ -3,6 +3,7 @@
 require 'test_helper'
 require 'open-uri'
 require 'open3'
+require 'cgi'
 
 class TestWebRI < Minitest::Test
 
@@ -22,10 +23,17 @@ class TestWebRI < Minitest::Test
 
   # Errors.
 
-  def test_name_missing
+  def test_no_name
     webri_session('') do |stdin, stdout, stderr|
-      err = stderr.readpartial(4096)
-      assert_match('No name given.', err)
+      output = stdout.readpartial(4096)
+      assert_start_with('No name given', output)
+    end
+  end
+
+  def test_multiple_names
+    webri_session('Foo Bar') do |stdin, stdout, stderr|
+      output = stdout.readpartial(4096)
+      assert_start_with('Multiple names given', output)
     end
   end
 
@@ -125,26 +133,21 @@ class TestWebRI < Minitest::Test
 
   # Singleton methods.
 
+  def test_singleton_method_nosuch_name
+    type = :singleton_method
+    name = get_nosuch_name(type)
+    webri_session(name) do |stdin, stdout, stderr|
+      assert_found_line(stdout,0, type, name)
+      assert_show(stdout, stdin, type, yes: true)
+    end
+  end
+
   def zzz_test_singleton_method_exact_name
     name = @@test_names[:singleton_method][:full_unique_single_path] # Should open page.
     refute_nil(name)
     webri_session(name) do |stdin, stdout, stderr|
       output = read(stdout)
       assert_match(/Found one singleton method name starting with '#{name}'./, output)
-      check_web_page(name, output)
-    end
-  end
-
-  def zzz_test_singleton_method_nosuch_name
-    name = @@test_names[:singleton_method][:nosuch]  # Should offer all choices; open chosen page.
-    refute_nil(name)
-    webri_session(name) do |stdin, stdout, stderr|
-      output = read(stdout)
-      assert_match(/Found no singleton method name starting with '#{name}'./, output)
-      assert_match(/Show names of all \d+ singleton methods?/, output)
-      check_choices(stdin, stdout, output)
-      writeln(stdin, '0')
-      output = read(stdout)
       check_web_page(name, output)
     end
   end
@@ -242,7 +245,8 @@ class TestWebRI < Minitest::Test
       assert_operator(choice_count, :>, 1, 'Single method name should have multiple paths.')
       assert_match(/Found \d+ instance method names starting with '#{name}'./, output)
       check_choices(stdin, stdout, output)
-      writeln(stdin, '0')
+      last_index = choice_count - 1
+      writeln(stdin, last_index.to_s)
       output = read(stdout)
       check_web_page(name, output)
     end
@@ -314,14 +318,16 @@ class TestWebRI < Minitest::Test
 
   NoSuchName = {
     class:            'NoSuChClAsS',
-    singleton_method: '::nOsUcHmEtHoD',
-    instance_method:  '#nOsUcHmEtHoD',
+    singleton_method: '::nOsUcHsInGlEtOnMeThOd',
+    instance_method:  '#nOsUcHiNsTaNcEmEtHoD',
     file:             'ruby:nOsUcHfIlE',
   }
 
   def setup
     return if defined?(@@test_names)
     @@test_names = {}
+    io = URI.open('https://docs.ruby-lang.org/en/master/table_of_contents.html')
+    @toc_html = io.read
     build_test_class_names
     build_test_file_names
     build_test_singleton_method_names
@@ -584,15 +590,36 @@ class TestWebRI < Minitest::Test
     assert_equal('Command', command_word.sub(':', ''))
     assert_equal('start', start_word.sub("'", ''))
     url.gsub!("'", '')
-    assert_match(name, url)
+    _, fragment = url.split('#')
     io = URI.open(url)
     classes = [Tempfile, StringIO]
     assert(classes.include?(io.class))
-    _, fragment = url.split('#')
-    if fragment
-      html = io.read
-      assert_match(fragment, html)
+    unless fragment
+      assert_match(name, url)
+      return
     end
+    # There is a fragment.
+    # Make sure it's on the page
+    html = io.read
+    assert_match(fragment, html)
+    # If the name matches the url, assert it and we're done.
+    if name.match(url)
+      assert_match(name, url)
+      return
+    end
+    # The name does not match the url,
+    # that means the name has special characters (such as '=')
+    # that in the url are represented as triplets (such as '-3D').
+    # TODO: Verify the fragment in the command.
+    # url_ = url
+    # s = ''
+    # while url_.match(/(-[A-F0-9]{2})/)
+    #   removed = url_.slice!(-3..-1)
+    #   s += removed[1..].hex.chr
+    #   name.slice!(/.$/)
+    # end
+    # url_ = url_ + '-' unless url_.end_with?('-')
+    # url_ = url_ + s
   end
 
   def assert_show_line(stdout)
@@ -657,9 +684,11 @@ class TestWebRI < Minitest::Test
                     choice.gsub('::', '/')
                   when :file
                     choice.split('.').first
+                  when :singleton_method
+                    method_name = choice.split(' ').first
                   else
                     choice
-    end
+                  end
     assert_opening_line(stdout, target_path)
     assert_command_line(stdout, target_path)
   end
