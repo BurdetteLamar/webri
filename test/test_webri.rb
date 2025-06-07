@@ -21,6 +21,16 @@ class TestWebRI < Minitest::Test
     assert_match(/\d+\.\d+\.\d+/, version)
   end
 
+  def test_option_release
+    a = RUBY_VERSION.split('.')
+    release = a[0..1].join('.')
+    webri_session("Array --release #{release}") do |stdin, stdout, stderr|
+      _, _, opening_line, command_line = stdout.readlines
+      assert_match(release, opening_line)
+      assert_match(release, command_line)
+    end
+  end
+
   # Test errors.
 
   def test_no_name_given
@@ -41,6 +51,15 @@ class TestWebRI < Minitest::Test
     webri_session('foo') do |stdin, stdout, stderr|
       output = stdout.readpartial(4096)
       assert_start_with('No documentation available', output)
+    end
+  end
+
+  def test_option_release_invalid
+    webri_session("--release 2.7") do |stdin, stdout, stderr|
+      unsupported_line = stdout.readline
+      assert_start_with('Unsupported', unsupported_line)
+      supported_line = stdout.readline
+      assert_start_with('Supported', supported_line)
     end
   end
 

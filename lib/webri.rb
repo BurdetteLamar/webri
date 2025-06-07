@@ -2,6 +2,7 @@
 
 require 'rbconfig'
 require 'open-uri'
+require 'rexml'
 
 # TODO: Verify the fragment in the command line.
 # TODO: Test %w[y n].
@@ -23,7 +24,7 @@ require 'open-uri'
 # TODO: Make sure webri is on $PATH.
 
 # TODO: Add --release option.
-# TODO: Show all release numbers; allow choice.
+# TODO: If invalid release, show all releases and allow choice.
 
 # TODO: Test all releases.
 # TODO: Test all pages(?).
@@ -49,9 +50,33 @@ class WebRI
   # and build our @index_for_type.
   def initialize(options = {})
     capture_options(options)
+    set_doc_release
     get_toc_html
     build_indexes
     print_info if @info
+  end
+
+  def set_doc_release
+    releases = []
+    io = URI.open('https://docs.ruby-lang.org/en/')
+    lines = io.readlines
+    lines.each do |line|
+      next unless line.match(/<a/)
+      doc = REXML::Document.new(line)
+      _, release, end_of_support = doc.root.text.split(' ')
+      break if end_of_support
+      releases.push(release)
+    end
+    if @doc_release
+      unless releases.include?(@doc_release)
+        puts "Unsupported or unknown documentation release '#{@doc_release}'."
+        puts "Supported releases are: #{releases.join(', ')}."
+        exit
+      end
+    else
+      a = RUBY_VERSION.split('.')
+      @doc_release ||= a[0..1].join('.')
+    end
   end
 
   def print_info
@@ -145,12 +170,11 @@ class WebRI
   def capture_options(options)
     @noop = options[:noop]
     @info = options[:info]
+    @doc_release = options[:release]
   end
 
   def get_toc_html
     # Construct the doc release; e.g., '3.4'.
-    a = RUBY_VERSION.split('.')
-    @doc_release = a[0..1].join('.')
     # Get the doc table of contents as a temp file.
     @toc_url = DocSite + @doc_release + '/table_of_contents.html'
     begin
