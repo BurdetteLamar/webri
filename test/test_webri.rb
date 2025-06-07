@@ -259,23 +259,6 @@ class TestWebRI < Minitest::Test
     end
   end
 
-  def check_choices(stdin, stdout, output)
-    # String argument output must contain the count of choices.
-    output.match(/(\d+)/)
-    choice_count = $1.to_i
-    assert_operator(choice_count, :>, 1)
-    writeln(stdin, 'y')
-    # Verify the choices.
-    # Each choice line ends with newline, so use readline.
-    for i in 0...choice_count do
-      output = stdout.readline
-      assert_match("#{i}:", output)
-    end
-    # Cannot use readline for this because it has no trailing newline.
-    output = read(stdout)
-    assert_match(/^Choose/, output)
-  end
-
   def read(stdout)
     stdout.readpartial(4096)
   end
