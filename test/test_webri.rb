@@ -184,9 +184,9 @@ class TestWebRI < Minitest::Test
     end
   end
 
-  def zzz_test_singleton_method_partial_name_unambiguous_multiple_paths
+  def test_singleton_method_partial_name_unambiguous_multiple_paths
     type = :singleton_method
-    name = 'method'
+    name = '::wra'
     assert_partial_name_unambiguous(type , name, multiple_paths: true)
     webri_session(name) do |stdin, stdout, stderr|
       assert_found_line(stdout,2, type, name)
