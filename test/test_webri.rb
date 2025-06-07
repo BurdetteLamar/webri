@@ -276,23 +276,6 @@ class TestWebRI < Minitest::Test
     assert_match(/^Choose/, output)
   end
 
-  # def check_web_page(name, output)
-  #   lines = output.split("\n")
-  #   command_line_no = lines.index {|line| line.match('Command') }
-  #   command_line = lines[command_line_no]
-  #   # Get the page.
-  #   url = command_line.split(' ').last.sub("'", '')
-  #   io = URI.open(url)
-  #   classes = [Tempfile, StringIO]
-  #   assert(classes.include?(io.class))
-  #   # Check that the method is on the page.
-  #   _, fragment = url.split('#')
-  #   if fragment
-  #     html = io.read
-  #     assert_match(fragment, html)
-  #   end
-  # end
-
   def read(stdout)
     stdout.readpartial(4096)
   end
@@ -388,93 +371,6 @@ class TestWebRI < Minitest::Test
     end
     name_lines
   end
-
-  # def get_item_locations(type)
-  #   name = @@test_names[type][:nosuch]
-  #   items = {}
-  #   webri_session(name) do |stdin, stdout, stderr|
-  #     # Get the count of items.
-  #     lines = read(stdout).split("\n")
-  #     lines.last.match(/(\d+)/)
-  #     count = $1.to_s.to_i
-  #     # Get the items
-  #     writeln(stdin, 'y')
-  #     i = 0
-  #     stdout.each_line do |line|
-  #       line.chomp!
-  #       index_pattern = /^\s*\d+\s*:\s*/
-  #       line.sub!(index_pattern, '')
-  #       name, location = line.split(' ')
-  #       name.sub!(/:$/, '')
-  #       items[name] = [] unless items[name]
-  #       items[name].push(location)
-  #       i += 1
-  #       break if i == count
-  #     end
-  #   end
-  #   items
-  # end
-
-  # def get_test_names_for_classes
-  #   # Get test names for classes.
-  #   class_locations = get_item_locations(:class)
-  #   class_names = class_locations.keys # A class does not have a location; just use the names.
-  #   # Find a full class name that no other class name starts with.
-  #   class_names.each do |name_to_try|
-  #     selected_names = class_names.select do |name|
-  #       name.start_with?(name_to_try)
-  #     end
-  #     if selected_names.size == 1
-  #       @@test_names[:class][:full_unique] = name_to_try
-  #       break
-  #     end
-  #   end
-  #   # Find an abbreviated class name matching only one name.
-  #   class_names.each do |class_name|
-  #     found = false
-  #     (3..4).each do |len|
-  #       abbrev = class_name[0..len]
-  #       selected_names = class_names.select do |name|
-  #         name.start_with?(abbrev) && name.size != abbrev.size
-  #       end
-  #       if selected_names.size == 1
-  #         @@test_names[:class][:abbrev_unique] = abbrev
-  #         found = true
-  #         break
-  #       end
-  #       break if found
-  #     end
-  #     break if found
-  #   end
-  #   # Find an abbreviated class name matching multiple names.
-  #   class_names.each do |class_name|
-  #     found = false
-  #     (3..4).each do |len|
-  #       abbrev = class_name[0..len]
-  #       selected_names = class_names.select do |name|
-  #         name.start_with?(abbrev)
-  #       end
-  #       if (5..7).include?(selected_names.size)
-  #         @@test_names[:class][:abbrev_multi] = abbrev
-  #         found = true
-  #         break
-  #       end
-  #       break if found
-  #     end
-  #     break if found
-  #   end
-  # end
-
-  # def get_test_names(type)
-  #   locations = get_item_locations(type)
-  #   found_names = @@test_names[type]
-  #   # Find full names matching only one name,
-  #   # one with single path and one with multiple paths.
-  #   find_full_names(locations, found_names)
-  #   # Find abbreviated names matching only one name,
-  #   # one with single path and one with multiple paths.
-  #   find_abbrev_names(locations, found_names)
-  # end
 
   def find_full_names(locations, found_names)
     names_to_find = {
