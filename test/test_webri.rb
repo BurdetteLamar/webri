@@ -173,34 +173,24 @@ class TestWebRI < Minitest::Test
     end
   end
 
-  def zzz_test_singleton_method_partial_name_unambiguous_multiple_paths
-    name = @@test_names[:singleton_method][:abbrev_unique_multi_path] # Should offer multiple choices and open chosen page.
-    refute_nil(name)
+  def test_singleton_method_partial_name_unambiguous_one_path
+    type = :singleton_method
+    name =  '::zca'
+    assert_partial_name_unambiguous(type , name, multiple_paths: false)
     webri_session(name) do |stdin, stdout, stderr|
-      output = read(stdout)
-      output.match(/(\d+)/)
-      # This test is for a singleton method name that has multiple paths.
-      # Check whether it's so for the given singleton method name.
-      # If not, we need to change the singleton method name for this test.
-      choice_count = $1.to_i
-      assert_operator(choice_count, :>, 1, 'Single method name should have multiple paths.')
-      assert_match(/Found \d+ singleton method names starting with '#{name}'./, output)
-      check_choices(stdin, stdout, output)
-      writeln(stdin, '0')
-      output = read(stdout)
-      check_web_page(name, output)
+      assert_found_line(stdout,1, type, name)
+      assert_name_line(stdout, name)
+      assert_open_line(stdin, stdout, name, yes: true)
     end
   end
 
-  def zzz_test_singleton_method_partial_name_unambiguous_one_path
-    name = @@test_names[:singleton_method][:abbrev_unique_single_path] # Should offer one choice; open if yes.
-    refute_nil(name)
+  def zzz_test_singleton_method_partial_name_unambiguous_multiple_paths
+    type = :singleton_method
+    name = 'method'
+    assert_partial_name_unambiguous(type , name, multiple_paths: true)
     webri_session(name) do |stdin, stdout, stderr|
-      output = read(stdout)
-      assert_match(/Found one singleton method name starting with '#{name}'./, output)
-      writeln(stdin, 'y')
-      output = read(stdout)
-      check_web_page(name, output)
+      assert_found_line(stdout,2, type, name)
+      assert_show(stdout, stdin, type, yes: true)
     end
   end
 
