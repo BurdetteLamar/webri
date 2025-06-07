@@ -84,20 +84,22 @@ class TestWebRI < Minitest::Test
   # Files.
 
   def test_file_nosuch_name
-    name = get_nosuch_name(:file)
+    type = :file
+    name = get_nosuch_name(type)
     short_name = name.sub('ruby:', '')
     webri_session(name) do |stdin, stdout, stderr|
-      assert_found_line(stdout,0, :file, short_name)
-      assert_show(stdout, stdin, :file, yes: true)
+      assert_found_line(stdout,0, type, short_name)
+      assert_show(stdout, stdin, type, yes: true)
     end
   end
 
   def test_file_exact_name
+    type = :file
     short_name = 'literals'
-    assert_exact_name(:file, short_name)
+    assert_exact_name(type, short_name)
     name = "ruby:#{short_name}"
     webri_session(name) do |stdin, stdout, stderr|
-      assert_found_line(stdout,1, :file, short_name)
+      assert_found_line(stdout,1, type, short_name)
       assert_name_line(stdout, short_name)
       assert_opening_line(stdout, short_name)
       assert_command_line(stdout, short_name)
@@ -105,33 +107,36 @@ class TestWebRI < Minitest::Test
   end
 
   def test_file_partial_name_ambiguous
+    type = :file
     short_name = 'o'
-    assert_partial_name_ambiguous(:file, short_name)
+    assert_partial_name_ambiguous(type, short_name)
     name = "ruby:#{short_name}"
     webri_session(name) do |stdin, stdout, stderr|
-      assert_found_line(stdout,2, :file, short_name)
-      assert_show(stdout, stdin, :file, yes: true)
+      assert_found_line(stdout,2, type, short_name)
+      assert_show(stdout, stdin, type, yes: true)
     end
   end
 
   def test_file_partial_name_unambiguous_one_path
+    type = :file
     short_name =  'maintainer'
-    assert_partial_name_unambiguous(:file , short_name, multiple_paths: false)
+    assert_partial_name_unambiguous(type , short_name, multiple_paths: false)
     name = "ruby:#{short_name}"
     webri_session(name) do |stdin, stdout, stderr|
-      assert_found_line(stdout,1, :file, short_name)
+      assert_found_line(stdout,1, type, short_name)
       assert_name_line(stdout, short_name)
       assert_open_line(stdin, stdout, short_name, yes: true)
     end
   end
 
   def test_file_partial_name_unambiguous_multiple_paths
+    type = :file
     short_name = 'method'
-    assert_partial_name_unambiguous(:file , short_name, multiple_paths: true)
+    assert_partial_name_unambiguous(type , short_name, multiple_paths: true)
     name = "ruby:#{short_name}"
     webri_session(name) do |stdin, stdout, stderr|
-      assert_found_line(stdout,2, :file, short_name)
-      assert_show(stdout, stdin, :file, yes: true)
+      assert_found_line(stdout,2, type, short_name)
+      assert_show(stdout, stdin, type, yes: true)
     end
   end
 
