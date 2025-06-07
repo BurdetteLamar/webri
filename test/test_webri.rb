@@ -251,7 +251,7 @@ class TestWebRI < Minitest::Test
   # Infrastructure.
 
   # Open a webri session and yield its IO streams.
-  # Option --noop means don't actually open the web page.
+  # Option --noop, which we use for all tests, means don't actually open the web page.
   def webri_session(name, options_s = '--noop')
     command = "ruby bin/webri #{options_s} #{name}"
     Open3.popen3(command) do |stdin, stdout, stderr, wait_thread|
@@ -261,10 +261,6 @@ class TestWebRI < Minitest::Test
 
   def read(stdout)
     stdout.readpartial(4096)
-  end
-
-  def writeln(stdin, s)
-    stdin.write(s + "\n")
   end
 
   NoSuchName = {
@@ -346,7 +342,7 @@ class TestWebRI < Minitest::Test
       lines.last.match(/(\d+)/)
       count = $1.to_s.to_i
       # Get the items
-      writeln(stdin, 'y')
+      stdin.puts('y')
       (0..count - 1).each do
         line = stdout.readline.chomp
         name_lines.push(line)
@@ -527,7 +523,7 @@ class TestWebRI < Minitest::Test
 
   def assert_show(stdout, stdin, type, yes: true)
     choice_count = assert_show_line(stdout)
-    writeln(stdin, yes ? 'y' : 'n')
+    stdin.puts(yes ? 'y' : 'n')
     return unless yes
     # Verify the choices.
     # Each choice line ends with newline, so use readline.
@@ -541,7 +537,7 @@ class TestWebRI < Minitest::Test
     end
     assert_choose_line(stdout, choice_count)
     index = 0
-    writeln(stdin, index.to_s)
+    stdin.puts(index.to_s)
     choice = choices[index]
     target_path = case type
                   when :class
