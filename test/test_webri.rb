@@ -23,17 +23,24 @@ class TestWebRI < Minitest::Test
 
   # Test errors.
 
-  def test_no_name
+  def test_no_name_given
     webri_session('') do |stdin, stdout, stderr|
       output = stdout.readpartial(4096)
       assert_start_with('No name given', output)
     end
   end
 
-  def test_multiple_names
+  def test_multiple_names_given
     webri_session('Foo Bar') do |stdin, stdout, stderr|
       output = stdout.readpartial(4096)
       assert_start_with('Multiple names given', output)
+    end
+  end
+
+  def test_nonexistent_name_given
+    webri_session('foo') do |stdin, stdout, stderr|
+      output = stdout.readpartial(4096)
+      assert_start_with('No documentation available', output)
     end
   end
 

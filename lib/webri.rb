@@ -257,12 +257,12 @@ class WebRI
       show_singleton_method(name, @index_for_type[:singleton_method])
     when name.start_with?('#')
       show_instance_method(name, @index_for_type[:instance_method])
-    when name.start_with?('.')
-      show_method(name, @index_for_type[:singleton_method], @index_for_type[:instance_method])
-    when name.match(/^[a-z]/)
-      show_method(name, @index_for_type[:singleton_method], @index_for_type[:instance_method])
+    # when name.start_with?('.')
+    #   show_method(name, @index_for_type[:singleton_method], @index_for_type[:instance_method])
+    # when name.match(/^[a-z]/)
+    #   show_method(name, @index_for_type[:singleton_method], @index_for_type[:instance_method])
     else
-      fail name
+      puts "No documentation available for name '#{name}'."
     end
   end
 
