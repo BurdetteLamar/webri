@@ -227,9 +227,9 @@ class TestWebRI < Minitest::Test
     end
   end
 
-  def zzz_test_instance_method_partial_name_unambiguous_one_path
+  def test_instance_method_partial_name_unambiguous_one_path
     type = :instance_method
-    name =  '::zca'
+    name =  '#yield_sel'
     assert_partial_name_unambiguous(type , name, multiple_paths: false)
     webri_session(name) do |stdin, stdout, stderr|
       assert_found_line(stdout,1, type, name)
