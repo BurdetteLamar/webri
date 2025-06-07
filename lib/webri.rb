@@ -199,7 +199,7 @@ class WebRI
 
     # Return a choice for a path.
     def self.choice(name, path)
-      "#{name}: (#{path})"
+      "#{name} (#{path})"
     end
 
   end
@@ -208,7 +208,7 @@ class WebRI
 
     # Return a choice for a path.
     def self.choice(name, path)
-      "#{name}: (#{path})"
+      "#{name} (#{path})"
     end
 
   end

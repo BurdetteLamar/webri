@@ -541,7 +541,7 @@ class TestWebRI < Minitest::Test
     (0...choice_count).each do |i|
       choice_line = stdout.readline
       choice_index, choice = choice_line.split(':', 2)
-      choice = choice.split(': ').first.strip
+      choice = choice.split(' ').first.strip
       choices.push(choice)
       assert_match("#{i}", choice_index)
     end
