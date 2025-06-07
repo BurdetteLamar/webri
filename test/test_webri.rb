@@ -43,7 +43,7 @@ class TestWebRI < Minitest::Test
     type = :class
     name = get_nosuch_name(type)
     webri_session(name) do |stdin, stdout, stderr|
-      assert_found_line(stdout,0, type, name)
+      assert_found_line(stdout, 0, type, name)
       assert_show(stdout, stdin, type, yes: true)
     end
   end
@@ -88,7 +88,7 @@ class TestWebRI < Minitest::Test
     name = get_nosuch_name(type)
     short_name = name.sub('ruby:', '')
     webri_session(name) do |stdin, stdout, stderr|
-      assert_found_line(stdout,0, type, short_name)
+      assert_found_line(stdout, 0, type, short_name)
       assert_show(stdout, stdin, type, yes: true)
     end
   end
@@ -146,7 +146,7 @@ class TestWebRI < Minitest::Test
     type = :singleton_method
     name = get_nosuch_name(type)
     webri_session(name) do |stdin, stdout, stderr|
-      assert_found_line(stdout,0, type, name)
+      assert_found_line(stdout, 0, type, name)
       assert_show(stdout, stdin, type, yes: true)
     end
   end
@@ -196,68 +196,55 @@ class TestWebRI < Minitest::Test
 
   # Instance methods.
 
-  def zzz_test_instance_method_exact_name
-    name = @@test_names[:instance_method][:full_unique_single_path] # Should open page.
+  def test_instance_method_nosuch_name
+    type = :instance_method
+    name = get_nosuch_name(type)
     webri_session(name) do |stdin, stdout, stderr|
-      output = read(stdout)
-      assert_match(/Found one instance method name starting with '#{name}'./, output)
-      check_web_page(name, output)
+      assert_found_line(stdout, 0, type, name)
+      assert_show(stdout, stdin, type, yes: true)
     end
   end
 
-  def zzz_test_instance_method_nosuch_name
-    name = @@test_names[:instance_method][:nosuch]  # Should offer all choices; open chosen page.
-    refute_nil(name)
+  def zzz_test_instance_method_exact_name
+    type = :instance_method
+    name = '::umask'
+    assert_exact_name(type, name)
     webri_session(name) do |stdin, stdout, stderr|
-      output = read(stdout)
-      assert_match(/Found no instance method name starting with '#{name}'./, output)
-      assert_match(/Show names of all \d+ instance methods?/, output)
-      check_choices(stdin, stdout, output)
-      writeln(stdin, '0')
-      output = read(stdout)
-      check_web_page(name, output)
+      assert_found_line(stdout,1, type, name)
+      assert_name_line(stdout, name)
+      assert_opening_line(stdout, name)
+      assert_command_line(stdout, name)
     end
   end
 
   def zzz_test_instance_method_partial_name_ambiguous
-    name = @@test_names[:instance_method][:abbrev_unique_multi_path] # Should offer multiple choices and open chosen page.
+    type = :instance_method
+    name = '::wri'
+    assert_partial_name_ambiguous(type, name)
     webri_session(name) do |stdin, stdout, stderr|
-      output = read(stdout)
-      assert_match(/Found \d+ instance method names starting with '#{name}'./, output)
-      check_choices(stdin, stdout, output)
-      writeln(stdin, '0')
-      output = read(stdout)
-      check_web_page(name, output)
-    end
-  end
-
-  def zzz_test_instance_method_partial_name_unambiguous_multiple_paths
-    name = @@test_names[:instance_method][:abbrev_unique_multi_path] # Should offer multiple choices and open chosen page.
-    webri_session(name) do |stdin, stdout, stderr|
-      output = read(stdout)
-      output.match(/(\d+)/)
-      # This test is for a instance method name that has multiple paths.
-      # Check whether it's so for the given instance method name.
-      # If not, we need to change the instance method name for this test.
-      choice_count = $1.to_i
-      assert_operator(choice_count, :>, 1, 'Single method name should have multiple paths.')
-      assert_match(/Found \d+ instance method names starting with '#{name}'./, output)
-      check_choices(stdin, stdout, output)
-      last_index = choice_count - 1
-      writeln(stdin, last_index.to_s)
-      output = read(stdout)
-      check_web_page(name, output)
+      assert_found_line(stdout,2, type, name)
+      assert_show(stdout, stdin, type, yes: true)
     end
   end
 
   def zzz_test_instance_method_partial_name_unambiguous_one_path
-    name = @@test_names[:instance_method][:abbrev_unique_single_path] # Should offer one choice; open if yes.
+    type = :instance_method
+    name =  '::zca'
+    assert_partial_name_unambiguous(type , name, multiple_paths: false)
     webri_session(name) do |stdin, stdout, stderr|
-      output = read(stdout)
-      assert_match(/Found one instance method name starting with '#{name}'./, output)
-      writeln(stdin, 'y')
-      output = read(stdout)
-      check_web_page(name, output)
+      assert_found_line(stdout,1, type, name)
+      assert_name_line(stdout, name)
+      assert_open_line(stdin, stdout, name, yes: true)
+    end
+  end
+
+  def zzz_test_instance_method_partial_name_unambiguous_multiple_paths
+    type = :instance_method
+    name = '::wra'
+    assert_partial_name_unambiguous(type , name, multiple_paths: true)
+    webri_session(name) do |stdin, stdout, stderr|
+      assert_found_line(stdout,2, type, name)
+      assert_show(stdout, stdin, type, yes: true)
     end
   end
 
@@ -682,10 +669,10 @@ class TestWebRI < Minitest::Test
                     choice.gsub('::', '/')
                   when :file
                     choice.split('.').first
-                  when :singleton_method
+                  when :singleton_method, :instance_method
                     method_name = choice.split(' ').first
                   else
-                    choice
+                    fail choice
                   end
     assert_opening_line(stdout, target_path)
     assert_command_line(stdout, target_path)
