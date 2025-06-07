@@ -272,12 +272,14 @@ class TestWebRI < Minitest::Test
 
   def setup
     return if defined?(@@test_names)
+    # Get the url from --info and fetch the toc html.
     webri_session('--info') do |stdin, stdout, stderr|
       url_line = stdout.readline
       url = url_line.split(' ').last
       io = URI.open(url)
       @toc_html = io.read
     end
+    # Build the names from the toc html.
     @@test_names = {}
     build_test_class_names
     build_test_file_names
@@ -286,14 +288,18 @@ class TestWebRI < Minitest::Test
   end
 
   def build_test_class_names
-    @@test_names[:class] = {}
-    names = @@test_names[:class]
-    name = NoSuchName[:class]
+    type = :class
+    @@test_names[type] = {}
+    names = @@test_names[type]
+    # Get names by trying for a nonexistent name.
+    name = NoSuchName[type]
     lines = get_name_lines(name)
     lines.each do |line|
+      # The line looks something like this:
+      #    1349:  Zlib::GzipFile::CRCError: (Zlib/GzipFile/CRCError.html)
       _, _, name, path = line.split(/\s+/)
-      name.sub!(/:$/, '')
-      path.gsub!(/[()]/, '')
+      name.sub!(/:$/, '')    # Trim the trailing colon from the name.
+      path.gsub!(/[()]/, '') # Trim the parentheses from the path.
       names[name] = path
     end
   end
