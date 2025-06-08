@@ -119,7 +119,7 @@ Open page Zlib/GzipReader.html at method ::zcat? (y or n):  y
 Opening web page https://docs.ruby-lang.org/en/3.4/Zlib/GzipReader.html at method ::zcat.
 ```
 
-When multiple such class/module names are found offer to list the found names:
+When multiple such singleton method names are found offer to list the found names:
 
 ```bash
 $ webri ::z
@@ -160,7 +160,7 @@ Type a number to choose, 'x' to exit, or 'r' to open the README:  r
 Opening web page https://github.com/BurdetteLamar/webri/blob/main/README.md.
 ```
 
-When no such class/module name is found, offers to list all class/module names:
+When no such singleton method name is found, offers to list all singleton method names:
 
 ```
 $ webri ::nosuch
@@ -169,6 +169,86 @@ Show names of all 2288 singleton methods? (y or n):  n
 ```
 
 ### Instance Method
+
+For a `name` beginning with `#`,
+WebRI finds the names of instance methods beginning
+with that name.
+
+Note that for certain command windows,
+the leading `'#'` character may be seen as the beginning of a comment,
+and must be escaped:
+
+```bash
+$ webri #nosuch
+No name given.
+```
+
+When exactly one such instance method name is found:
+
+- If `name` is the exact name of the found name, opens the page for that name:
+
+```
+$ webri \#yield_self
+Found one instance method name starting with '#yield_self'
+  #yield_self
+Opening web page https://docs.ruby-lang.org/en/3.4/Kernel.html at method #yield_self.
+```
+
+- If `name` is the start of the found name, offers to open the page for that name:
+
+```
+Found one instance method name starting with '#yield_sel'
+  #yield_self
+Open page Kernel.html at method #yield_self? (y or n):  y
+Opening web page https://docs.ruby-lang.org/en/3.4/Kernel.html at method #yield_self.
+```
+
+When multiple such instance method names are found offer to list the found names:
+
+```bash
+$ webri \#yield
+Found 4 instance method names starting with '#yield'.
+Show 4 names?' (y or n):  y
+       0:  #yield (in Proc)
+       1:  #yield_node (in Prism::DSL)
+       2:  #yield_self (in Kernel)
+       3:  #yields_directive (in RDoc::MarkupReference)
+Type a number to choose, 'x' to exit, or 'r' to open the README:  0
+Opening web page https://docs.ruby-lang.org/en/3.4/Proc.html at method #yield.
+```
+
+```bash
+$ webri \#yield
+Found 4 instance method names starting with '#yield'.
+Show 4 names?' (y or n):  y
+       0:  #yield (in Proc)
+       1:  #yield_node (in Prism::DSL)
+       2:  #yield_self (in Kernel)
+       3:  #yields_directive (in RDoc::MarkupReference)
+Type a number to choose, 'x' to exit, or 'r' to open the README:  x
+```
+
+```bash
+$ webri \#yield
+Found 4 instance method names starting with '#yield'.
+Show 4 names?' (y or n):  y
+       0:  #yield (in Proc)
+       1:  #yield_node (in Prism::DSL)
+       2:  #yield_self (in Kernel)
+       3:  #yields_directive (in RDoc::MarkupReference)
+Type a number to choose, 'x' to exit, or 'r' to open the README:  r
+"https://github.com/BurdetteLamar/webri/blob/main/README.md"
+Opening web page https://github.com/BurdetteLamar/webri/blob/main/README.md.
+```
+
+When no such instance method name is found, offers to list all singleton method names:
+
+```
+$ webri \#nosuch
+Found no instance method name starting with '#nosuch'.
+Show names of all 10370 instance methods? (y or n):  n
+```
+
 
 
 ### Ruby 'File'
