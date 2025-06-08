@@ -553,8 +553,7 @@ class TestWebRI < Minitest::Test
   def assert_choose_line(stdout, choice_count)
     # Cannot use readline for this because it has no trailing newline.
     choose_line = read(stdout)
-    assert_start_with('Choose', choose_line)
-    assert_match((0..choice_count - 1).to_s, choose_line)
+    assert_match('choose', choose_line)
   end
 
   def assert_show(stdout, stdin, type, yes: true)

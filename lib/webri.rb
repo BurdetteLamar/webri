@@ -491,17 +491,21 @@ class WebRI
         s = "%6d" % i
         puts "  #{s}:  #{choice}"
       end
-      print "Choose an item by typing an index in the range (#{range}), or '?' to open the README:  "
-      $stdout.flush
-      response = $stdin.gets
-      if response.match(/\?/)
-        open_readme
-        return
+      while true
+        print "Type a number to choose, 'x' to exit, or 'r' to open the README:  "
+        $stdout.flush
+        response = $stdin.gets
+        case response
+        when /(\d+)/
+          return choices[$1.to_i]
+        when /x/i
+          exit
+        when /r/i
+          open_readme
+          exit
+        end
       end
-      index = response.match(/^\d+$/) ? response.to_i : -1
-      return if index == -1
     end
-    choices[index]
   end
 
   # Present question; return answer.
