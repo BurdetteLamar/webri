@@ -36,6 +36,15 @@ For more information, see https://github.com/BurdetteLamar/webri/blob/main/READM
 BANNER
 
 parser.separator('Options:')
+parser.on('-i', '--info', 'Prints information about webri.') do
+  options[:info] = true
+end
+parser.on('-r=RELEASE', '--release=RELEASE', 'Sets the Ruby release to document.') do |value|
+  options[:release] = value
+end
+parser.on('-n', '--noop', 'Does not actually open web page.') do |value|
+  options[:noop] = true
+end
 parser.on('-h', '--help', 'Prints this help.') do
   puts parser
   exit
@@ -43,15 +52,6 @@ end
 parser.on('-v', '--version', 'Prints the version of webri.') do
   puts WebRI::VERSION
   exit
-end
-parser.on('-i', '--info', 'Prints information about webri.') do
-  options[:info] = true
-end
-parser.on('-n', '--noop', 'Do not open web page.') do |value|
-  options[:noop] = true
-end
-parser.on('-r=RELEASE', '--release=RELEASE', 'Ruby release to document.') do |value|
-  options[:release] = value
 end
 
 parser.parse!

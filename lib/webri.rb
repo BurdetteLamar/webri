@@ -78,9 +78,9 @@ class WebRI
 
   def print_info
     puts "Ruby documentation home: #{@toc_url}"
-    puts "Items:"
+    puts "Names:"
     @index_for_type.each_pair do |type, items|
-      puts format("  %5d %s items", items.count, type)
+      puts format("  %5d %s names", items.count, type)
     end
     exit
   end
@@ -90,9 +90,9 @@ class WebRI
     # Each index has a hash; key is name, value is array of URIs.
     @index_for_type = {
       class: {}, # Has both classes and modules.
-      file: {},
       singleton_method: {},
       instance_method: {},
+      file: {},
     }
     # Iterate over the lines of the TOC page.
     lines = @toc_html.split("\n")

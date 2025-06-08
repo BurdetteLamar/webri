@@ -321,6 +321,10 @@ Found no file name starting with 'nosuch'.
 Show names of all 83 files? (y or n):  n
 ```
 
+### Options
+
+
+
 ## Installation
 
 To install the gem:
