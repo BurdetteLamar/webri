@@ -371,6 +371,29 @@ Names:
      85 file names
 ```
 
+Issues a message if the given release is unsupported or unknown:
+
+```
+$ webri --release=3.1 --info
+Unsupported or unknown documentation release '3.1'.
+Supported releases are: master, 3.4, 3.3, 3.2.
+```
+
+Option `--noop` suppresses the actual opening of a web page,
+instead reporting the relevant command:
+
+```
+$ webri --noop Array
+Found one class/module name starting with 'Array'
+  Array (Array.html)
+Opening web page https://docs.ruby-lang.org/en/3.4/Array.html.
+Command: 'start https://docs.ruby-lang.org/en/3.4/Array.html'
+```
+
+Option `--help` prints the WebRI help text.
+
+Option `--version` prints the WebRI version.
+
 ## Installation
 
 To install the gem:
