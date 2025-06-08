@@ -352,7 +352,7 @@ to [rubygems.org](https://rubygems.org).
 Bug reports and pull requests are welcome on GitHub at https://github.com/BurdetteLamar/webri.
 This project is intended to be a safe, welcoming space for collaboration,
 and contributors are expected to adhere
-to the [code of conduct](https://github.com/[USERNAME]/webri/blob/master/CODE_OF_CONDUCT.md).
+to the [code of conduct](https://github.com/BurdetteLamar/webri/blob/master/CODE_OF_CONDUCT.md).
 
 ## License
 
@@ -363,4 +363,4 @@ of the [MIT License](https://opensource.org/licenses/MIT).
 
 Everyone interacting in the Webri project's codebases,
 issue trackers, chat rooms and mailing lists is expected
-to follow the [code of conduct](https://github.com/[USERNAME]/webri/blob/master/CODE_OF_CONDUCT.md).
+to follow the [code of conduct](https://github.com/BurdetteLamar/webri/blob/master/CODE_OF_CONDUCT.md).
