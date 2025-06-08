@@ -7,7 +7,6 @@ require 'rexml'
 # TODO: Build test names from ruby-lang.org (not webri).
 # TODO: Use REXML to build test names.
 # TODO: Verify the fragment in the command line.
-# TODO: Test %w[y n].
 # TODO: Subroutinize.
 # TODO: Change assert_match to assert_start_with? when possible.
 # TODO: Make initialization faster.
