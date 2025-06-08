@@ -45,7 +45,7 @@ end
 parser.on('-n', '--noop', 'Do not open web page.') do |value|
   options[:noop] = true
 end
-parser.on('-r RELEASE', '--release RELEASE', 'Ruby release to document.') do |value|
+parser.on('-r=RELEASE', '--release=RELEASE', 'Ruby release to document.') do |value|
   options[:release] = value
 end
 

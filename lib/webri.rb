@@ -4,6 +4,7 @@ require 'rbconfig'
 require 'open-uri'
 require 'rexml'
 
+# TODO: Build test names from ruby-lang.org (not webri).
 # TODO: Verify the fragment in the command line.
 # TODO: Test %w[y n].
 # TODO: Subroutinize.
@@ -22,9 +23,6 @@ require 'rexml'
 
 # TODO: Push to gem.
 # TODO: Make sure webri is on $PATH.
-
-# TODO: Add --release option.
-# TODO: If invalid release, show all releases and allow choice.
 
 # TODO: Test all releases.
 # TODO: Test all pages(?).
