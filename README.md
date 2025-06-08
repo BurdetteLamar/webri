@@ -249,10 +249,77 @@ Found no instance method name starting with '#nosuch'.
 Show names of all 10370 instance methods? (y or n):  n
 ```
 
-
-
 ### Ruby 'File'
 
+For a `name` beginning with `ruby:`,
+WebRI finds the names of ruby files beginning
+with that name.
+
+When exactly one such file name is found:
+
+- If `name` is the exact name of the found name, opens the page for that name:
+
+```
+Found one file name starting with 'operators'
+  operators (syntax/operators_rdoc.html)
+Opening web page https://docs.ruby-lang.org/en/3.4/syntax/operators_rdoc.html.
+```
+
+- If `name` is the start of the found name, offers to open the page for that name:
+
+```
+$ webri ruby:opera
+Found one file name starting with 'opera'
+  operators (syntax/operators_rdoc.html)
+Open page syntax/operators_rdoc.html? (y or n):  y
+Opening web page https://docs.ruby-lang.org/en/3.4/syntax/operators_rdoc.html.
+```
+
+When multiple such file names are found offer to list the found names:
+
+```bash
+$ webri ruby:o
+Found 4 file names starting with 'o'.
+Show 4 names?' (y or n):  y
+       0:  operators (syntax/operators_rdoc.html)
+       1:  option_dump (ruby/option_dump_md.html)
+       2:  option_params (optparse/option_params_rdoc.html)
+       3:  options (ruby/options_md.html)
+Type a number to choose, 'x' to exit, or 'r' to open the README:  3
+Opening web page https://docs.ruby-lang.org/en/3.4/ruby/options_md.html.
+```
+
+```bash
+$ webri ruby:o
+Found 4 file names starting with 'o'.
+Show 4 names?' (y or n):  y
+       0:  operators (syntax/operators_rdoc.html)
+       1:  option_dump (ruby/option_dump_md.html)
+       2:  option_params (optparse/option_params_rdoc.html)
+       3:  options (ruby/options_md.html)
+Type a number to choose, 'x' to exit, or 'r' to open the README:  x
+```
+
+```bash
+$ webri ruby:o
+Found 4 file names starting with 'o'.
+Show 4 names?' (y or n):  y
+       0:  operators (syntax/operators_rdoc.html)
+       1:  option_dump (ruby/option_dump_md.html)
+       2:  option_params (optparse/option_params_rdoc.html)
+       3:  options (ruby/options_md.html)
+Type a number to choose, 'x' to exit, or 'r' to open the README:  r
+"https://github.com/BurdetteLamar/webri/blob/main/README.md"
+Opening web page https://github.com/BurdetteLamar/webri/blob/main/README.md.
+```
+
+When no such file name is found, offers to list all singleton method names:
+
+```
+$ webri ruby:nosuch
+Found no file name starting with 'nosuch'.
+Show names of all 83 files? (y or n):  n
+```
 
 ## Installation
 
