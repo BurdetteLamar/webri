@@ -12,21 +12,26 @@ parser = OptionParser.new
 
 parser.version = WebRI::VERSION
 parser.banner = <<-BANNER
-webri is a console application for accessing Ruby online HTML documentation.
+webri is a console application for displaying Ruby online HTML documentation.
+The HTML documentation is opened in your default web browser.
 
 Usage: #{parser.program_name} [options] name
 
-Argument name selects the documentation to be accessed.
+Argument 'name' specifies the documentation to be displayed;
+it may be:
 
-o If name specifies a single item, that item is selected.
-o If name specifies multiple items, those items are displayed,
-  and a single item may be chosen.
+- The name of a class/module such as 'Array' or 'Net::HTTP'.
+- The name of a singleton method such as '::parse' or '::new'.
+- The name of an instance method such as '#parse' or '#to_s'.
+- The name of a Ruby 'file' such as 'ruby:dig_methods'.
 
-The given name is converted to a Regexp, which is used to select documentation.
+If the name does not specify a single documentation page,
+webri tries to be helpful by showing related candidate names.
 
 Note that your command window may require you to escape certain characters;
-in particular, you may need to escape circumflex (^), dollar sign ($),
-and pound sign (#).
+in particular, you may need to escape the pound sign ('#').
+
+For more information, see https://github.com/BurdetteLamar/webri/blob/main/README.md.
 
 BANNER
 

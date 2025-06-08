@@ -5,6 +5,7 @@ require 'open-uri'
 require 'rexml'
 
 # TODO: Build test names from ruby-lang.org (not webri).
+# TODO: Use REXML to build test names.
 # TODO: Verify the fragment in the command line.
 # TODO: Test %w[y n].
 # TODO: Subroutinize.
@@ -17,10 +18,9 @@ require 'rexml'
 # TODO: Update README.md.
 # TODO: Update help text.
 
-# TODO: Update webri.gemspec.
-
 # TODO: Make it work for naked method (parse) or dotted method (.parse).
 
+# TODO: Update webri.gemspec.
 # TODO: Push to gem.
 # TODO: Make sure webri is on $PATH.
 
