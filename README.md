@@ -323,7 +323,53 @@ Show names of all 83 files? (y or n):  n
 
 ### Options
 
+Option `--info` prints information about WebRI,
+including the documentation release to be used (`3.4` in this example),
+then exits:
 
+```
+$ webri --info
+Ruby documentation home: https://docs.ruby-lang.org/en/3.4/table_of_contents.html
+Names:
+   1364 class names
+   1175 singleton_method names
+   4407 instance_method names
+     81 file names
+```
+
+Option `--release` sets the release of the documentation to be used.
+The collections of names will vary among releases:
+
+```
+$ webri --release=3.2 --info
+Ruby documentation home: https://docs.ruby-lang.org/en/3.2/table_of_contents.html
+Names:
+   1262 class names
+   1301 singleton_method names
+   4397 instance_method names
+     73 file names
+$ webri --release=3.3 --info
+Ruby documentation home: https://docs.ruby-lang.org/en/3.3/table_of_contents.html
+Names:
+   1469 class names
+   1270 singleton_method names
+   4638 instance_method names
+     77 file names
+$ webri --release=3.4 --info
+Ruby documentation home: https://docs.ruby-lang.org/en/3.4/table_of_contents.html
+Names:
+   1364 class names
+   1175 singleton_method names
+   4407 instance_method names
+     81 file names
+$ webri --release=master --info
+Ruby documentation home: https://docs.ruby-lang.org/en/master/table_of_contents.html
+Names:
+   1250 class names
+   1087 singleton_method names
+   3641 instance_method names
+     85 file names
+```
 
 ## Installation
 
