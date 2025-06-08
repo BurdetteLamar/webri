@@ -319,9 +319,9 @@ class WebRI
       puts "Found no class/module name starting with '#{name}'."
       message = "Show #{all_choices.size} class/module names?"
       return unless get_boolean_answer(message)
-      key = get_choice(all_choices.keys)
-      return if key.nil?
-      path = all_choices[key]
+      choice_index = get_choice(all_choices.keys)
+      return if choice_index.nil?
+      path = all_choices[choice_index]
     else
       selected_choices = ClassEntry.choices(selected_entries)
       puts "Found #{selected_choices.size} class/module names starting with '#{name}'."
@@ -332,7 +332,7 @@ class WebRI
       path = selected_choices[key]
     end
     uri = Entry.uri(path)
-    open_url(name, uri)
+    open_page(name, uri)
   end
 
   # Show file.
@@ -381,7 +381,7 @@ class WebRI
       path = selected_choices[key]
     end
     uri = Entry.uri(path)
-    open_url(name, uri)
+    open_page(name, uri)
   end
 
   # Show singleton method.
@@ -430,7 +430,7 @@ class WebRI
       path = all_choices[choice]
     end
     uri = Entry.uri(path)
-    open_url(full_name, uri)
+    open_page(full_name, uri)
   end
 
   # Show instance method.
@@ -479,7 +479,7 @@ class WebRI
       full_name = InstanceMethodEntry.full_name_for_choice(choice)
     end
     uri = Entry.uri(path)
-    open_url(full_name, uri)
+    open_page(full_name, uri)
   end
 
   # Present choices; return choice.
@@ -491,9 +491,13 @@ class WebRI
         s = "%6d" % i
         puts "  #{s}:  #{choice}"
       end
-      print "Choose (#{range}):  "
+      print "Choose an item by typing an index in the range (#{range}), or '?' to open the README:  "
       $stdout.flush
       response = $stdin.gets
+      if response.match(/\?/)
+        open_readme
+        return
+      end
       index = response.match(/^\d+$/) ? response.to_i : -1
       return if index == -1
     end
@@ -507,8 +511,20 @@ class WebRI
     $stdin.gets.match(/y/i) ? true : false
   end
 
+  def open_readme
+    url = 'https://github.com/BurdetteLamar/webri/blob/main/README.md'
+    p url
+    uri = URI.parse(url)
+    open_uri('README',uri)
+  end
+
   # Open URL in browser.
-  def open_url(name, target_uri)
+  def open_page(name, target_uri)
+    uri = URI.parse(File.join(DocSite, @doc_release, target_uri.to_s))
+    open_uri(name, uri)
+  end
+
+  def open_uri(name, target_uri)
     host_os = RbConfig::CONFIG['host_os']
     executable_name = case host_os
                       when /linux|bsd/
@@ -521,8 +537,7 @@ class WebRI
                         message = "Unrecognized host OS: '#{host_os}'."
                         raise RuntimeError.new(message)
                       end
-    uri = URI.parse(File.join(DocSite, @doc_release, target_uri.to_s))
-    full_url = uri.to_s
+    full_url = target_uri.to_s
     url, fragment = full_url.split('#')
     message = "Opening web page #{url}"
     if fragment

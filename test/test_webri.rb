@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-require 'test_helper'
+require_relative 'test_helper'
 require 'open-uri'
 require 'open3'
 require 'cgi'
@@ -12,7 +12,7 @@ class TestWebRI < Minitest::Test
   def test_option_help
     webri_session('', '--help') do |stdin, stdout, stderr|
       lines = stdout.readlines
-      assert_start_with('Usage: webri [options] name', lines[2])
+      assert_start_with('Usage: webri [options] name', lines[3])
     end
   end
 
