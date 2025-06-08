@@ -77,7 +77,9 @@ class WebRI
   end
 
   def print_info
-    puts "Ruby documentation home: #{@toc_url}"
+    puts "Ruby documentation release:  '#{@doc_release}'"
+    puts "Ruby documentation URL:      '#{@toc_url}'"
+    puts "Executable to open page:     '#{opener_name}'"
     puts "Names:"
     @index_for_type.each_pair do |type, items|
       puts format("  %5d %s names", items.count, type)
@@ -527,7 +529,7 @@ class WebRI
     open_uri(name, uri)
   end
 
-  def open_uri(name, target_uri)
+  def opener_name
     host_os = RbConfig::CONFIG['host_os']
     executable_name = case host_os
                       when /linux|bsd/
@@ -540,6 +542,9 @@ class WebRI
                         message = "Unrecognized host OS: '#{host_os}'."
                         raise RuntimeError.new(message)
                       end
+  end
+
+  def open_uri(name, target_uri)
     full_url = target_uri.to_s
     url, fragment = full_url.split('#')
     message = "Opening web page #{url}"
@@ -548,7 +553,7 @@ class WebRI
     end
     message += '.'
     puts message
-    command = "#{executable_name} #{full_url}"
+    command = "#{opener_name} #{full_url}"
     if @noop
       puts "Command: '#{command}'"
     else

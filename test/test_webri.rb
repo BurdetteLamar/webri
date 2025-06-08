@@ -300,8 +300,10 @@ class TestWebRI < Minitest::Test
     return if defined?(@@test_names)
     # Get the url from --info and fetch the toc html.
     webri_session('--info') do |stdin, stdout, stderr|
-      url_line = stdout.readline
+      lines = stdout.readlines
+      url_line = lines[1]
       url = url_line.split(' ').last
+      url.gsub!("'", '')
       io = URI.open(url)
       @toc_html = io.read
     end
@@ -482,9 +484,12 @@ class TestWebRI < Minitest::Test
 
   def assert_command_line(stdout, name)
     command_line = stdout.readline
-    command_word, start_word, url = command_line.split(' ')
-    assert_equal('Command', command_word.sub(':', ''))
-    assert_equal('start', start_word.sub("'", ''))
+    command_word, opener_word, url = command_line.split(' ')
+    opener_word.sub!("'", '')
+    command_word.sub!(':', '')
+    assert_equal('Command', command_word)
+    opener_words = %w[xdg-open open start]
+    assert_includes(opener_words, opener_word)
     url.gsub!("'", '')
     _, fragment = url.split('#')
     io = URI.open(url)
