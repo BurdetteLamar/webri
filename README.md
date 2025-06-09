@@ -329,7 +329,9 @@ then exits:
 
 ```
 $ webri --info
-Ruby documentation home: https://docs.ruby-lang.org/en/3.4/table_of_contents.html
+Ruby documentation release:  '3.4'
+Ruby documentation URL:      'https://docs.ruby-lang.org/en/3.4/table_of_contents.html'
+Executable to open page:     'start'
 Names:
    1364 class names
    1175 singleton_method names
@@ -342,41 +344,33 @@ The collections of names will vary among releases:
 
 ```
 $ webri --release=3.2 --info
-Ruby documentation home: https://docs.ruby-lang.org/en/3.2/table_of_contents.html
+Ruby documentation release:  '3.2'
+Ruby documentation URL:      'https://docs.ruby-lang.org/en/3.2/table_of_contents.html'
+Executable to open page:     'start'
 Names:
    1262 class names
    1301 singleton_method names
    4397 instance_method names
      73 file names
 $ webri --release=3.3 --info
-Ruby documentation home: https://docs.ruby-lang.org/en/3.3/table_of_contents.html
+Ruby documentation release:  '3.3'
+Ruby documentation URL:      'https://docs.ruby-lang.org/en/3.3/table_of_contents.html'
+Executable to open page:     'start'
 Names:
    1469 class names
    1270 singleton_method names
    4638 instance_method names
      77 file names
-$ webri --release=3.4 --info
-Ruby documentation home: https://docs.ruby-lang.org/en/3.4/table_of_contents.html
-Names:
-   1364 class names
-   1175 singleton_method names
-   4407 instance_method names
-     81 file names
-$ webri --release=master --info
-Ruby documentation home: https://docs.ruby-lang.org/en/master/table_of_contents.html
-Names:
-   1250 class names
-   1087 singleton_method names
-   3641 instance_method names
-     85 file names
 ```
 
-Issues a message if the given release is unsupported or unknown:
+Issues a message if the given release is unknown:
 
 ```
-$ webri --release=3.1 --info
-Unsupported or unknown documentation release '3.1'.
-Supported releases are: master, 3.4, 3.3, 3.2.
+$ webri --release foo
+Unknown documentation release:  foo
+Master release:                 master
+Supported releases:             3.4, 3.3, 3.2
+Unsupported releases:           3.1, 3.0
 ```
 
 Option `--noop` suppresses the actual opening of a web page,

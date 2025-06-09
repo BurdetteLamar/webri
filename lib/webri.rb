@@ -54,20 +54,31 @@ class WebRI
   end
 
   def set_doc_release
-    releases = []
+    supported_releases = []
+    unsupported_releases = []
+    master_release = nil
     io = URI.open('https://docs.ruby-lang.org/en/')
     lines = io.readlines
     lines.each do |line|
       next unless line.match(/<a/)
       doc = REXML::Document.new(line)
       _, release, end_of_support = doc.root.text.split(' ')
-      break if end_of_support
-      releases.push(release)
+      break if release.start_with?('2')
+      if end_of_support
+        unsupported_releases.push(release)
+      elsif release == 'master'
+        master_release = release
+      else
+        supported_releases.push(release)
+      end
     end
     if @doc_release
-      unless releases.include?(@doc_release)
-        puts "Unsupported or unknown documentation release '#{@doc_release}'."
-        puts "Supported releases are: #{releases.join(', ')}."
+      unless supported_releases.include?(@doc_release) ||
+        unsupported_releases.include?(@doc_release)
+        puts "Unknown documentation release:  #{@doc_release}"
+        puts "Master release:                 #{master_release}"
+        puts "Supported releases:             #{supported_releases.join(', ')}"
+        puts "Unsupported releases:           #{unsupported_releases.join(', ')}"
         exit
       end
     else

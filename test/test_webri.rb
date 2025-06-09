@@ -55,11 +55,12 @@ class TestWebRI < Minitest::Test
   end
 
   def test_option_release_invalid
-    webri_session("--release 2.7") do |stdin, stdout, stderr|
-      unsupported_line = stdout.readline
-      assert_start_with('Unsupported', unsupported_line)
-      supported_line = stdout.readline
-      assert_start_with('Supported', supported_line)
+    webri_session("--release foo") do |stdin, stdout, stderr|
+      lines = stdout.readlines
+      assert_start_with('Unknown', lines[0])
+      assert_start_with('Master', lines[1])
+      assert_start_with('Supported', lines[2])
+      assert_start_with('Unsupported', lines[3])
     end
   end
 
