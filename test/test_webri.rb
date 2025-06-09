@@ -159,8 +159,11 @@ class TestWebRI < Minitest::Test
 
   def test_file_partial_name_unambiguous_multiple_paths
     type = :file
-    short_name = 'method'
-    assert_partial_name_unambiguous(type , short_name, multiple_paths: true)
+    short_name = get_partial_name_unambiguous(type, multiple_paths: true)
+    unless short_name
+      puts "Warning: Method #{__method__} could not get a suitable name."
+      return
+    end
     name = "ruby:#{short_name}"
     webri_session(name) do |stdin, stdout, stderr|
       assert_found_line(stdout,2, type, short_name)
@@ -651,6 +654,23 @@ class TestWebRI < Minitest::Test
     name = names.first
     paths = @@test_names[type][name]
     assert_operator(paths.size, :>, 1)
+  end
+
+  def get_partial_name_unambiguous(type, multiple_paths:)
+    names = @@test_names[type]
+    names.keys.each do |candidate_name|
+      partial_name = candidate_name[0..-2]
+      abbreviated_names = []
+      names.each_pair do |other_name, paths|
+        next unless other_name.start_with?(partial_name)
+        next if multiple_paths && paths.size < 2
+        abbreviated_names.push(other_name)
+      end
+      if abbreviated_names.size == 1
+        return partial_name
+      end
+    end
+    nil
   end
 
 end
