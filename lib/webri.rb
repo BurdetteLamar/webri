@@ -10,6 +10,7 @@ require 'rexml'
 # TODO: Subroutinize.
 # TODO: Make initialization faster.
 
+# TODO: Choose dynamically the test names (rather than fixed)?
 # TODO: Test methods with trailing special chars, and with all special chars
 # TODO: Test on Linux.
 # TODO: Test all releases.
@@ -535,19 +536,31 @@ class WebRI
     open_uri(name, uri)
   end
 
+  def os_type
+    case RbConfig::CONFIG['host_os']
+    when /linux|bsd|arch/
+      :linux
+    when /darwin/
+      :macos
+    when /mswin|windows|32/
+      :windows
+    else
+      :unknown
+    end
+  end
+
   def opener_name
-    host_os = RbConfig::CONFIG['host_os']
-    executable_name = case host_os
-                      when /linux|bsd/
-                        'xdg-open'
-                      when /darwin/
-                        'open'
-                      when /32$/
-                        'start'
-                      else
-                        message = "Unrecognized host OS: '#{host_os}'."
-                        raise RuntimeError.new(message)
-                      end
+    case os_type
+    when :linux
+      'xdg-open'
+    when :windows
+      'start'
+    when :macos
+      'open'
+    else
+      message = "Unknown opener name for #{os_type}"
+      raise RuntimeError(messae)
+    end
   end
 
   def open_uri(name, target_uri)
