@@ -136,7 +136,7 @@ class TestWebRI < Minitest::Test
 
   def test_file_partial_name_ambiguous
     type = :file
-    short_name = 'o'
+    short_name = 'p'
     assert_partial_name_ambiguous(type, short_name)
     name = "ruby:#{short_name}"
     webri_session(name) do |stdin, stdout, stderr|
