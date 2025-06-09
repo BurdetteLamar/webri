@@ -4,6 +4,7 @@ require_relative 'test_helper'
 require 'open-uri'
 require 'open3'
 require 'cgi'
+require 'rbconfig'
 
 class TestWebRI < Minitest::Test
 
@@ -280,6 +281,9 @@ class TestWebRI < Minitest::Test
   # Open a webri session and yield its IO streams.
   # Option --noop, which we use for all tests, means don't actually open the web page.
   def webri_session(name, options_s = '--noop')
+    if RbConfig::CONFIG['host_os'].match(/linux/) && name.start_with?('#')
+      name = name.sub(/^#/, '\\\\#')
+    end
     command = "ruby bin/webri #{options_s} #{name}"
     Open3.popen3(command) do |stdin, stdout, stderr, wait_thread|
       yield stdin, stdout, stderr
