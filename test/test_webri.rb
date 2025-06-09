@@ -509,19 +509,36 @@ class TestWebRI < Minitest::Test
       assert_match(name, url)
       return
     end
-    # The name does not match the url,
-    # that means the name has special characters (such as '=')
-    # that in the url are represented as triplets (such as '-3D').
-    # TODO: Verify the fragment in the command.
-    # url_ = url
-    # s = ''
-    # while url_.match(/(-[A-F0-9]{2})/)
-    #   removed = url_.slice!(-3..-1)
-    #   s += removed[1..].hex.chr
-    #   name.slice!(/.$/)
-    # end
-    # url_ = url_ + '-' unless url_.end_with?('-')
-    # url_ = url_ + s
+    # The name does not match the url.
+    # Try to fix the method name to make it match
+    fixed_name = case name
+            when /^::/
+              name.sub(/::/, 'method-c-')
+            when /^#/
+              name.sub(/#/, 'method-i-')
+            else
+              assert(false)
+            end
+    if fragment.start_with?(fixed_name)
+      assert_match(fixed_name, fragment)
+      return
+    end
+    # The name ends with special characters such as '?',
+    # and fragment ends with encoded characters such as '-3F'.
+    # Try to fix the name to make it match.
+    fixed_fragment = fragment
+    replacement_chars = []
+    while fixed_fragment[-3] == '-' do
+      encoded_string = fixed_fragment.slice!(-3..-1)
+      encoded_string.slice!(0, 1)
+      replacement_char = encoded_string.hex.chr
+      replacement_chars.push(replacement_char)
+    end
+    replacement_string = replacement_chars.join('')
+    pattern = /method-\w$/
+    fixed_fragment += '-' if fixed_fragment.match(pattern)
+    fixed_fragment += replacement_string
+    assert_equal(fixed_name, fixed_fragment)
   end
 
   def assert_show_line(stdout)

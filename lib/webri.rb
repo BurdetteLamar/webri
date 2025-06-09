@@ -6,25 +6,20 @@ require 'rexml'
 
 # TODO: Build test names from ruby-lang.org (not webri).
 # TODO: Use REXML to build test names.
-# TODO: Verify the fragment in the command line.
+#
 # TODO: Subroutinize.
-# TODO: Change assert_match to assert_start_with? when possible.
 # TODO: Make initialization faster.
 
-# TODO: Test options.
+# TODO: Test methods with trailing special chars, and with all special chars
 # TODO: Test on Linux.
+# TODO: Test all releases.
+# TODO: Test all pages(?).
 
-# TODO: Update README.md.
-# TODO: Update help text.
-
-# TODO: Make it work for naked method (parse) or dotted method (.parse).
+# TODO: Make it work for naked method ('parse') or dotted method ('.parse').
 
 # TODO: Update webri.gemspec.
 # TODO: Push to gem.
 # TODO: Make sure webri is on $PATH.
-
-# TODO: Test all releases.
-# TODO: Test all pages(?).
 
 # TODO: Support interactive mode (remain in app).
 
