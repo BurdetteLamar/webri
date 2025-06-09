@@ -4,6 +4,8 @@ require 'rbconfig'
 require 'open-uri'
 require 'rexml'
 
+# TODO: Support interactive mode (remain in app).
+
 # TODO: Build test names from ruby-lang.org (not webri).
 # TODO: Use REXML to build test names.
 #
@@ -22,8 +24,6 @@ require 'rexml'
 # TODO: Push to gem.
 # TODO: Make sure webri is on $PATH.
 
-# TODO: Support interactive mode (remain in app).
-
 # TODO: Support pager.
 
 # TODO: Support .webrirc.
@@ -41,12 +41,24 @@ class WebRI
 
   # Get the info from the Ruby doc site's table of contents
   # and build our @index_for_type.
-  def initialize(options = {})
+  def initialize(name, options = {})
     capture_options(options)
     set_doc_release
     get_toc_html
     build_indexes
     print_info if @info
+    if name
+      show(name)
+      return
+    end
+    while true
+      $stdout.write('webri> ')
+      $stdout.flush
+      response = $stdin.gets.chomp
+      exit if response == 'exit'
+      next if response.empty?
+      show(response)
+    end
   end
 
   def set_doc_release
@@ -266,20 +278,12 @@ class WebRI
   end
 
   # Show a page of Ruby documentation.
-  def show(args)
-    case args.size
-    when 0
-      puts "No name given."
-      exit
-    when 1
-      name = args.first
-    else
-      puts "Multiple names given; please do one at at time."
-      exit
-    end
+  def show(name)
     # Figure out what's asked for.
     case
-    when name.match(/^[A-Z]/), %w[fatal fata fat fa f].include?(name)
+    when name.match(/^[A-Z]/)
+      show_class(name, @index_for_type[:class])
+    when %w[fatal fata fat fa f].include?(name)
       show_class(name, @index_for_type[:class])
     when name.start_with?('ruby:')
       show_file(name, @index_for_type[:file])
@@ -525,7 +529,6 @@ class WebRI
 
   def open_readme
     url = 'https://github.com/BurdetteLamar/webri/blob/main/README.md'
-    p url
     uri = URI.parse(url)
     open_uri('README',uri)
   end

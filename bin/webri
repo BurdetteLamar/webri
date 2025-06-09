@@ -56,5 +56,14 @@ end
 
 parser.parse!
 
-web_ri = WebRI.new(options)
-web_ri.show(ARGV.to_a)
+case ARGV.size
+when 0
+  name = nil
+when 1
+  name = ARGV.first
+else
+  puts "Multiple names given; please do one at at time."
+  exit
+end
+
+WebRI.new(name, options)
