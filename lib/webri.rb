@@ -558,8 +558,8 @@ class WebRI
     when :macos
       'open'
     else
-      message = "Unknown opener name for #{os_type}"
-      raise RuntimeError(messae)
+      message = "No opener name for #{os_type}"
+      raise RuntimeError(message)
     end
   end
 
