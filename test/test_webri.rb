@@ -297,9 +297,9 @@ class TestWebRI < Minitest::Test
                  #! #!= #% #* #** #+ #+@ #- #-@ #/
                  #== #=== #[] #[]= #^ #__ #_d
                  #! #!= #% #* #** #+ #+@ #- #-@ #/
-                 #== #=== #[] #[]= #^
+                 #== #=== #[] #[]= #^ #=~
                  ]
-    other_names = %w[ #< #<< #<= #<=> #< #<< #<= #<=> #> #> #>= #>> #& #` #| #> #>= #=~ ]
+    other_names = %w[ #< #<< #<= #<=> #< #<< #<= #<=> #> #> #>= #>> #> #>= #& #` #| ]
     names.each do |name|
       webri_session(name) do |stdin, stdout, stderr|
         found_line = stdout.readline
@@ -575,21 +575,27 @@ class TestWebRI < Minitest::Test
       assert_match(fixed_name, fragment)
       return
     end
-    # The name ends with special characters such as '?',
-    # and fragment ends with encoded characters such as '-3F'.
-    # Try to fix the name to make it match.
-    fixed_fragment = fragment
+    # The name has with special characters such as '?',
+    # and fragment has triplets of characters such as '-3F'.
+    # Build a fixed fragment that has characters instead of triplets.
+    a = fragment.split(/-[A-F0-9][A-F0-9]/)
+    assert_operator(a.size, :<, 3)
+    leader, trailer = *a
+    trailer ||= ''
+    triplets = fragment.slice(leader.size..)
+    unless trailer.empty?
+      triplets_len = triplets.size - trailer.size
+      triplets.slice!(triplets_len..)
+    end
     replacement_chars = []
-    while fixed_fragment[-3] == '-' do
-      encoded_string = fixed_fragment.slice!(-3..-1)
-      encoded_string.slice!(0, 1)
-      replacement_char = encoded_string.hex.chr
-      replacement_chars.unshift(replacement_char)
+    until triplets.empty?
+      duple = triplets.slice!(0..2).slice!(1..)
+      replacement_char = duple.hex.chr
+      replacement_chars.push(replacement_char)
     end
     replacement_string = replacement_chars.join('')
-    pattern = /method-\w$/
-    fixed_fragment += '-' if fixed_fragment.match(pattern)
-    fixed_fragment += replacement_string
+    leader += '-' if leader.match(/method-\w$/)
+    fixed_fragment = leader + replacement_string + trailer
     assert_equal(fixed_name, fixed_fragment)
   end
 
