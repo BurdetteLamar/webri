@@ -3,6 +3,7 @@
 require 'rbconfig'
 require 'open-uri'
 require 'rexml'
+require 'cgi'
 
 # TODO: Support interactive mode (remain in app).
 
@@ -137,6 +138,7 @@ class WebRI
       type = class_attr_value
       _, path, rest = anchor_line.split('"')
       full_name = rest.split(/<|>/)[1]
+      full_name = CGI.unescapeHTML(full_name)
       case type
       when 'class', 'module'
         index = @index_for_type[:class]
