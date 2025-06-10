@@ -291,22 +291,25 @@ class TestWebRI < Minitest::Test
     end
   end
 
-  def zzz_test_instance_method_special_names
+  def test_instance_method_special_names
     type = :instance_method
-    names =   %w[#! #!= #% #& #* #** #+ #+@ #- #-@ #/ #< #<< #<= #<=> #== #=== #=~ #> #> #>= #>> #[] #[]= #^ #__ #_d #` #| #! #!= #% #& #* #** #+ #+@ #- #-@ #/ #< #<< #<= #<=> #== #=== #=~ #> #>= #[] #[]= #^]
+    names =   %w[
+                 #! #!= #% #* #** #+ #+@ #- #-@ #/
+                 #== #=== #[] #[]= #^ #__ #_d
+                 #! #!= #% #* #** #+ #+@ #- #-@ #/
+                 #== #=== #[] #[]= #^
+                 ]
+    other_names = %w[ #< #<< #<= #<=> #< #<< #<= #<=> #> #> #>= #>> #& #` #| #> #>= #=~ ]
     names.each do |name|
       webri_session(name) do |stdin, stdout, stderr|
-        p name
-        p read(stdout)
-        next
         found_line = stdout.readline
         if found_line.match('Found one ')
-          p 'one'
+          assert_name_line(stdout, name)
+          assert_opening_line(stdout, name)
+          assert_command_line(stdout, name)
         else
-          p 'multi'
-          # assert_show(stdout, stdin, type, yes: true)
+          assert_show(stdout, stdin, type, yes: true)
         end
-        # assert_found_line(stdout, 2, type, name)
       end
     end
   end
