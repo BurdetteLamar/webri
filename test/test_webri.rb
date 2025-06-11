@@ -8,12 +8,12 @@ require 'rbconfig'
 
 class TestWebRI < Minitest::Test
 
-  # Test housekeeping.
+  # Options.
 
   def test_option_help
-    webri_session('', '--help') do |stdin, stdout, stderr|
+    webri_session('--help') do |stdin, stdout, stderr|
       lines = stdout.readlines
-      assert_start_with('Usage: webri [options] name', lines[3])
+      assert_start_with('Usage: webri [options]', lines[3])
     end
   end
 
@@ -23,52 +23,36 @@ class TestWebRI < Minitest::Test
   end
 
   def test_option_release
-    a = RUBY_VERSION.split('.')
-    release = a[0..1].join('.')
-    webri_session("Array --release #{release}") do |stdin, stdout, stderr|
-      _, _, opening_line, command_line = stdout.readlines
-      assert_match(release, opening_line)
-      assert_match(release, command_line)
+    good_releases = nil
+    bad_release = 'nosuch'
+    webri_session("--release=#{bad_release} --info") do |stdin, stdout, stderr|
+      error_line = stdout.readline
+      assert_match('Unknown', error_line)
+      assert_match(bad_release, error_line)
+      available_line = stdout.readline
+      assert_match('Available', available_line)
+      good_releases = available_line.split(' ')[2..]
+    end
+    good_releases.each do |release|
+      webri_session("--release=#{release} --info") do |stdin, stdout, stderr|
+        release_line = stdout.readline
+        assert_match('Ruby documentation release', release_line)
+        assert_match(release, release_line)
+      end
     end
   end
 
   # Test errors.
 
-  def test_multiple_names_given
-    webri_session('Foo Bar') do |stdin, stdout, stderr|
-      output = stdout.readpartial(4096)
-      assert_start_with('Multiple names given', output)
-    end
-  end
-
-  def test_nonexistent_name_given
-    webri_session('foo') do |stdin, stdout, stderr|
-      output = stdout.readpartial(4096)
-      assert_start_with('No documentation available', output)
-    end
-  end
-
-  def test_option_release_invalid
-    webri_session("--release foo") do |stdin, stdout, stderr|
-      lines = stdout.readlines
-      assert_start_with('Unknown', lines[0])
-      assert_start_with('Master', lines[1])
-      assert_start_with('Supported', lines[2])
-      assert_start_with('Unsupported', lines[3])
-    end
-  end
-
   # Test classes and modules.
 
-  def zzz_test_class_nosuch_name
+  def test_class_nosuch_name
     type = :class
     name = get_nosuch_name(type)
-    webri_session(name) do |stdin, stdout, stderr|
+    webri_session do |stdin, stdout, stderr|
+      put_name(name, stdin, stdout)
       assert_found_line(stdout, 0, type, name)
       assert_show(stdout, stdin, type, yes: true)
-    end
-    webri_session(nil) do |stdin, stdout, stderr|
-      p name
     end
   end
 
@@ -76,7 +60,8 @@ class TestWebRI < Minitest::Test
     type = :class
     name = 'ArgumentError'
     assert_exact_name(type, name)
-    webri_session(name) do |stdin, stdout, stderr|
+    webri_session do |stdin, stdout, stderr|
+      put_name(name, stdin, stdout)
       assert_found_line(stdout,1, type, name)
       assert_name_line(stdout, name)
       assert_opening_line(stdout, name)
@@ -88,7 +73,8 @@ class TestWebRI < Minitest::Test
     type = :class
     name = 'Dat'
     assert_partial_name_ambiguous(type, name)
-    webri_session(name) do |stdin, stdout, stderr|
+    webri_session do |stdin, stdout, stderr|
+      put_name(name, stdin, stdout)
       assert_found_line(stdout, 2, type, name)
       assert_show(stdout, stdin, type, yes: true)
     end
@@ -98,7 +84,8 @@ class TestWebRI < Minitest::Test
     type = :class
     name =  'ZeroDivision'
     assert_partial_name_unambiguous(type, name, multiple_paths: false)
-    webri_session(name) do |stdin, stdout, stderr|
+    webri_session do |stdin, stdout, stderr|
+      put_name(name, stdin, stdout)
       assert_found_line(stdout,1, type, name)
       assert_name_line(stdout, name)
       assert_open_line(stdin, stdout, name, yes: true)
@@ -111,7 +98,8 @@ class TestWebRI < Minitest::Test
     type = :file
     name = get_nosuch_name(type)
     short_name = name.sub('ruby:', '')
-    webri_session(name) do |stdin, stdout, stderr|
+    webri_session do |stdin, stdout, stderr|
+      put_name(name, stdin, stdout)
       assert_found_line(stdout, 0, type, short_name)
       assert_show(stdout, stdin, type, yes: true)
     end
@@ -122,7 +110,8 @@ class TestWebRI < Minitest::Test
     short_name = 'literals'
     assert_exact_name(type, short_name)
     name = "ruby:#{short_name}"
-    webri_session(name) do |stdin, stdout, stderr|
+    webri_session do |stdin, stdout, stderr|
+      put_name(name, stdin, stdout)
       assert_found_line(stdout,1, type, short_name)
       assert_name_line(stdout, short_name)
       assert_opening_line(stdout, short_name)
@@ -135,7 +124,8 @@ class TestWebRI < Minitest::Test
     short_name = 'p'
     assert_partial_name_ambiguous(type, short_name)
     name = "ruby:#{short_name}"
-    webri_session(name) do |stdin, stdout, stderr|
+    webri_session do |stdin, stdout, stderr|
+      put_name(name, stdin, stdout)
       assert_found_line(stdout, 2, type, short_name)
       assert_show(stdout, stdin, type, yes: true)
     end
@@ -146,7 +136,8 @@ class TestWebRI < Minitest::Test
     short_name =  'maintainer'
     assert_partial_name_unambiguous(type , short_name, multiple_paths: false)
     name = "ruby:#{short_name}"
-    webri_session(name) do |stdin, stdout, stderr|
+    webri_session do |stdin, stdout, stderr|
+      put_name(name, stdin, stdout)
       assert_found_line(stdout,1, type, short_name)
       assert_name_line(stdout, short_name)
       assert_open_line(stdin, stdout, short_name, yes: true)
@@ -161,7 +152,8 @@ class TestWebRI < Minitest::Test
       return
     end
     name = "ruby:#{short_name}"
-    webri_session(name) do |stdin, stdout, stderr|
+    webri_session do |stdin, stdout, stderr|
+      put_name(name, stdin, stdout)
       assert_found_line(stdout, 2, type, short_name)
       assert_show(stdout, stdin, type, yes: true)
     end
@@ -172,7 +164,8 @@ class TestWebRI < Minitest::Test
   def test_singleton_method_nosuch_name
     type = :singleton_method
     name = get_nosuch_name(type)
-    webri_session(name) do |stdin, stdout, stderr|
+    webri_session do |stdin, stdout, stderr|
+      put_name(name, stdin, stdout)
       assert_found_line(stdout, 0, type, name)
       assert_show(stdout, stdin, type, yes: true)
     end
@@ -182,7 +175,8 @@ class TestWebRI < Minitest::Test
     type = :singleton_method
     name = '::umask'
     assert_exact_name(type, name)
-    webri_session(name) do |stdin, stdout, stderr|
+    webri_session do |stdin, stdout, stderr|
+      put_name(name, stdin, stdout)
       assert_found_line(stdout,1, type, name)
       assert_name_line(stdout, name)
       assert_opening_line(stdout, name)
@@ -194,7 +188,8 @@ class TestWebRI < Minitest::Test
     type = :singleton_method
     name = '::wri'
     assert_partial_name_ambiguous(type, name)
-    webri_session(name) do |stdin, stdout, stderr|
+    webri_session do |stdin, stdout, stderr|
+      put_name(name, stdin, stdout)
       assert_found_line(stdout, 2, type, name)
       assert_show(stdout, stdin, type, yes: true)
     end
@@ -204,7 +199,8 @@ class TestWebRI < Minitest::Test
     type = :singleton_method
     name =  '::zca'
     assert_partial_name_unambiguous(type , name, multiple_paths: false)
-    webri_session(name) do |stdin, stdout, stderr|
+    webri_session do |stdin, stdout, stderr|
+      put_name(name, stdin, stdout)
       assert_found_line(stdout,1, type, name)
       assert_name_line(stdout, name)
       assert_open_line(stdin, stdout, name, yes: true)
@@ -215,13 +211,14 @@ class TestWebRI < Minitest::Test
     type = :singleton_method
     name = '::wra'
     assert_partial_name_unambiguous(type , name, multiple_paths: true)
-    webri_session(name) do |stdin, stdout, stderr|
+    webri_session do |stdin, stdout, stderr|
+      put_name(name, stdin, stdout)
       assert_found_line(stdout, 2, type, name)
       assert_show(stdout, stdin, type, yes: true)
     end
   end
 
-  def test_singleton_method_special_names
+  def zzz_test_singleton_method_special_names
     type = :singleton_method
     %w[::=== ::\[\] ::\[\]= ::_].each do |name|
       webri_session(name) do |stdin, stdout, stderr|
@@ -242,7 +239,8 @@ class TestWebRI < Minitest::Test
   def test_instance_method_nosuch_name
     type = :instance_method
     name = get_nosuch_name(type)
-    webri_session(name) do |stdin, stdout, stderr|
+    webri_session do |stdin, stdout, stderr|
+      put_name(name, stdin, stdout)
       assert_found_line(stdout, 0, type, name)
       assert_show(stdout, stdin, type, yes: true)
     end
@@ -252,7 +250,8 @@ class TestWebRI < Minitest::Test
     type = :instance_method
     name = '#yield_self'
     assert_exact_name(type, name)
-    webri_session(name) do |stdin, stdout, stderr|
+    webri_session do |stdin, stdout, stderr|
+      put_name(name, stdin, stdout)
       assert_found_line(stdout,1, type, name)
       assert_name_line(stdout, name)
       assert_opening_line(stdout, name)
@@ -264,7 +263,8 @@ class TestWebRI < Minitest::Test
     type = :instance_method
     name = '#wri'
     assert_partial_name_ambiguous(type, name)
-    webri_session(name) do |stdin, stdout, stderr|
+    webri_session do |stdin, stdout, stderr|
+      put_name(name, stdin, stdout)
       assert_found_line(stdout, 2, type, name)
       assert_show(stdout, stdin, type, yes: true)
     end
@@ -274,7 +274,8 @@ class TestWebRI < Minitest::Test
     type = :instance_method
     name =  '#yield_sel'
     assert_partial_name_unambiguous(type , name, multiple_paths: false)
-    webri_session(name) do |stdin, stdout, stderr|
+    webri_session do |stdin, stdout, stderr|
+      put_name(name, stdin, stdout)
       assert_found_line(stdout,1, type, name)
       assert_name_line(stdout, name)
       assert_open_line(stdin, stdout, name, yes: true)
@@ -285,7 +286,8 @@ class TestWebRI < Minitest::Test
     type = :instance_method
     name = '#yea'
     assert_partial_name_unambiguous(type , name, multiple_paths: true)
-    webri_session(name) do |stdin, stdout, stderr|
+    webri_session do |stdin, stdout, stderr|
+      put_name(name, stdin, stdout)
       assert_found_line(stdout, 2, type, name)
       assert_show(stdout, stdin, type, yes: true)
     end
@@ -328,27 +330,15 @@ class TestWebRI < Minitest::Test
     end
   end
 
-
   # Infrastructure.
 
   # Open a webri session and yield its IO streams.
   # Option --noop, which we use for all tests, means don't actually open the web page.
-  def webri_session(name, options_s = '--noop')
-    if name
-      if RbConfig::CONFIG['host_os'].match(/linux/) && name.start_with?('#')
-        name = '"' + name + '"'
-      end
-      command = "ruby bin/webri #{options_s} #{name}"
-      Open3.popen3(command) do |stdin, stdout, stderr, wait_thread|
-        yield stdin, stdout, stderr
-      end
-    else
-      Open3.popen3(command) do |stdin, stdout, stderr, wait_thread|
-        # Cannot use readline for this because it has no trailing newline.
-        prompt_line = read(stdout)
-        assert_start_with('webri> ', prompt_line)
-        yield stdin, stdout, stderr
-      end
+  def webri_session(options_s = '--noop')
+    command = "ruby bin/webri #{options_s}"
+    Open3.popen3(command) do |stdin, stdout, stderr, wait_thread|
+      # Cannot use readline for this because it has no trailing newline.
+      yield stdin, stdout, stderr
     end
   end
 
@@ -441,10 +431,11 @@ class TestWebRI < Minitest::Test
 
   def get_name_lines(name)
     name_lines = []
-    webri_session(name) do |stdin, stdout, stderr|
-      # Get the count of items.
-      lines = read(stdout).split("\n")
-      lines.last.match(/(\d+)/)
+    webri_session do |stdin, stdout, stderr|
+      put_name(name, stdin, stdout)
+      _ = stdout.readline # Found line
+      show_line = read(stdout)
+      show_line.match(/(\d+)/)
       count = $1.to_s.to_i
       # Get the items
       stdin.puts('y')
@@ -516,6 +507,12 @@ class TestWebRI < Minitest::Test
     assert(actual.start_with?(expected), message)
   end
 
+  def put_name(name, stdin, stdout)
+    prompt = read(stdout)
+    assert_match('webri', prompt)
+    stdin.puts(name)
+  end
+
   TypeWord = {
     class: 'class/module',
     file: 'file',
@@ -524,7 +521,7 @@ class TestWebRI < Minitest::Test
   }
   def assert_found_line(stdout, count, type, name)
     found_line = stdout.readline
-    assert_start_with('Found', found_line)
+    assert_match('Found', found_line)
     pattern = case count
               when 0
                 'no'

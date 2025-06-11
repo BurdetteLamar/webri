@@ -42,16 +42,12 @@ class WebRI
 
   # Get the info from the Ruby doc site's table of contents
   # and build our @index_for_type.
-  def initialize(name, options = {})
+  def initialize(options = {})
     capture_options(options)
     set_doc_release
     get_toc_html
     build_indexes
     print_info if @info
-    if name
-      show(name)
-      return
-    end
     while true
       $stdout.write('webri> ')
       $stdout.flush
@@ -81,13 +77,11 @@ class WebRI
         supported_releases.push(release)
       end
     end
+    all_releases = [master_release] + supported_releases + unsupported_releases
     if @doc_release
-      unless supported_releases.include?(@doc_release) ||
-        unsupported_releases.include?(@doc_release)
+      unless all_releases.include?(@doc_release)
         puts "Unknown documentation release:  #{@doc_release}"
-        puts "Master release:                 #{master_release}"
-        puts "Supported releases:             #{supported_releases.join(', ')}"
-        puts "Unsupported releases:           #{unsupported_releases.join(', ')}"
+        puts "Available releases: #{all_releases.join(' ')}"
         exit
       end
     else
@@ -97,9 +91,9 @@ class WebRI
   end
 
   def print_info
-    puts "Ruby documentation release:  '#{@doc_release}'"
-    puts "Ruby documentation URL:      '#{@toc_url}'"
-    puts "Executable to open page:     '#{opener_name}'"
+    puts "Ruby documentation release:  #{@doc_release}"
+    puts "Ruby documentation URL:      #{@toc_url}"
+    puts "Executable to open page:     #{opener_name}"
     puts "Names:"
     @index_for_type.each_pair do |type, items|
       puts format("  %5d %s names", items.count, type)

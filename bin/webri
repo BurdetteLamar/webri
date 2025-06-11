@@ -13,23 +13,9 @@ parser = OptionParser.new
 parser.version = WebRI::VERSION
 parser.banner = <<-BANNER
 webri is a console application for displaying Ruby online HTML documentation.
-The HTML documentation is opened in your default web browser.
+Documentation pages are opened in the default web browser.
 
-Usage: #{parser.program_name} [options] name
-
-Argument 'name' specifies the documentation to be displayed;
-it may be:
-
-- The name of a class/module such as 'Array' or 'Net::HTTP'.
-- The name of a singleton method such as '::parse' or '::new'.
-- The name of an instance method such as '#parse' or '#to_s'.
-- The name of a Ruby 'file' such as 'ruby:dig_methods'.
-
-If the name does not specify a single documentation page,
-webri tries to be helpful by showing related candidate names.
-
-Note that your command window may require you to escape certain characters;
-in particular, you may need to escape the pound sign ('#').
+Usage: #{parser.program_name} [options]
 
 For more information, see https://github.com/BurdetteLamar/webri/blob/main/README.md.
 
@@ -42,7 +28,7 @@ end
 parser.on('-r=RELEASE', '--release=RELEASE', 'Sets the Ruby release to document.') do |value|
   options[:release] = value
 end
-parser.on('-n', '--noop', 'Does not actually open web page.') do |value|
+parser.on('-n', '--noop', 'Does not actually open web pages.') do |value|
   options[:noop] = true
 end
 parser.on('-h', '--help', 'Prints this help.') do
@@ -56,14 +42,11 @@ end
 
 parser.parse!
 
-case ARGV.size
-when 0
-  name = nil
-when 1
-  name = ARGV.first
-else
-  puts "Multiple names given; please do one at at time."
+unless ARGV.empty?
+  $stderr.puts "Argument error: No arguments allowed."
+  $stderr.puts ''
+  $stdout.puts parser.help
   exit
 end
 
-WebRI.new(name, options)
+WebRI.new(options)
