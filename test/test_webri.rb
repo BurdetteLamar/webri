@@ -44,6 +44,26 @@ class TestWebRI < Minitest::Test
 
   # Test errors.
 
+  # Too many names.
+  def test_too_many_names
+    webri_session do |stdin, stdout, stderr|
+      name = 'Foo Bar'
+      put_name(name, stdin, stdout)
+      error_line = stdout.readline
+      assert_start_with('One name', error_line)
+      assert_prompt(stdout)
+    end
+  end
+
+  # Not an error, exactly, but test anyway.
+  def test_no_name
+    webri_session do |stdin, stdout, stderr|
+      name = ''
+      put_name(name, stdin, stdout)
+      assert_prompt(stdout)
+    end
+  end
+
   # Test classes and modules.
 
   def test_class_nosuch_name
@@ -508,9 +528,13 @@ class TestWebRI < Minitest::Test
   end
 
   def put_name(name, stdin, stdout)
+    assert_prompt(stdout)
+    stdin.puts(name)
+  end
+
+  def assert_prompt(stdout)
     prompt = read(stdout)
     assert_match('webri', prompt)
-    stdin.puts(name)
   end
 
   TypeWord = {

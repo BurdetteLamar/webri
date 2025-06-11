@@ -54,6 +54,10 @@ class WebRI
       response = $stdin.gets.chomp
       exit if response == 'exit'
       next if response.empty?
+      if response.split(' ').size > 1
+        puts "One name at a time, please."
+        next
+      end
       show(response)
     end
   end
