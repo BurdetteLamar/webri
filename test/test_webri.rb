@@ -658,8 +658,12 @@ class TestWebRI < Minitest::Test
       choice_index, choice = choice_line.split(':', 2)
       choice = choice.split(' ').first.strip
       choices.push(choice)
+      # Check the indexes of the first few.
+      next if i > 4
       assert_match("#{i}", choice_index)
     end
+    # No duplicate choices.
+    assert_empty(choices - choices.uniq)
     assert_choose_line(stdout, choice_count)
     index = 0
     stdin.puts(index.to_s)
