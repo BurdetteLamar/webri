@@ -293,20 +293,29 @@ class TestWebRI < Minitest::Test
 
   def test_instance_method_special_names
     type = :instance_method
+    all_names_count = 0
+    @@test_names[type].each_pair do |name, paths|
+      all_names_count += paths.size
+    end
     names =   %w[
                  #! #!= #% #* #** #+ #+@ #- #-@ #/
                  #== #=== #[] #[]= #^ #__ #_d
                  #! #!= #% #* #** #+ #+@ #- #-@ #/
                  #== #=== #[] #[]= #^ #=~
                  ]
-    other_names = %w[ #< #<< #<= #<=> #< #<< #<= #<=> #> #> #>= #>> #> #>= #& #` #| ]
+    other_names = %w[ #< #<< #<= #<=> #< #<< #<= #<=> #> #> #>= #>> #> #>= #| #& #` ]
     names.each do |name|
       webri_session(name) do |stdin, stdout, stderr|
         found_line = stdout.readline
+        _, search_name, _ = found_line.split("'")
+        # WebRI should be searching with the same name we passed in.
+        assert_equal(search_name, name)
         if found_line.match('Found one ')
           assert_name_line(stdout, name)
           assert_opening_line(stdout, name)
           assert_command_line(stdout, name)
+        elsif found_line.match('Found no')
+          assert(false)
         else
           assert_show(stdout, stdin, type, yes: true)
         end
