@@ -332,6 +332,33 @@ Opening web page https://docs.ruby-lang.org/en/3.4/regexp/unicode_properties_rdo
 
 ### Special Names
 
+To display the WebRI help text, use the special name `@help`:
+
+```
+webri> @help
+Showing help.
+webri is a console application for displaying Ruby online HTML documentation.
+Documentation pages are opened in the default web browser.
+
+Usage: webri [options]
+
+For more information, see https://github.com/BurdetteLamar/webri/blob/main/README.md.
+
+Options:
+    -i, --info                       Prints information about webri.
+    -r, --release=RELEASE            Sets the Ruby release to document.
+    -n, --noop                       Does not actually open web pages.
+    -h, --help                       Prints this help.
+    -v, --version                    Prints the version of webri.
+```
+
+To open the WebRI README page, use the special name `@readme`:
+
+```
+webri> @readme
+Opening web page https://github.com/BurdetteLamar/webri/blob/main/README.md.
+```
+
 ### Options
 
 Option `--info` prints information about WebRI,

@@ -501,11 +501,12 @@ class WebRI
   end
 
   def show_help
+    puts 'Showing help.'
     puts `ruby bin/webri --help`
   end
 
   def show_readme
-    puts 'Readme'
+    open_readme
   end
 
   # Present choices; return choice.
