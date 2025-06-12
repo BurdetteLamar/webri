@@ -13,8 +13,11 @@ class TestWebRI < Minitest::Test
   def test_special_name_help
     webri_session do |stdin, stdout, stderr|
       put_name('@help', stdin, stdout)
-      lines = read(stdout).split("\n")
-      assert_start_with('Usage: webri [options]', lines[4])
+      line = nil
+      (0..4).each do
+        line = stdout.readline
+      end
+      assert_start_with('Usage: webri [options]', line)
     end
   end
 
