@@ -173,14 +173,17 @@ class TestWebRI < Minitest::Test
 
   def test_file_partial_name_unambiguous_one_path
     type = :file
-    short_name =  'maintainer'
-    assert_partial_name_unambiguous(type , short_name, multiple_paths: false)
-    name = "ruby:#{short_name}"
-    webri_session do |stdin, stdout, stderr|
-      put_name(name, stdin, stdout)
-      assert_found_line(stdout,1, type, short_name)
-      assert_name_line(stdout, short_name)
-      assert_open_line(stdin, stdout, short_name, yes: true)
+    short_names = %w[NEWS-3.3 COPYING.j]
+    short_names.each do |short_name|
+      assert_partial_name_unambiguous(type , short_name, multiple_paths: false)
+      name = "ruby:#{short_name}"
+      webri_session do |stdin, stdout, stderr|
+        put_name(name, stdin, stdout)
+        assert_found_line(stdout,1, type, short_name)
+        regexp = Regexp.new(short_name)
+        assert_name_line(stdout, regexp)
+        assert_open_line(stdin, stdout, regexp, yes: true)
+      end
     end
   end
 
@@ -706,11 +709,11 @@ class TestWebRI < Minitest::Test
     names = @@test_names[type].keys.select do |name_|
       name_.start_with?(name) && name_ != name
     end
-    assert_operator(names.size, :==, 1)
+    assert_operator(names.size, :==, 1, name)
     return unless multiple_paths
     name = names.first
     paths = @@test_names[type][name]
-    assert_operator(paths.size, :>, 1)
+    assert_operator(paths.size, :>, 1, name)
   end
 
   def get_partial_name_unambiguous(type, multiple_paths:)
