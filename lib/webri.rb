@@ -293,6 +293,10 @@ class WebRI
       show_singleton_method(name, @index_for_type[:singleton_method])
     when name.start_with?('#')
       show_instance_method(name, @index_for_type[:instance_method])
+    when name == '@help'
+      show_help
+    when name == '@readme'
+      open_readme
     # when name.start_with?('.')
     #   show_method(name, @index_for_type[:singleton_method], @index_for_type[:instance_method])
     # when name.match(/^[a-z]/)
@@ -494,6 +498,14 @@ class WebRI
     end
     uri = Entry.uri(path)
     open_page(full_name, uri)
+  end
+
+  def show_help
+    puts `ruby bin/webri --help`
+  end
+
+  def show_readme
+    puts 'Readme'
   end
 
   # Present choices; return choice.

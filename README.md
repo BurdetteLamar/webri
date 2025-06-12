@@ -40,12 +40,12 @@ $
 
 At the prompt, you can type:
 
-- The name of a class or module.
-- The name of a singleton method.
-- The name of an instance method.
-- The name of a Ruby file.
+- The name of a [class or module][1].
+- The name of a [singleton method][2].
+- The name of an [instance method][3].
+- The name of a [Ruby file][4].
 - An abbreviation of any of the above.
-- One of the special names `@help` or `@readme`.
+- One of the [special names][5] `@help` or `@readme`.
 
 ### Class or Module
 
@@ -330,6 +330,8 @@ Type a number to choose, or Return to skip:  80
 Opening web page https://docs.ruby-lang.org/en/3.4/regexp/unicode_properties_rdoc.html.
 ```
 
+### Special Names
+
 ### Options
 
 Option `--info` prints information about WebRI,
@@ -419,3 +421,9 @@ of the [MIT License](https://opensource.org/licenses/MIT).
 Everyone interacting in the Webri project's codebases,
 issue trackers, chat rooms and mailing lists is expected
 to follow the [code of conduct](https://github.com/BurdetteLamar/webri/blob/master/CODE_OF_CONDUCT.md).
+
+[1]: rdoc-ref:README.md@Class+or+Module
+[2]: rdoc-ref:README.md@Singleton+Method
+[3]: rdoc-ref:README.md@Instance+Method
+[4]: rdoc-ref:README.md@Ruby+File
+[5]: rdoc-ref:README.md@Special+Names
