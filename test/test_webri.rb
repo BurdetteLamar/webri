@@ -107,13 +107,16 @@ class TestWebRI < Minitest::Test
 
   def test_class_partial_name_unambiguous
     type = :class
-    name =  'ZeroDivision'
-    assert_partial_name_unambiguous(type, name, multiple_paths: false)
-    webri_session do |stdin, stdout, stderr|
-      put_name(name, stdin, stdout)
-      assert_found_line(stdout,1, type, name)
-      assert_name_line(stdout, name)
-      assert_open_line(stdin, stdout, name, yes: true)
+    names = %w[Zlib::GzipFile::CRCE ZeroDivision]
+    names.each do |name|
+      assert_partial_name_unambiguous(type, name, multiple_paths: false)
+      webri_session do |stdin, stdout, stderr|
+        put_name(name, stdin, stdout)
+        assert_found_line(stdout,1, type, name)
+        assert_name_line(stdout, name)
+        path = name.gsub('::', '/')
+        assert_open_line(stdin, stdout, path, yes: true)
+      end
     end
   end
 
