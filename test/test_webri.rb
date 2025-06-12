@@ -94,7 +94,7 @@ class TestWebRI < Minitest::Test
 
   def test_class_partial_name_ambiguous
     type = :class
-    names = %w[Dat Socket::HostnameResolution]
+    names = %w[Dat URI::Invalid]
     names.each do |name|
       assert_partial_name_ambiguous(type, name)
       webri_session do |stdin, stdout, stderr|
@@ -135,7 +135,7 @@ class TestWebRI < Minitest::Test
 
   def test_file_exact_name
     type = :file
-    short_names = %w[COPYING.ja NEWS-3.3.0 LEGAL]
+    short_names = %w[COPYING.ja NEWS-2.7.0 LEGAL]
     short_names.each do |short_name|
       assert_exact_name(type, short_name)
       name = "ruby:#{short_name}"
@@ -173,7 +173,7 @@ class TestWebRI < Minitest::Test
 
   def test_file_partial_name_unambiguous_one_path
     type = :file
-    short_names = %w[NEWS-3.3 COPYING.j]
+    short_names = %w[NEWS-2.7 COPYING.j]
     short_names.each do |short_name|
       assert_partial_name_unambiguous(type , short_name, multiple_paths: false)
       name = "ruby:#{short_name}"
