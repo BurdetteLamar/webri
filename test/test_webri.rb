@@ -78,14 +78,17 @@ class TestWebRI < Minitest::Test
 
   def test_class_exact_name
     type = :class
-    name = 'ArgumentError'
-    assert_exact_name(type, name)
-    webri_session do |stdin, stdout, stderr|
-      put_name(name, stdin, stdout)
-      assert_found_line(stdout,1, type, name)
-      assert_name_line(stdout, name)
-      assert_opening_line(stdout, name)
-      assert_command_line(stdout, name)
+    names = %w[ArgumentError Gem::Commands::BuildCommand]
+    names.each do |name|
+      assert_exact_name(type, name)
+      webri_session do |stdin, stdout, stderr|
+        put_name(name, stdin, stdout)
+        assert_found_line(stdout,1, type, name)
+        assert_name_line(stdout, name)
+        path = name.gsub('::', '/')
+        assert_opening_line(stdout, path)
+        assert_command_line(stdout, path)
+      end
     end
   end
 
