@@ -135,15 +135,18 @@ class TestWebRI < Minitest::Test
 
   def test_file_exact_name
     type = :file
-    short_name = 'literals'
-    assert_exact_name(type, short_name)
-    name = "ruby:#{short_name}"
-    webri_session do |stdin, stdout, stderr|
-      put_name(name, stdin, stdout)
-      assert_found_line(stdout,1, type, short_name)
-      assert_name_line(stdout, short_name)
-      assert_opening_line(stdout, short_name)
-      assert_command_line(stdout, short_name)
+    short_names = %w[COPYING.ja NEWS-3.3.0 LEGAL]
+    short_names.each do |short_name|
+      assert_exact_name(type, short_name)
+      name = "ruby:#{short_name}"
+      webri_session do |stdin, stdout, stderr|
+        put_name(name, stdin, stdout)
+        assert_found_line(stdout,1, type, short_name)
+        assert_name_line(stdout, short_name)
+        regexp = Regexp.new(short_name)
+        assert_opening_line(stdout, regexp)
+        assert_command_line(stdout, regexp)
+      end
     end
   end
 
