@@ -94,12 +94,14 @@ class TestWebRI < Minitest::Test
 
   def test_class_partial_name_ambiguous
     type = :class
-    name = 'Dat'
-    assert_partial_name_ambiguous(type, name)
-    webri_session do |stdin, stdout, stderr|
-      put_name(name, stdin, stdout)
-      assert_found_line(stdout, 2, type, name)
-      assert_show(stdout, stdin, type, yes: true)
+    names = %w[Dat Socket::HostnameResolution]
+    names.each do |name|
+      assert_partial_name_ambiguous(type, name)
+      webri_session do |stdin, stdout, stderr|
+        put_name(name, stdin, stdout)
+        assert_found_line(stdout, 2, type, name)
+        assert_show(stdout, stdin, type, yes: true)
+      end
     end
   end
 
