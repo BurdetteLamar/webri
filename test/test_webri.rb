@@ -238,22 +238,6 @@ class TestWebRI < Minitest::Test
     end
   end
 
-  def zzz_test_singleton_method_special_names
-    type = :singleton_method
-    %w[::=== ::\[\] ::\[\]= ::_].each do |name|
-      webri_session(name) do |stdin, stdout, stderr|
-        found_line = stdout.readline
-        if found_line.match('Found one ')
-          assert_name_line(stdout, name)
-          assert_opening_line(stdout, name)
-          assert_command_line(stdout, name)
-        else
-          assert_show(stdout, stdin, type, yes: true)
-        end
-      end
-    end
-  end
-
   # Test instance methods.
 
   def test_instance_method_nosuch_name
@@ -310,43 +294,6 @@ class TestWebRI < Minitest::Test
       put_name(name, stdin, stdout)
       assert_found_line(stdout, 2, type, name)
       assert_show(stdout, stdin, type, yes: true)
-    end
-  end
-
-  def zzz_test_instance_method_special_names
-    type = :instance_method
-    all_names_count = 0
-    @@test_names[type].each_pair do |name, paths|
-      all_names_count += paths.size
-    end
-    names =   %w[
-                 #! #!= #% #* #** #+ #+@ #- #-@ #/
-                 #== #=== #[] #[]= #^ #__ #_d
-                 #! #!= #% #* #** #+ #+@ #- #-@ #/
-                 #== #=== #[] #[]= #^ #=~ #`
-                 ]
-    other_names = %w[ #& #| #< #<< #<= #<=> #< #<< #<= #<=> #> #> #>= #>> #> #>= ]
-    names.each do |name|
-      p name
-      webri_session(name) do |stdin, stdout, stderr|
-        found_line = stdout.readline
-        _, search_name, _ = found_line.split("'")
-        # WebRI should be searching with the same name we passed in.
-        unless search_name == name
-          p [name, search_name]
-          next
-        end
-        assert_equal(search_name, name)
-        if found_line.match('Found one ')
-          assert_name_line(stdout, name)
-          assert_opening_line(stdout, name)
-          assert_command_line(stdout, name)
-        elsif found_line.match('Found no')
-          assert(false)
-        else
-          assert_show(stdout, stdin, type, yes: true)
-        end
-      end
     end
   end
 
