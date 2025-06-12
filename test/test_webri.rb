@@ -152,13 +152,22 @@ class TestWebRI < Minitest::Test
 
   def test_file_partial_name_ambiguous
     type = :file
-    short_name = 'p'
-    assert_partial_name_ambiguous(type, short_name)
-    name = "ruby:#{short_name}"
-    webri_session do |stdin, stdout, stderr|
-      put_name(name, stdin, stdout)
-      assert_found_line(stdout, 2, type, short_name)
-      assert_show(stdout, stdin, type, yes: true)
+    short_names = %w[COPY NEWS-]
+    short_names.each do |short_name|
+      assert_partial_name_ambiguous(type, short_name)
+      name = "ruby:#{short_name}"
+      webri_session do |stdin, stdout, stderr|
+        put_name(name, stdin, stdout)
+        assert_found_line(stdout, 2, type, short_name)
+        assert_show(stdout, stdin, type, yes: true)
+        assert_partial_name_ambiguous(type, short_name)
+        name = "ruby:#{short_name}"
+        webri_session do |stdin, stdout, stderr|
+          put_name(name, stdin, stdout)
+          assert_found_line(stdout, 2, type, short_name)
+          assert_show(stdout, stdin, type, yes: true)
+        end
+      end
     end
   end
 
