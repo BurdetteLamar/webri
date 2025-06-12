@@ -5,26 +5,38 @@ WebRI has a command-line utility, `webri`, for displaying Ruby online documentat
 It is in some ways similar to [Ruby's RI utility](https://ruby.github.io/rdoc/RI_md.html),
 but differs mainly in that:
 
-- RI displays text-only documentation the the user's command window.
-- WebRI opens documentation web pages
+- **RI:** displays text-only documentation the the user's command window.
+- **WebRI:** opens documentation web pages
   from [Ruby official on-line documentation](https://docs.ruby-lang.org/en)
   in the user's default web browser.
 
 WebRI displays documentation for:
 
-- A class or module: opens its web page.
-- A method: opens the web page for its class/module _scrolled to the method's documentation_.
-- A Ruby 'topic': opens a free-standing web page.
+- A **class** or **module**: opens its web page.
+- A **method**: opens the web page for its class/module _scrolled to the method's documentation_.
+- A Ruby **file**: opens a free-standing web page.
 
 ## Usage
 
+Form: `webri` _options_
+
+`webri` is an interactive program;
+when invoked, it prints its prompt:
+
 ```
-$ webri name options
+$ webri
+webri>
 ```
 
-The `webri` command takes a single argument `name`,
-which may be the name of a class, module, or method,
-or the first part of such a name.
+To exit, type `exit`:
+
+```
+$ webri
+webri> exit
+$
+```
+
+At the prompt, you can type the name of a class, module, method, or Ruby file.
 
 ### Class or Module
 
@@ -33,61 +45,42 @@ WebRI finds the names of classes and modules beginning with that name.
 
 When exactly one such class/module name is found:
 
-- If `name` is the exact name of the found name, opens the page for that name:
+- If `name` is the exact name of a class/module, opens its page:
 
 ```
-webri Array
+webri> Array
 Found one class/module name starting with 'Array'
   Array (Array.html)
 Opening web page https://docs.ruby-lang.org/en/3.4/Array.html.
 ```
 
-- If `name` is the start of the found name, offers to open the page for that name:
+- If `name` is the start of one class/module, offers to open its page:
 
 ```
-$ webri Arr
+webri> Arr
 Found one class/module name starting with 'Arr'
   Array (Array.html)
 Open page Array.html? (y or n):  y
 Opening web page https://docs.ruby-lang.org/en/3.4/Array.html.
 ```
 
-When multiple such class/module names are found offer to list the found names:
+When multiple such class/module names are found, offers to list the found names:
 
 ```bash
-$ webri Ar
+webri> Ar
 Found 2 class/module names starting with 'Ar'.
 Show 2 class/module names?' (y or n):  y
        0:  ArgumentError (ArgumentError.html)
        1:  Array (Array.html)
-Type a number to choose, 'x' to exit, or 'r' to open the README:  0
+Type a number to choose, or Return to skip:  0
 Opening web page https://docs.ruby-lang.org/en/3.4/ArgumentError.html.
 ```
 
-```bash
-$ webri Ar
-Found 2 class/module names starting with 'Ar'.
-Show 2 class/module names?' (y or n):  y
-       0:  ArgumentError (ArgumentError.html)
-       1:  Array (Array.html)
-Type a number to choose, 'x' to exit, or 'r' to open the README:  x
-```
-
-```bash
-$ webri Ar
-Found 2 class/module names starting with 'Ar'.
-Show 2 class/module names?' (y or n):  y
-       0:  ArgumentError (ArgumentError.html)
-       1:  Array (Array.html)
-Type a number to choose, 'x' to exit, or 'r' to open the README:  r
-"https://github.com/BurdetteLamar/webri/blob/main/README.md"
-Opening web page https://github.com/BurdetteLamar/webri/blob/main/README.md.
-```
 
 When no such class/module name is found, offers to list all class/module names:
 
 ```
-$ webri Nosuch
+webri> Nosuch
 Found no class/module name starting with 'Nosuch'.
 Show 1364 class/module names? (y or n):  n
 ```
@@ -100,19 +93,20 @@ with that name.
 
 When exactly one such singleton method name is found:
 
-- If `name` is the exact name of the found name, opens the page for that name:
+- If `name` is the exact name of one singleton method, opens its class/module page at that method:
 
 ```
-$ webri ::zcat
+webri> ::zcat
 Found one singleton method name starting with '::zcat'
   ::zcat
 Opening web page https://docs.ruby-lang.org/en/3.4/Zlib/GzipReader.html at method ::zcat.
-```
-
-- If `name` is the start of the found name, offers to open the page for that name:
 
 ```
-$ webri ::zca
+
+- If `name` is the start of the found name, offers to open its page:
+
+```
+webri> ::zca
 Found one singleton method name starting with '::zca'
   ::zcat
 Open page Zlib/GzipReader.html at method ::zcat? (y or n):  y
@@ -122,7 +116,7 @@ Opening web page https://docs.ruby-lang.org/en/3.4/Zlib/GzipReader.html at metho
 When multiple such singleton method names are found offer to list the found names:
 
 ```bash
-$ webri ::z
+webri> ::z
 Found 5 singleton method names starting with '::z'.
 Show 5 names?' (y or n):  y
        0:  ::zcat (in Zlib::GzipReader)
@@ -130,34 +124,9 @@ Show 5 names?' (y or n):  y
        2:  ::zip? (in RDoc::Parser)
        3:  ::zlib_version (in Zlib)
        4:  ::zone_offset (in Time)
-Type a number to choose, 'x' to exit, or 'r' to open the README:  2
-Opening web page https://docs.ruby-lang.org/en/3.4/RDoc/Parser.html at method ::zip?.
-```
+Type a number to choose, or Return to skip:  3
+Opening web page https://docs.ruby-lang.org/en/3.4/Zlib.html at method ::zlib_version.
 
-```bash
-$ webri ::z
-Found 5 singleton method names starting with '::z'.
-Show 5 names?' (y or n):  y
-       0:  ::zcat (in Zlib::GzipReader)
-       1:  ::zero? (in File)
-       2:  ::zip? (in RDoc::Parser)
-       3:  ::zlib_version (in Zlib)
-       4:  ::zone_offset (in Time)
-Type a number to choose, 'x' to exit, or 'r' to open the README:  x
-```
-
-```bash
-$ webri ::z
-Found 5 singleton method names starting with '::z'.
-Show 5 names?' (y or n):  y
-       0:  ::zcat (in Zlib::GzipReader)
-       1:  ::zero? (in File)
-       2:  ::zip? (in RDoc::Parser)
-       3:  ::zlib_version (in Zlib)
-       4:  ::zone_offset (in Time)
-Type a number to choose, 'x' to exit, or 'r' to open the README:  r
-"https://github.com/BurdetteLamar/webri/blob/main/README.md"
-Opening web page https://github.com/BurdetteLamar/webri/blob/main/README.md.
 ```
 
 When no such singleton method name is found, offers to list all singleton method names:

@@ -5,7 +5,7 @@ require 'open-uri'
 require 'rexml'
 require 'cgi'
 
-# TODO: Support interactive mode (remain in app).
+# TODO: Add names @help and @readme.
 
 # TODO: Build test names from ruby-lang.org (not webri).
 # TODO: Use REXML to build test names.
@@ -504,17 +504,16 @@ class WebRI
         puts "  #{s}:  #{choice}"
       end
       while true
-        print "Type a number to choose, 'x' to exit, or 'r' to open the README:  "
+        print "Type a number to choose, or Return to skip:  "
         $stdout.flush
         response = $stdin.gets
         case response
         when /(\d+)/
           return choices[$1.to_i]
-        when /x/i
-          exit
-        when /r/i
-          open_readme
-          exit
+        when "\n"
+          return nil
+        else
+
         end
       end
     end
