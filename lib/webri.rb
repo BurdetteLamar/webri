@@ -6,7 +6,9 @@ require 'rexml'
 require 'cgi'
 
 # TODO: Add names @help and @readme.
-
+#
+# TODO: Use reline.
+#
 # TODO: Build test names from ruby-lang.org (not webri).
 # TODO: Use REXML to build test names.
 #
