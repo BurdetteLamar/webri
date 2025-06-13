@@ -115,13 +115,12 @@ class WebRI
       i += 1
       next unless item_line.match('<li class="(\w+)"')
       class_attr_value = $1 # Save for later.
-      # We have a triplet of lines such as:
+      # We have a pair of lines such as:
       #     <li class="file">
       #       <a href="COPYING.html">COPYING</a>
-      #     </li>
-      anchor_line = lines[i] # Second line of triplet.
-      # Consume anchor_line and third (unused) line.
-      i += 2
+      anchor_line = lines[i] # Second line of pair.
+      # Consume anchor_line.
+      i += 1
       # We capture variables thus:
       # - +type+ is the value of attribute 'class'.
       # - +path+ is the value of attribute 'href'.
