@@ -7,11 +7,11 @@ require 'cgi'
 
 # TODO: Use reline.
 #
-# TODO: Build test names from ruby-lang.org (not webri).
-#
 # TODO: Subroutinize.
 # TODO: Make initialization faster.
 
+# TODO: Build test names from ruby-lang.org (not webri).
+#
 # TODO: Choose dynamically the test names (rather than fixed)?
 # TODO: Test methods with trailing special chars, and with all special chars
 # TODO: Test on Linux.
