@@ -339,7 +339,7 @@ class TestWebRI < Minitest::Test
 
   # Open a webri session and yield its IO streams.
   # Option --noop, which we use for all tests, means don't actually open the web page.
-  def webri_session(options_s = '--noop')
+  def webri_session(options_s = '--noop --release=3.4')
     command = "ruby bin/webri #{options_s}"
     Open3.popen3(command) do |stdin, stdout, stderr, wait_thread|
       # Cannot use readline for this because it has no trailing newline.
@@ -360,14 +360,8 @@ class TestWebRI < Minitest::Test
 
   def setup
     return if defined?(@@test_names)
-    options = %w[--info]
-    @release = ENV['WEBRI_RELEASE']
-    if @release
-      options.unshift("--release=#{@release}")
-    end
-    options_s = options.join(' ')
     # Get the url from --info and fetch the toc html.
-    webri_session(options_s) do |stdin, stdout, stderr|
+    webri_session('--info') do |stdin, stdout, stderr|
       lines = stdout.readlines
       url_line = lines[1]
       url = url_line.split(' ').last
@@ -441,9 +435,8 @@ class TestWebRI < Minitest::Test
   end
 
   def get_name_lines(name)
-    release_option = @release ? "--release=#{@release}" : ''
     name_lines = []
-    webri_session(release_option) do |stdin, stdout, stderr|
+    webri_session do |stdin, stdout, stderr|
       put_name(name, stdin, stdout)
       _ = stdout.readline # Found line
       show_line = read(stdout)
