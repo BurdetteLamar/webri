@@ -360,8 +360,14 @@ class TestWebRI < Minitest::Test
 
   def setup
     return if defined?(@@test_names)
+    options = %w[--info]
+    @release = ENV['WEBRI_RELEASE']
+    if @release
+      options.unshift("--release=#{@release}")
+    end
+    options_s = options.join(' ')
     # Get the url from --info and fetch the toc html.
-    webri_session('--info') do |stdin, stdout, stderr|
+    webri_session(options_s) do |stdin, stdout, stderr|
       lines = stdout.readlines
       url_line = lines[1]
       url = url_line.split(' ').last
@@ -435,8 +441,9 @@ class TestWebRI < Minitest::Test
   end
 
   def get_name_lines(name)
+    release_option = @release ? "--release=#{@release}" : ''
     name_lines = []
-    webri_session do |stdin, stdout, stderr|
+    webri_session(release_option) do |stdin, stdout, stderr|
       put_name(name, stdin, stdout)
       _ = stdout.readline # Found line
       show_line = read(stdout)
