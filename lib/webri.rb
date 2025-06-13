@@ -8,7 +8,6 @@ require 'cgi'
 # TODO: Use reline.
 #
 # TODO: Build test names from ruby-lang.org (not webri).
-# TODO: Use REXML to build test names.
 #
 # TODO: Subroutinize.
 # TODO: Make initialization faster.
