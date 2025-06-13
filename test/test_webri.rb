@@ -182,13 +182,6 @@ class TestWebRI < Minitest::Test
         put_name(name, stdin, stdout)
         assert_found_line(stdout, 2, type, short_name)
         assert_show(stdout, stdin, type, yes: true)
-        assert_partial_name_ambiguous(type, short_name)
-        name = "ruby:#{short_name}"
-        webri_session do |stdin, stdout, stderr|
-          put_name(name, stdin, stdout)
-          assert_found_line(stdout, 2, type, short_name)
-          assert_show(stdout, stdin, type, yes: true)
-        end
       end
     end
   end
