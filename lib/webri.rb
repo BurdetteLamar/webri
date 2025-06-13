@@ -5,8 +5,6 @@ require 'open-uri'
 require 'rexml'
 require 'cgi'
 
-# TODO: Add names @help and @readme.
-#
 # TODO: Use reline.
 #
 # TODO: Build test names from ruby-lang.org (not webri).
@@ -23,18 +21,11 @@ require 'cgi'
 
 # TODO: Make it work for naked method ('parse') or dotted method ('.parse').
 
-# TODO: Update webri.gemspec.
-# TODO: Push to gem.
-# TODO: Make sure webri is on $PATH.
-
 # TODO: Support pager.
 
 # TODO: Support .webrirc.
 # TODO: Make it save options to .webrirc.
 # TODO: Make it show .webrirc.
-
-# TODO: Review RI docs, options, and help.
-# TODO: Review RDoc docs, options, and help.
 
 # A class to display Ruby online HTML documentation.
 class WebRI
