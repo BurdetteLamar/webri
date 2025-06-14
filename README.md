@@ -14,7 +14,7 @@ WebRI displays documentation for:
 
 - A **class** or **module**: opens its web page.
 - A **method**: opens the web page for its class/module _scrolled to the method's documentation_.
-- A Ruby **file**: opens a free-standing web page.
+- A Ruby **page**: opens a free-standing web page.
 
 ## Usage
 
@@ -43,7 +43,7 @@ At the prompt, you can type:
 - The name of a [class or module][1].
 - The name of a [singleton method][2].
 - The name of an [instance method][3].
-- The name of a [Ruby file][4].
+- The name of a [Ruby page][4].
 - An abbreviation of any of the above.
 - One of the [special names][5] `@help` or `@readme`.
 
@@ -196,19 +196,19 @@ Found no instance method name starting with '#nosuch'.
 Show names of all 10370 instance methods? (y or n):  n
 ```
 
-### Ruby 'File'
+### Ruby Page
 
 For a name beginning with `ruby:`,
-finds the names of ruby files beginning
+finds the names of ruby pages beginning
 with that name.
 
-When exactly one such file name is found:
+When exactly one such page name is found:
 
 - If the name is the exact name of the found name, opens its page:
 
 ```
 webri> ruby:operators
-Found one file name starting with 'operators'
+Found one page name starting with 'operators'
   operators (syntax/operators_rdoc.html)
 ```
 
@@ -216,18 +216,18 @@ Found one file name starting with 'operators'
 
 ```
 webri> ruby:opera
-Found one file name starting with 'opera'
+Found one page name starting with 'opera'
   operators (syntax/operators_rdoc.html)
 Open page syntax/operators_rdoc.html? (y or n):  y
 Opening web page https://docs.ruby-lang.org/en/3.4/syntax/operators_rdoc.html.
 
 ```
 
-When multiple such file names are found offer to list the found names:
+When multiple such page names are found offer to list the found names:
 
 ```
 webri> ruby:o
-Found 4 file names starting with 'o'.
+Found 4 page names starting with 'o'.
 Show 4 names?' (y or n):  y
        0:  operators (syntax/operators_rdoc.html)
        1:  option_dump (ruby/option_dump_md.html)
@@ -237,12 +237,12 @@ Type a number to choose, or Return to skip:  2
 
 ```
 
-When no such file name is found, offers to list all file names:
+When no such page name is found, offers to list all page names:
 
 ```
 webri> ruby:nosuch
-Found no file name starting with 'nosuch'.
-Show names of all 83 files? (y or n):  y
+Found no page name starting with 'nosuch'.
+Show names of all 83 pages? (y or n):  y
        0:  COPYING (COPYING.html)
        1:  COPYING.ja (COPYING_ja.html)
        2:  LEGAL (LEGAL.html)
@@ -374,7 +374,7 @@ Names:
    1364 class names
    1175 singleton_method names
    4407 instance_method names
-     81 file names
+     81 page names
 ```
 
 Option `--release` sets the release of the documentation to be used.
@@ -389,7 +389,7 @@ Names:
    1262 class names
    1301 singleton_method names
    4397 instance_method names
-     73 file names
+     73 page names
 $ webri --release=3.3 --info
 Ruby documentation release:  '3.3'
 Ruby documentation URL:      'https://docs.ruby-lang.org/en/3.3/table_of_contents.html'
@@ -398,7 +398,7 @@ Names:
    1469 class names
    1270 singleton_method names
    4638 instance_method names
-     77 file names
+     77 page names
 ```
 
 Issues a message if the given release is unknown:
@@ -452,5 +452,5 @@ to follow the [code of conduct](https://github.com/BurdetteLamar/webri/blob/mast
 [1]: rdoc-ref:README.md@Class+or+Module
 [2]: rdoc-ref:README.md@Singleton+Method
 [3]: rdoc-ref:README.md@Instance+Method
-[4]: rdoc-ref:README.md@Ruby+File
+[4]: rdoc-ref:README.md@Ruby+Page
 [5]: rdoc-ref:README.md@Special+Names

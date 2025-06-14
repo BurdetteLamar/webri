@@ -142,10 +142,10 @@ class TestWebRI < Minitest::Test
     end
   end
 
-  # Test files.
+  # Test pages.
 
   def test_file_nosuch_name
-    type = :file
+    type = :page
     name = get_nosuch_name(type)
     short_name = name.sub('ruby:', '')
     webri_session do |stdin, stdout, stderr|
@@ -156,7 +156,7 @@ class TestWebRI < Minitest::Test
   end
 
   def test_file_exact_name
-    type = :file
+    type = :page
     short_names = %w[COPYING.ja NEWS-2.7.0 LEGAL]
     short_names.each do |short_name|
       assert_exact_name(type, short_name)
@@ -173,7 +173,7 @@ class TestWebRI < Minitest::Test
   end
 
   def test_file_partial_name_ambiguous
-    type = :file
+    type = :page
     short_names = %w[COPY NEWS-]
     short_names.each do |short_name|
       assert_partial_name_ambiguous(type, short_name)
@@ -187,7 +187,7 @@ class TestWebRI < Minitest::Test
   end
 
   def test_file_partial_name_unambiguous_one_path
-    type = :file
+    type = :page
     short_names = %w[NEWS-2.7 COPYING.j]
     short_names.each do |short_name|
       assert_partial_name_unambiguous(type , short_name, multiple_paths: false)
@@ -203,7 +203,7 @@ class TestWebRI < Minitest::Test
   end
 
   def test_file_partial_name_unambiguous_multiple_paths
-    type = :file
+    type = :page
     short_name = get_partial_name_unambiguous(type, multiple_paths: true)
     unless short_name
       puts "Warning: Method #{__method__} could not get a suitable name."
@@ -355,7 +355,7 @@ class TestWebRI < Minitest::Test
     class:            'NoSuChClAsS',
     singleton_method: '::nOsUcHsInGlEtOnMeThOd',
     instance_method:  '#nOsUcHiNsTaNcEmEtHoD',
-    file:             'ruby:nOsUcHfIlE',
+    page:             'ruby:nOsUcHpAgE',
   }
 
   def setup
@@ -395,9 +395,9 @@ class TestWebRI < Minitest::Test
   end
 
   def build_test_file_names
-    @@test_names[:file] = {}
-    names = @@test_names[:file]
-    name = NoSuchName[:file]
+    @@test_names[:page] = {}
+    names = @@test_names[:page]
+    name = NoSuchName[:page]
     lines = get_name_lines(name)
     lines.each do |line|
       _, _, name, path = line.split(/\s+/)
@@ -524,7 +524,7 @@ class TestWebRI < Minitest::Test
 
   TypeWord = {
     class: 'class/module',
-    file: 'file',
+    page: 'page',
     singleton_method: 'singleton method',
     instance_method: 'instance method',
   }
@@ -682,7 +682,7 @@ class TestWebRI < Minitest::Test
     target_path = case type
                   when :class
                     choice.gsub('::', '/')
-                  when :file
+                  when :page
                     choice.split('.').first
                   when :singleton_method, :instance_method
                     choice.split(' ').first

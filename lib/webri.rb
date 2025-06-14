@@ -104,7 +104,7 @@ class WebRI
       class: {}, # Has both classes and modules.
       singleton_method: {},
       instance_method: {},
-      file: {},
+      page: {},
     }
     # Iterate over the lines of the TOC page.
     lines = @toc_html.split("\n")
@@ -139,7 +139,7 @@ class WebRI
         end
         entry.paths.push(path) unless entry.paths.include?(path)
       when 'file'
-        index = @index_for_type[:file]
+        index = @index_for_type[:page]
         if index.include?(full_name)
           entry = index[full_name]
         else
@@ -277,7 +277,7 @@ class WebRI
     when %w[fatal fata fat fa f].include?(name)
       show_class(name, @index_for_type[:class])
     when name.start_with?('ruby:')
-      show_file(name, @index_for_type[:file])
+      show_file(name, @index_for_type[:page])
     when name.start_with?('::')
       show_singleton_method(name, @index_for_type[:singleton_method])
     when name.start_with?('#')
@@ -342,11 +342,11 @@ class WebRI
     open_page(name, uri)
   end
 
-  # Show file.
+  # Show page.
   def show_file(name, file_index)
     # Target page is a free-standing page such as 'COPYING'.
     name = name.sub(/^ruby:/, '') # Discard leading 'ruby:'
-    all_entries = @index_for_type[:file]
+    all_entries = @index_for_type[:page]
     all_choices = FileEntry.choices(all_entries)
     # Find entries whose names that start with name.
     selected_entries = all_entries.select do |key, value|
@@ -364,7 +364,7 @@ class WebRI
       selected_choices = FileEntry.choices(selected_entries)
       choice = selected_choices.keys.first
       path = selected_choices.values.first
-      puts "Found one file name starting with '#{name}'\n  #{choice}"
+      puts "Found one page name starting with '#{name}'\n  #{choice}"
       full_name = FileEntry.full_name_for_choice(choice)
       if name != full_name
         message = "Open page #{path}?"
@@ -372,15 +372,15 @@ class WebRI
       end
       path
     when 0
-      puts "Found no file name starting with '#{name}'."
-      message = "Show names of all #{all_choices.size} files?"
+      puts "Found no page name starting with '#{name}'."
+      message = "Show names of all #{all_choices.size} pages?"
       return unless get_boolean_answer(message)
       key = get_choice(all_choices.keys)
       return if key.nil?
       path = all_choices[key]
     else
       selected_choices = FileEntry.choices(selected_entries)
-      puts "Found #{selected_choices.size} file names starting with '#{name}'."
+      puts "Found #{selected_choices.size} page names starting with '#{name}'."
       message = "Show #{selected_choices.size} names?'"
       return unless get_boolean_answer(message)
       key = get_choice(selected_choices.keys)
