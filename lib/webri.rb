@@ -68,6 +68,17 @@ class WebRI
     end
 
     begin
+      completion_words= []
+      @index_for_type.each_pair do |type, index|
+        if type == :page
+          completion_words += index.keys.map {|name| 'ruby:' + name }
+        else
+          completion_words += index.keys
+        end
+      end
+      Reline.completion_proc = proc { |word|
+        completion_words
+      }
       while line = Reline.readline("webri> ", true)
         case line.chomp
         when 'exit'
