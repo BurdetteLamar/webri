@@ -1,4 +1,4 @@
-# WebRI
+# WebRI - Quick Access to Ruby Online Documentation
 
 WebRI has a command-line utility, `webri`, for displaying Ruby online documentation.
 
