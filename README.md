@@ -335,6 +335,7 @@ Opening web page https://docs.ruby-lang.org/en/3.4/regexp/unicode_properties_rdo
 To display the WebRI help text, use the special name `@help`:
 
 ```
+$ ruby bin/webri
 webri> @help
 Showing help.
 webri is a console application for displaying Ruby online HTML documentation.
@@ -347,6 +348,7 @@ For more information, see https://github.com/BurdetteLamar/webri/blob/main/READM
 Options:
     -i, --info                       Prints information about webri.
     -r, --release=RELEASE            Sets the Ruby release to document.
+        --noreline                   Does not use Reline (helps testing).
     -n, --noop                       Does not actually open web pages.
     -h, --help                       Prints this help.
     -v, --version                    Prints the version of webri.
@@ -358,6 +360,14 @@ To open the WebRI README page, use the special name `@readme`:
 webri> @readme
 Opening web page https://github.com/BurdetteLamar/webri/blob/main/README.md.
 ```
+
+### Reline
+
+`webri` uses [Reline](https://ruby.github.io/reline/Reline.html)
+(on Linux, but not on other OS platforms).
+
+Reline enables editing of text at the `webri` prompt (use left- and right-arrows),
+and gives access to history (use up-arrow).
 
 ### Options
 
@@ -422,6 +432,8 @@ Opening web page https://docs.ruby-lang.org/en/3.4/Array.html.
 Command: 'start https://docs.ruby-lang.org/en/3.4/Array.html'
 ```
 
+Option `--noreline` blocks Reline behavior; see [Reline][6].
+
 Option `--help` prints the WebRI help text.
 
 Option `--version` prints the WebRI version.
@@ -454,3 +466,4 @@ to follow the [code of conduct](https://github.com/BurdetteLamar/webri/blob/mast
 [3]: rdoc-ref:README.md@Instance+Method
 [4]: rdoc-ref:README.md@Ruby+Page
 [5]: rdoc-ref:README.md@Special+Names
+[6]: rdoc-ref:README.md@Reline
