@@ -28,6 +28,9 @@ end
 parser.on('-r=RELEASE', '--release=RELEASE', 'Sets the Ruby release to document.') do |value|
   options[:release] = value
 end
+parser.on('--noreline', 'Does not use Reline (helps testing).') do |value|
+  options[:noreline] = true
+end
 parser.on('-n', '--noop', 'Does not actually open web pages.') do |value|
   options[:noop] = true
 end

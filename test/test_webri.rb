@@ -339,7 +339,8 @@ class TestWebRI < Minitest::Test
 
   # Open a webri session and yield its IO streams.
   # Option --noop, which we use for all tests, means don't actually open the web page.
-  def webri_session(options_s = '--noop')
+  # Option --noreline, which we use for all tests, means don't use Reline..
+  def webri_session(options_s = '--noop --noreline')
     command = "ruby bin/webri #{options_s}"
     Open3.popen3(command) do |stdin, stdout, stderr, wait_thread|
       # Cannot use readline for this because it has no trailing newline.

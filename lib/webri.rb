@@ -4,6 +4,7 @@ require 'rbconfig'
 require 'open-uri'
 require 'rexml'
 require 'cgi'
+require 'reline'
 
 # TODO: Use reline.
 #
@@ -37,6 +38,15 @@ class WebRI
     get_toc_html
     build_indexes
     print_info if @info
+    print @noreline
+    if os_type == :linux && !@noreline
+      repl_reline
+    else
+      repl_plain
+    end
+  end
+
+  def repl_plain # Read-evaluate-print loop, without Reline.
     while true
       $stdout.write('webri> ')
       $stdout.flush
@@ -49,6 +59,35 @@ class WebRI
       end
       show(response)
     end
+  end
+
+  def repl_reline # Read-evaluate-print loop, with Reline.
+    begin
+      stty_save = `stty -g`.chomp
+    rescue
+    end
+
+    begin
+      while line = Reline.readline("webri> ", true)
+        case line.chomp
+        when 'exit'
+          exit 0
+        when ''
+          # NOOP
+        else
+          if line.split(' ').size > 1
+            puts "One name at a time, please."
+            next
+          end
+          show(line)
+        end
+      end
+    rescue Interrupt
+      puts '^C'
+      `stty #{stty_save}` if stty_save
+      exit 0
+    end
+    puts
   end
 
   def set_doc_release
@@ -176,6 +215,7 @@ class WebRI
   def capture_options(options)
     @noop = options[:noop]
     @info = options[:info]
+    @noreline = options[:noreline]
     @doc_release = options[:release]
   end
 
