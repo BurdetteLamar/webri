@@ -34,6 +34,17 @@ class WebRI
   # Get the info from the Ruby doc site's table of contents
   # and build our @index_for_type.
   def initialize(options = {})
+    msg = <<MSG
+The release of Ruby 4.0 broke webri in a couple of ways:
+
+- The documentation format changed from Darkfish to Alike,
+  thus breaking all the parsing.
+- Class CGI was pushed out of the Ruby core.
+
+Look for fixes in August 2026.
+MSG
+    puts msg
+    exit
     capture_options(options)
     set_doc_release
     get_toc_html
