@@ -6,6 +6,7 @@ require 'rexml'
 require 'cgi'
 require 'reline'
 
+# TODO: Make it work on Aliki.
 # TODO: Use reline.
 #
 # TODO: Subroutinize.
@@ -13,7 +14,7 @@ require 'reline'
 
 # TODO: Choose dynamically the test names (rather than fixed)?
 # TODO: Test on Linux.
-# TODO: Test all releases(?).
+# TODO: Test all releases(?).0
 # TODO: Test all pages(?).
 
 # TODO: Make it work for naked method ('parse') or dotted method ('.parse').

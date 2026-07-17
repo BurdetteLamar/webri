@@ -12,6 +12,16 @@ parser = OptionParser.new
 
 parser.version = WebRI::VERSION
 parser.banner = <<-BANNER
+=====================================================
+17-Jul-2026
+
+Webri was broken by the Ruby documentation's change
+from Darkfish format to Aliki format,
+and by the removal of CGI from the Ruby core.
+
+Expect fixes within this month.
+=====================================================
+
 webri is a console application for displaying Ruby online HTML documentation.
 Documentation pages are opened in the default web browser.
 
