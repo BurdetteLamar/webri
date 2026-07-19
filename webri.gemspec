@@ -29,9 +29,9 @@ Gem::Specification.new do |spec|
         f.start_with?(*%w[test/ .git appveyor Gemfile])
     end
   end
-  spec.files.push('bin/webri')
-  spec.bindir = "bin"
-  spec.executables = spec.files.grep(/^bin/) { |f| File.basename(f) }
+  spec.files.push('exe/webri')
+  spec.bindir = "exe"
+  spec.executables = spec.files.grep(/^exe/) { |f| File.basename(f) }
   spec.require_paths = ["lib"]
 
   # Uncomment to register a new dependency of your gem

@@ -335,7 +335,7 @@ Opening web page https://docs.ruby-lang.org/en/3.4/regexp/unicode_properties_rdo
 To display the WebRI help text, use the special name `@help`:
 
 ```
-$ ruby bin/webri
+$ ruby exe/webri
 webri> @help
 Showing help.
 webri is a console application for displaying Ruby online HTML documentation.

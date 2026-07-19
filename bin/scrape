@@ -1,0 +1,8 @@
+#!/usr/bin/env ruby
+
+# A utility application to scrape Ruby information from the web.
+
+require_relative '../lib/scraper'
+
+scraper = Scraper.new
+scraper.scrape(ARGV[0])
