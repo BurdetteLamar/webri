@@ -29,7 +29,9 @@ require 'uri'
 class WebRI
 
   # Site of the official documentation.
-  DocSite = 'https://docs.ruby-lang.org/en/'
+  DOC_SITE = 'https://docs.ruby-lang.org/en/'
+  
+  attr_accessor :classes, :pages, :singleton_methods, :instance_methods
 
   def initialize(options = {})
     capture_options(options)
@@ -37,8 +39,9 @@ class WebRI
     data_file_path = File.join('data', @doc_release + '.json')
     json = open(data_file_path).read
     @data = JSON.parse(json, create_additions: true)
+    make_groups
     print_info if @info
-    build_indexes
+    # build_indexes
     if os_type == :linux && !@noreline
       repl_reline
     else
@@ -46,7 +49,26 @@ class WebRI
     end
   end
 
-  def repl_plain # Read-evaluate-print loop, without Reline.
+  def make_groups
+    self.classes = {}
+    self.pages = {}
+    self.singleton_methods = {}
+    self.instance_methods = {}
+    @data['hrefs_for_name'].group_by do |name, hrefs|
+      case
+      when name.start_with?('ruby:')
+        self.pages[name] = hrefs.first
+      when name.start_with?('#')
+        self.instance_methods[name] = hrefs
+      when name.start_with?('::')
+        self.singleton_methods[name] = hrefs
+      else
+        self.classes[name] = hrefs.first
+      end
+    end
+  end
+
+    def repl_plain # Read-evaluate-print loop, without Reline.
     while true
       $stdout.write('webri> ')
       $stdout.flush
@@ -68,20 +90,7 @@ class WebRI
     end
 
     begin
-      completion_words= []
-      @data.each_pair do |type, value|
-        case
-        when type == 'pages'
-          completion_words += value.keys
-        when type == 'classes'
-          value.each_pair do |class_name, _value|
-            completion_words << class_name
-            _value['methods'].keys.each do |method_name|
-              completion_words << method_name
-            end
-          end
-        end
-      end
+      completion_words= @data['hrefs_for_name'].keys.sort
       Reline.completion_proc = proc { |word|
         completion_words
       }
@@ -126,20 +135,21 @@ class WebRI
 
   def print_info
     puts "Ruby documentation release:  #{@doc_release}"
-    puts "Ruby documentation site:     #{DocSite}"
+    puts "Ruby documentation site:     #{DOC_SITE}"
     puts "Executable to open page:     #{opener_name}"
     puts "Names:"
-    method_count = 0
-    @data['classes'].each_pair do |_, value|
-      method_count += value['methods'].size
+    puts format("  %5d %s", pages.size, 'Pages')
+    puts format("  %5d %s", classes.size, 'Classes and modules')
+    count = 0
+    singleton_methods.each_pair do |name, _|
+      count += @data['classes_for_method'][name].size
     end
-    {
-      pages: @data['pages'].size,
-      classes: @data['classes'].size,
-      methods: method_count
-    }.each_pair do |type, count|
-      puts format("  %5d %s", count, type)
+    puts format("  %5d %s", count, 'Singleton methods')
+    count = 0
+    instance_methods.each_pair do |name, _|
+      count += @data['classes_for_method'][name].size
     end
+    puts format("  %5d %s", count, 'Instance methods')
     exit
   end
 
@@ -248,9 +258,9 @@ class WebRI
     # Figure out what's asked for.
     case
     when name.match(/^[A-Z]/)
-      show_class(name, @index_for_type[:classes])
+      show_class(name)
     when %w[fatal fata fat fa f].include?(name)
-      show_class(name, @index_for_type[:classess])
+      show_class(name)
     when name.start_with?('ruby:')
       show_file(name, @index_for_type[:page])
     when name.start_with?('::')
@@ -271,14 +281,17 @@ class WebRI
   end
 
   # Show class.
-  def show_class(name, classes)
+  def show_class(class_name)
     # Find classes whose names that start name.
-    selected_classes = classes.select do |class_name, value|
+    class_data = groups[CLASSES_AND_MODULES]
+    class_names = class_data.map {|data| data.first }
+    class_hrefs = class_data.map {|data| data.last.first }
+    selected_names = class_names.select do |name|
       class_name.start_with?(name)
     end
-    case selected_classes.size
+    case selected_names.size
     when 1
-      full_name = selected_classes.keys.first
+      full_name = selected_names.first
       href = selected_classes.values.first
       puts "Found one class/module name starting with '#{name}'\n  #{full_name}"
       if name != full_name
@@ -508,7 +521,7 @@ class WebRI
 
   # Open URL in browser.
   def open_page(name, href)
-    uri = URI.parse(File.join(DocSite, @doc_release, href))
+    uri = URI.parse(File.join(DOC_SITE, @doc_release, href))
     open_uri(name, uri)
   end
 
@@ -554,6 +567,15 @@ class WebRI
     else
       system(command)
     end
+  end
+
+  def self.git_root
+    git_root = `git rev-parse --show-toplevel`.chomp
+    unless $?.success?
+      message = "Current working directory #{Dir.pwd} is not in a git project."
+      raise RuntimeError(message)
+    end
+    git_root
   end
 
 end

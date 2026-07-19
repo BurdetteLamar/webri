@@ -4,6 +4,9 @@ require 'rexml'
 require 'json'
 require 'json/add/core'
 
+
+require_relative 'webri'
+
 # Class to scrape Ruby info from the documentation site and store it as JSON.
 
 class Scraper
@@ -32,37 +35,29 @@ class Scraper
     '-7C' => '|',
   }
 
-  # Hash containing the scraped data.
-  attr_accessor :data, :git_root
+  attr_accessor :hrefs_for_name, :git_root, :classes_for_method
 
   def initialize
-    self.data = {
-      pages: {}, # Names and relative URLs of the free-standing Ruby doc pages.
-      classes: {},    # Each key is the relative URL of the class/module doc page;
-                      # the value is a set of relative URLs of its methods.
-    }
+    self.hrefs_for_name = {}
+    self.classes_for_method = {}
   end
 
   def scrape(release)
-    self.git_root = `git rev-parse --show-toplevel`.chomp
-    unless $?.success?
-      puts "FATAL: Current working directory #{Dir.pwd} is not in a git project."
-      exit 1
-    end
+    self.git_root = WebRI.git_root
     # Get the main page for the release.
     url = File.join(BASE_URL, release, '') # Must end with '/', else HTTP code 301.
     uri = URI(url)
     response = Net::HTTP.get_response(uri)
     unless response.code == '200'
-      puts "FATAL: Page #{url} for release #{release} not found."
-      exit 1
+      message = "Page #{url} for release #{release} not found."
+      raise RuntimeError.new(message)
     end
     case release
     when '4.0'
       scrape_40(response)
     else
-      puts "FATAL: Release #{release} is not supported."
-      exit 1
+      message = "Release #{release} is not supported."
+      raise RuntimeError.new(message)
     end
   end
 
@@ -86,8 +81,12 @@ class Scraper
       end
     end
     # This JSON is bulky, but readable by humans.
+    data = {
+      :hrefs_for_name => hrefs_for_name.sort.to_h,
+      :classes_for_method => classes_for_method.sort.to_h,
+    }
     json = JSON.generate(
-      data,
+      data.sort.to_h,
       indent: "  ",   # 4 spaces per level
       space: " ",       # space after :
       array_nl: "\n",   # newline after each array element
@@ -104,7 +103,7 @@ class Scraper
     page_href.sub!(%r[^./], '')
     page_name = 'ruby:' + page_href.sub(/\.html$/, '')
     puts "Adding page #{page_name}"
-    data[:pages][page_name] = page_href
+    hrefs_for_name[page_name] = [page_href]
   end
 
   def add_classes(element, release)
@@ -112,10 +111,7 @@ class Scraper
       class_href = element.attributes['href'].sub(%r[^./], '')
       class_name = class_href.gsub('/', '::').sub(%r[\.html$], '')
       puts "Adding class #{class_name}"
-      data[:classes][class_name] ||= {
-        href: class_href,
-        methods: {},
-      }
+      hrefs_for_name[class_name] = [class_href]
       url = File.join(BASE_URL, release, class_href)
       uri = URI(url)
       response = Net::HTTP.get_response(uri)
@@ -146,8 +142,9 @@ class Scraper
                           '::' + method_name.sub(/#method-c[-]?/, '')
                         end
           # puts "Adding method #{method_name}"
-
-          data[:classes][class_name][:methods][method_name] = method_href
+          hrefs_for_name[method_name] = "#{method_href}"
+          classes_for_method[method_name] ||= []
+          classes_for_method[method_name] << "#{class_name}"
         end
       end
     end
