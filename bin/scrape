@@ -4,5 +4,19 @@
 
 require_relative '../lib/scraper'
 
-scraper = Scraper.new
-scraper.scrape(ARGV[0])
+SCRAPERS = {
+  '4.0' => Scraper40,
+}
+
+Dir.chdir(WebRI.get_webri_root_dir) do
+  release_name = ARGV[0]
+  stash_release_names = SCRAPERS.keys
+  unless stash_release_names.include?(release_name)
+    message = "Release must be one of #{stash_release_names.inspect}, not #{release_name.inspect}."
+    puts message
+    exit 1
+  end
+  scraper = SCRAPERS[release_name].new
+  scraper.scrape
+end
+

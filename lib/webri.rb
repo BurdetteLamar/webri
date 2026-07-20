@@ -5,6 +5,7 @@ require 'reline'
 require 'json'
 require 'json/add/core'
 require 'uri'
+require 'open3'
 
 # TODO: Make it work on Aliki.
 # TODO: Use reline.
@@ -31,7 +32,7 @@ class WebRI
   # Site of the official documentation.
   DOC_SITE = 'https://docs.ruby-lang.org/en/'
   
-  attr_accessor :classes, :pages, :singleton_methods, :instance_methods
+  attr_accessor :href_for_class_name, :pages, :singleton_methods, :instance_methods
 
   def initialize(options = {})
     capture_options(options)
@@ -50,7 +51,7 @@ class WebRI
   end
 
   def make_groups
-    self.classes = {}
+    self.href_for_class_name = {}
     self.pages = {}
     self.singleton_methods = {}
     self.instance_methods = {}
@@ -63,7 +64,7 @@ class WebRI
       when name.start_with?('::')
         self.singleton_methods[name] = hrefs
       else
-        self.classes[name] = hrefs.first
+        self.href_for_class_name[name] = hrefs.first
       end
     end
   end
@@ -139,7 +140,7 @@ class WebRI
     puts "Executable to open page:     #{opener_name}"
     puts "Names:"
     puts format("  %5d %s", pages.size, 'Pages')
-    puts format("  %5d %s", classes.size, 'Classes and modules')
+    puts format("  %5d %s", href_for_class_name.size, 'Classes and modules')
     count = 0
     singleton_methods.each_pair do |name, _|
       count += @data['classes_for_method'][name].size
@@ -157,16 +158,16 @@ class WebRI
     # Index for each type of entry.
     # Each index has a hash; key is name, value is array of URIs.
     @index_for_type = {
-      classes: {}, # Has both classes and modules.
+      href_for_class_name: {}, # Has names of both classes and modules.
       methods: {},
       pages: {},
     }
     @data['pages'].each_pair do |page_name, page_href|
       @index_for_type[:pages][page_name] = [page_href]
     end
-    @data['classes'].each_pair do |class_name, hash|
-      @index_for_type[:classes][class_name] = []
-      @index_for_type[:classes][class_name] << hash['href']
+    @data['href_for_class_name'].each_pair do |class_name, hash|
+      @index_for_type[:href_for_class_name][class_name] = []
+      @index_for_type[:href_for_class_name][class_name] << hash['href']
       hash['methods'].each_pair do |method_name, method_href|
         @index_for_type[:methods][method_name] ||= []
         @index_for_type[:methods][method_name] << "#{class_name}#{method_href}"
@@ -282,41 +283,35 @@ class WebRI
 
   # Show class.
   def show_class(class_name)
-    # Find classes whose names that start name.
-    class_data = groups[CLASSES_AND_MODULES]
-    class_names = class_data.map {|data| data.first }
-    class_hrefs = class_data.map {|data| data.last.first }
-    selected_names = class_names.select do |name|
-      class_name.start_with?(name)
+    # Find class names that start with class_name.
+    selected_names = href_for_class_name.select do |name, _|
+      name.start_with?(class_name)
     end
-    case selected_names.size
-    when 1
-      full_name = selected_names.first
-      href = selected_classes.values.first
-      puts "Found one class/module name starting with '#{name}'\n  #{full_name}"
-      if name != full_name
-        message = "Open page #{name}?"
-        return unless get_boolean_answer(message)
-      end
-      href
-    when 0
-      puts "Found no class/module name starting with '#{name}'."
-      message = "Show #{classes.size} class/module names?"
-      return unless get_boolean_answer(message)
-      choice_index = get_choice(classes.keys)
-      return if choice_index.nil?
-      hrefs = classes[choice_index]
-      hrefs.first
-    else
-      puts "Found #{selected_classes.size} class/module names starting with '#{name}'."
-      message = "Show #{selected_classes.size} class/module names?'"
-      return unless get_boolean_answer(message)
-      choice_index = get_choice(selected_classes.keys)
-      return if choice_index.nil?
-      hrefs = classes[choice_index]
-      p hrefs.first
-    end
-    open_page(name, href)
+    href = case selected_names.size
+           when 0
+             puts "Found no class/module name starting with '#{class_name}'."
+             message = "Show #{href_for_class_name.size} class/module names?"
+             return unless get_boolean_answer(message)
+             choice_index = get_choice(href_for_class_name.keys)
+             return if choice_index.nil?
+             hrefs = href_for_class_name[choice_index]
+             hrefs.first
+           when 1
+             full_name = selected_names.first.first
+             puts "Found one class/module name starting with '#{class_name}': #{full_name}"
+             if class_name != full_name
+               message = "Open page #{full_name}?"
+               return unless get_boolean_answer(message)
+             end
+             href_for_class_name[full_name]
+           else
+             puts "Found #{selected_names.size} class/module names starting with '#{class_name}'."
+             message = "Show #{selected_names.size} class/module names?'"
+             return unless get_boolean_answer(message)
+             full_name = get_choice(selected_names.keys)
+             href_for_class_name[full_name]
+           end
+    open_page(class_name, href)
   end
 
   # Show page.
@@ -565,17 +560,20 @@ class WebRI
     if @noop
       puts "Command: '#{command}'"
     else
-      system(command)
+      # system(command)
+      Open3.popen3(command) do |stdin, stdout, stderr, wait_thr|
+      end
     end
   end
 
-  def self.git_root
-    git_root = `git rev-parse --show-toplevel`.chomp
-    unless $?.success?
-      message = "Current working directory #{Dir.pwd} is not in a git project."
-      raise RuntimeError(message)
+  def self.get_webri_root_dir
+    webri_root_dir = `git rev-parse --show-toplevel`.chomp
+    if $?.success? && File.basename(webri_root_dir) == 'webri'
+      return webri_root_dir
     end
-    git_root
+    message = "Current working directory must be in a webri project, not #{Dir.pwd}."
+    puts message
+    exit
   end
 
 end

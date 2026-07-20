@@ -12,9 +12,9 @@ require_relative 'webri'
 class Scraper
 
   # The official documentation site for English.
-  #
   BASE_URL = 'https://docs.ruby-lang.org/en'
 
+  # Translations for hex characters.
   HEX_CHARS = {
     '-21' => '!',
     '-25' => '%',
@@ -35,34 +35,33 @@ class Scraper
     '-7C' => '|',
   }
 
-  attr_accessor :hrefs_for_name, :git_root, :classes_for_method
+  # Hash: relative URL paths for a name.
+  attr_accessor :hrefs_for_name
+
+  # Hash: the names of the classes that have a method.
+  attr_accessor :classes_for_method
 
   def initialize
     self.hrefs_for_name = {}
     self.classes_for_method = {}
   end
 
-  def scrape(release)
-    self.git_root = WebRI.git_root
+end
+
+class Scraper40 < Scraper
+
+  RELEASE_NAME = '4.0'
+
+  def scrape
     # Get the main page for the release.
-    url = File.join(BASE_URL, release, '') # Must end with '/', else HTTP code 301.
+    url = File.join(BASE_URL, RELEASE_NAME, '') # Must end with '/', else HTTP code 301.
     uri = URI(url)
     response = Net::HTTP.get_response(uri)
     unless response.code == '200'
-      message = "Page #{url} for release #{release} not found."
+      message = "Page #{url} for release #{url} not found; code #{response.code}."
       raise RuntimeError.new(message)
     end
-    case release
-    when '4.0'
-      scrape_40(response)
-    else
-      message = "Release #{release} is not supported."
-      raise RuntimeError.new(message)
-    end
-  end
-
-  def scrape_40(response)
-    # Find the links for each free-standing page, and for each module or class.
+    # Find the links for each page, class, module, and method.
     response.body.lines.each do |line|
       next unless line.match(%r[<a href="])
       line.chomp!
@@ -74,7 +73,7 @@ class Scraper
       when 'a'  # Each page URL is the href attribute in an anchor element.
         add_page(root)
       when 'ul' # All class/module URLs are in a single ul element.
-        add_classes(root, '4.0')
+        add_classes(root)
         break # We don't need anything farther downpage.
       else
         # Ignore.
@@ -87,15 +86,13 @@ class Scraper
     }
     json = JSON.generate(
       data.sort.to_h,
-      indent: "  ",   # 4 spaces per level
+      indent: "  ",     # 4 spaces per level
       space: " ",       # space after :
       array_nl: "\n",   # newline after each array element
       object_nl: "\n"   # newline after each object member
     )
-    Dir.chdir(git_root) do
-      filepath = "data/4.0.json"
-      File.write(filepath, json)
-    end
+    filepath = "data/#{RELEASE_NAME}.json"
+    File.write(filepath, json)
   end
 
   def add_page(element)
@@ -106,13 +103,13 @@ class Scraper
     hrefs_for_name[page_name] = [page_href]
   end
 
-  def add_classes(element, release)
+  def add_classes(element)
     REXML::XPath.each(element, "//*[@href]") do |element|
       class_href = element.attributes['href'].sub(%r[^./], '')
       class_name = class_href.gsub('/', '::').sub(%r[\.html$], '')
       puts "Adding class #{class_name}"
       hrefs_for_name[class_name] = [class_href]
-      url = File.join(BASE_URL, release, class_href)
+      url = File.join(BASE_URL, RELEASE_NAME, class_href)
       uri = URI(url)
       response = Net::HTTP.get_response(uri)
       raise response.code unless response.code == '200'
@@ -148,6 +145,5 @@ class Scraper
         end
       end
     end
-
   end
 end
