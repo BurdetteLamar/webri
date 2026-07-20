@@ -32,7 +32,10 @@ class WebRI
   # Site of the official documentation.
   DOC_SITE = 'https://docs.ruby-lang.org/en/'
   
-  attr_accessor :href_for_class_name, :pages, :singleton_methods, :instance_methods
+  attr_accessor :href_for_class_name,
+                :href_for_page_name,
+                :href_for_singleton_method_name,
+                :href_for_instance_method_name
 
   def initialize(options = {})
     capture_options(options)
@@ -42,7 +45,6 @@ class WebRI
     @data = JSON.parse(json, create_additions: true)
     make_groups
     print_info if @info
-    # build_indexes
     if os_type == :linux && !@noreline
       repl_reline
     else
@@ -52,24 +54,24 @@ class WebRI
 
   def make_groups
     self.href_for_class_name = {}
-    self.pages = {}
-    self.singleton_methods = {}
-    self.instance_methods = {}
+    self.href_for_page_name = {}
+    self.href_for_singleton_method_name = {}
+    self.href_for_instance_method_name = {}
     @data['hrefs_for_name'].group_by do |name, hrefs|
       case
       when name.start_with?('ruby:')
-        self.pages[name] = hrefs.first
+        self.href_for_page_name[name] = hrefs.first
       when name.start_with?('#')
-        self.instance_methods[name] = hrefs
+        self.href_for_instance_method_name[name] = hrefs
       when name.start_with?('::')
-        self.singleton_methods[name] = hrefs
+        self.href_for_singleton_method_name[name] = hrefs
       else
         self.href_for_class_name[name] = hrefs.first
       end
     end
   end
 
-    def repl_plain # Read-evaluate-print loop, without Reline.
+  def repl_plain # Read-evaluate-print loop, without Reline.
     while true
       $stdout.write('webri> ')
       $stdout.flush
@@ -139,40 +141,19 @@ class WebRI
     puts "Ruby documentation site:     #{DOC_SITE}"
     puts "Executable to open page:     #{opener_name}"
     puts "Names:"
-    puts format("  %5d %s", pages.size, 'Pages')
+    puts format("  %5d %s", href_for_page_name.size, 'Pages')
     puts format("  %5d %s", href_for_class_name.size, 'Classes and modules')
     count = 0
-    singleton_methods.each_pair do |name, _|
-      count += @data['classes_for_method'][name].size
+    href_for_singleton_method_name.each_pair do |name, href_for_name|
+      count += href_for_name.size
     end
     puts format("  %5d %s", count, 'Singleton methods')
     count = 0
-    instance_methods.each_pair do |name, _|
-      count += @data['classes_for_method'][name].size
+    href_for_instance_method_name.each_pair do |name, href_for_name|
+      count += href_for_name.size
     end
     puts format("  %5d %s", count, 'Instance methods')
     exit
-  end
-
-  def build_indexes
-    # Index for each type of entry.
-    # Each index has a hash; key is name, value is array of URIs.
-    @index_for_type = {
-      href_for_class_name: {}, # Has names of both classes and modules.
-      methods: {},
-      pages: {},
-    }
-    @data['pages'].each_pair do |page_name, page_href|
-      @index_for_type[:pages][page_name] = [page_href]
-    end
-    @data['href_for_class_name'].each_pair do |class_name, hash|
-      @index_for_type[:href_for_class_name][class_name] = []
-      @index_for_type[:href_for_class_name][class_name] << hash['href']
-      hash['methods'].each_pair do |method_name, method_href|
-        @index_for_type[:methods][method_name] ||= []
-        @index_for_type[:methods][method_name] << "#{class_name}#{method_href}"
-      end
-    end
   end
 
   def capture_options(options)
@@ -263,11 +244,11 @@ class WebRI
     when %w[fatal fata fat fa f].include?(name)
       show_class(name)
     when name.start_with?('ruby:')
-      show_file(name, @index_for_type[:page])
+      show_file(name)
     when name.start_with?('::')
-      show_singleton_method(name, @index_for_type[:singleton_method])
+      show_singleton_method(name)
     when name.start_with?('#')
-      show_instance_method(name, @index_for_type[:instance_method])
+      show_instance_method(name)
     when name == '@help'
       show_help
     when name == '@readme'
@@ -277,188 +258,65 @@ class WebRI
     # when name.match(/^[a-z]/)
     #   show_method(name, @index_for_type[:singleton_method], @index_for_type[:instance_method])
     else
+
       puts "No documentation available for name '#{name}'."
     end
   end
 
-  # Show class.
-  def show_class(class_name)
-    # Find class names that start with class_name.
-    selected_names = href_for_class_name.select do |name, _|
-      name.start_with?(class_name)
+  # Show web page for selected name.
+  def show_webpage(partial_name, href_for_name, type)
+    # Find names that start with partial name (which may in fact be the full name).
+    selected_names = href_for_name.keys.select do |name|
+      name.start_with?(partial_name)
     end
-    href = case selected_names.size
-           when 0
-             puts "Found no class/module name starting with '#{class_name}'."
-             message = "Show #{href_for_class_name.size} class/module names?"
-             return unless get_boolean_answer(message)
-             choice_index = get_choice(href_for_class_name.keys)
-             return if choice_index.nil?
-             hrefs = href_for_class_name[choice_index]
-             hrefs.first
-           when 1
-             full_name = selected_names.first.first
-             puts "Found one class/module name starting with '#{class_name}': #{full_name}"
-             if class_name != full_name
-               message = "Open page #{full_name}?"
-               return unless get_boolean_answer(message)
-             end
-             href_for_class_name[full_name]
-           else
-             puts "Found #{selected_names.size} class/module names starting with '#{class_name}'."
-             message = "Show #{selected_names.size} class/module names?'"
-             return unless get_boolean_answer(message)
-             full_name = get_choice(selected_names.keys)
-             href_for_class_name[full_name]
-           end
-    open_page(class_name, href)
+    count = selected_names.size
+    selected_name =
+      case count
+      when 0
+        puts "Found no #{type} name starting with '#{partial_name}'."
+        message = "Show #{href_for_name.size} #{type} names?"
+        return unless get_boolean_answer(message)
+        selected_name = get_choice(href_for_name.keys)
+        return if selected_name.nil?
+        selected_name
+      when 1
+        full_name = selected_names.first
+        puts "Found one #{type} name starting with '#{partial_name}': #{full_name}"
+        if partial_name != full_name
+          message = "Open web page #{full_name}?"
+          return unless get_boolean_answer(message)
+        end
+        full_name
+      else
+        puts "Found #{count} #{type} names starting with '#{partial_name}'."
+        message = "Show #{selected_names.size} #{type} names?'"
+        return unless get_boolean_answer(message)
+        selected_name = get_choice(selected_names)
+        return if selected_name.nil?
+        selected_name
+      end
+    href = href_for_name[selected_name]
+    open_page(selected_name, href)
   end
 
-  # Show page.
-  def show_file(name, file_index)
-    # Target page is a free-standing page such as 'COPYING'.
-    name = name.sub(/^ruby:/, '') # Discard leading 'ruby:'
-    all_entries = @index_for_type[:page]
-    all_choices = FileEntry.choices(all_entries)
-    # Find entries whose names that start with name.
-    selected_entries = all_entries.select do |key, value|
-      key.start_with?(name)
-    end
-    # Find paths for selected_choices
-    selected_paths = []
-    selected_entries.each_pair do |name, entry|
-      entry.paths.each do |path|
-        selected_paths.push(path)
-      end
-    end
-    case selected_paths.size
-    when 1
-      selected_choices = FileEntry.choices(selected_entries)
-      choice = selected_choices.keys.first
-      path = selected_choices.values.first
-      puts "Found one page name starting with '#{name}'\n  #{choice}"
-      full_name = FileEntry.full_name_for_choice(choice)
-      if name != full_name
-        message = "Open page #{path}?"
-        return unless get_boolean_answer(message)
-      end
-      path
-    when 0
-      puts "Found no page name starting with '#{name}'."
-      message = "Show names of all #{all_choices.size} pages?"
-      return unless get_boolean_answer(message)
-      key = get_choice(all_choices.keys)
-      return if key.nil?
-      path = all_choices[key]
-    else
-      selected_choices = FileEntry.choices(selected_entries)
-      puts "Found #{selected_choices.size} page names starting with '#{name}'."
-      message = "Show #{selected_choices.size} names?'"
-      return unless get_boolean_answer(message)
-      key = get_choice(selected_choices.keys)
-      return if key.nil?
-      path = selected_choices[key]
-    end
-    uri = Entry.uri(path)
-    open_page(name, uri)
+  # Show web page for selected class.
+  def show_class(partial_name)
+    show_webpage(partial_name, href_for_class_name, 'class/module')
+  end
+
+  # Show web page for selected page.
+  def show_file(partial_name)
+    show_webpage(partial_name, href_for_page_name, 'page')
   end
 
   # Show singleton method.
-  def show_singleton_method(name, singleton_method_index)
-    # Target page is a singleton method such as ::new.
-    all_entries = @index_for_type[:singleton_method]
-    all_choices = SingletonMethodEntry.choices(all_entries)
-    # Find entries whose names that start with name.
-    selected_entries = all_entries.select do |key, value|
-      key.start_with?(name)
-    end
-    # Find paths for selected_choices
-    selected_paths = []
-    selected_entries.each_pair do |name, entry|
-      entry.paths.each do |path|
-        selected_paths.push(path)
-      end
-    end
-    selected_choices = SingletonMethodEntry.choices(selected_entries)
-    case selected_paths.size
-    when 1
-      full_name = selected_entries.keys.first
-      path = selected_choices.values.first
-      puts "Found one singleton method name starting with '#{name}'\n  #{full_name}"
-      if name != full_name
-        uri = URI.parse(path)
-        message = "Open page #{uri.path} at method #{full_name}?"
-        return unless get_boolean_answer(message)
-      end
-      path
-    when 0
-      puts "Found no singleton method name starting with '#{name}'."
-      message = "Show names of all #{all_choices.size} singleton methods?"
-      return unless get_boolean_answer(message)
-      choice = get_choice(all_choices.keys)
-      return if choice.nil?
-      full_name = SingletonMethodEntry.full_name_for_choice(choice)
-      path = all_choices[choice]
-    else
-      puts "Found #{selected_paths.size} singleton method names starting with '#{name}'."
-      message = "Show #{selected_paths.size} names?'"
-      return unless get_boolean_answer(message)
-      choice = get_choice(selected_choices.keys)
-      return if choice.nil?
-      full_name = SingletonMethodEntry.full_name_for_choice(choice)
-      path = all_choices[choice]
-    end
-    uri = Entry.uri(path)
-    open_page(full_name, uri)
+  def show_singleton_method(partial_name)
+    show_webpage(partial_name, href_for_singleton_method_name, 'singleton method')
   end
 
   # Show instance method.
-  def show_instance_method(name, instance_method_index)
-    # Target page is an instance method such as #to_s.
-    all_entries = @index_for_type[:instance_method]
-    all_choices = InstanceMethodEntry.choices(all_entries)
-    # Find entries whose names that start with name.
-    selected_entries = all_entries.select do |key, value|
-      key.start_with?(name)
-    end
-    # Find paths for selected_choices
-    selected_paths = []
-    selected_entries.each_pair do |name, entry|
-      entry.paths.each do |path|
-        selected_paths.push(path)
-      end
-    end
-    selected_choices = InstanceMethodEntry.choices(selected_entries)
-    case selected_paths.size
-    when 1
-      full_name = selected_entries.keys.first
-      path = selected_choices.values.first
-      puts "Found one instance method name starting with '#{name}'\n  #{full_name}"
-      if name != full_name
-        uri = URI.parse(path)
-        message = "Open page #{uri.path} at method #{full_name}?"
-        return unless get_boolean_answer(message)
-      end
-      path
-    when 0
-      puts "Found no instance method name starting with '#{name}'."
-      message = "Show names of all #{all_choices.size} instance methods?"
-      return unless get_boolean_answer(message)
-      choice = get_choice(all_choices.keys)
-      return if choice.nil?
-      path = all_choices[choice]
-      full_name = InstanceMethodEntry.full_name_for_choice(choice)
-    else
-      puts "Found #{selected_paths.size} instance method names starting with '#{name}'."
-      message = "Show #{selected_paths.size} names?'"
-      return unless get_boolean_answer(message)
-      choice = get_choice(selected_choices.keys)
-      return if choice.nil?
-      path = all_choices[choice]
-      full_name = InstanceMethodEntry.full_name_for_choice(choice)
-    end
-    uri = Entry.uri(path)
-    open_page(full_name, uri)
+  def show_instance_method(partial_name)
+    show_webpage(partial_name, href_for_instance_method_name, 'instance method')
   end
 
   def show_help
