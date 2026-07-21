@@ -16,7 +16,7 @@ require 'open3'
 # TODO: Choose dynamically the test names (rather than fixed)?
 # TODO: Test on Linux.
 # TODO: Test all releases(?).0
-# TODO: Test all pages(?).
+# TODO: Test all web pages(?).
 
 # TODO: Make it work for naked method ('parse') or dotted method ('.parse').
 
@@ -33,7 +33,7 @@ class WebRI
   DOC_SITE = 'https://docs.ruby-lang.org/en/'
   
   attr_accessor :href_for_class_name,
-                :href_for_page_name,
+                :href_for_file_name,
                 :href_for_singleton_method_name,
                 :href_for_instance_method_name
 
@@ -54,13 +54,13 @@ class WebRI
 
   def make_groups
     self.href_for_class_name = {}
-    self.href_for_page_name = {}
+    self.href_for_file_name = {}
     self.href_for_singleton_method_name = {}
     self.href_for_instance_method_name = {}
     @data['hrefs_for_name'].group_by do |name, hrefs|
       case
       when name.start_with?('ruby:')
-        self.href_for_page_name[name] = hrefs.first
+        self.href_for_file_name[name] = hrefs.first
       when name.start_with?('#')
         self.href_for_instance_method_name[name] = hrefs
       when name.start_with?('::')
@@ -139,9 +139,9 @@ class WebRI
   def print_info
     puts "Ruby documentation release:  #{@doc_release}"
     puts "Ruby documentation site:     #{DOC_SITE}"
-    puts "Executable to open page:     #{opener_name}"
+    puts "Executable to open web page: #{opener_name}"
     puts "Names:"
-    puts format("  %5d %s", href_for_page_name.size, 'Pages')
+    puts format("  %5d %s", href_for_file_name.size, 'Files')
     puts format("  %5d %s", href_for_class_name.size, 'Classes and modules')
     count = 0
     href_for_singleton_method_name.each_pair do |name, href_for_name|
@@ -264,7 +264,7 @@ class WebRI
   end
 
   # Show web page for selected name.
-  def show_webpage(partial_name, href_for_name, type)
+  def show_web_page_for_file_or_class(partial_name, href_for_name, type)
     # Find names that start with partial name (which may in fact be the full name).
     selected_names = href_for_name.keys.select do |name|
       name.start_with?(partial_name)
@@ -296,27 +296,27 @@ class WebRI
         selected_name
       end
     href = href_for_name[selected_name]
-    open_page(selected_name, href)
+    show_web_page(selected_name, href)
   end
 
   # Show web page for selected class.
   def show_class(partial_name)
-    show_webpage(partial_name, href_for_class_name, 'class/module')
+    show_web_page_for_file_or_class(partial_name, href_for_class_name, 'class/module')
   end
 
-  # Show web page for selected page.
+  # Show web page for selected file.
   def show_file(partial_name)
-    show_webpage(partial_name, href_for_page_name, 'page')
+    show_web_page_for_file_or_class(partial_name, href_for_file_name, 'file')
   end
 
   # Show singleton method.
   def show_singleton_method(partial_name)
-    show_webpage(partial_name, href_for_singleton_method_name, 'singleton method')
+    show_web_page_for_method(partial_name, href_for_singleton_method_name, 'singleton method')
   end
 
   # Show instance method.
   def show_instance_method(partial_name)
-    show_webpage(partial_name, href_for_instance_method_name, 'instance method')
+    show_web_page_for_method(partial_name, href_for_instance_method_name, 'instance method')
   end
 
   def show_help
@@ -373,7 +373,7 @@ class WebRI
   end
 
   # Open URL in browser.
-  def open_page(name, href)
+  def show_web_page(name, href)
     uri = URI.parse(File.join(DOC_SITE, @doc_release, href))
     open_uri(name, uri)
   end

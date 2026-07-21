@@ -53,7 +53,7 @@ class Scraper40 < Scraper
   RELEASE_NAME = '4.0'
 
   def scrape
-    # Get the main page for the release.
+    # Get the main web page for the release.
     url = File.join(BASE_URL, RELEASE_NAME, '') # Must end with '/', else HTTP code 301.
     uri = URI(url)
     response = Net::HTTP.get_response(uri)
@@ -61,7 +61,7 @@ class Scraper40 < Scraper
       message = "Page #{url} for release #{url} not found; code #{response.code}."
       raise RuntimeError.new(message)
     end
-    # Find the links for each page, class, module, and method.
+    # Find the links for each file, class, module, and method.
     response.body.lines.each do |line|
       next unless line.match(%r[<a href="])
       line.chomp!
@@ -70,11 +70,11 @@ class Scraper40 < Scraper
       doc = REXML::Document.new(line)
       root = doc.root
       case root.name
-      when 'a'  # Each page URL is the href attribute in an anchor element.
-        add_page(root)
+      when 'a'  # Each file URL is the href attribute in an anchor element.
+        add_file(root)
       when 'ul' # All class/module URLs are in a single ul element.
         add_classes(root)
-        break # We don't need anything farther downpage.
+        break # We don't need anything farther down.
       else
         # Ignore.
       end
@@ -95,12 +95,12 @@ class Scraper40 < Scraper
     File.write(filepath, json)
   end
 
-  def add_page(element)
-    page_href = element.attributes['href']
-    page_href.sub!(%r[^./], '')
-    page_name = 'ruby:' + page_href.sub(/\.html$/, '')
-    puts "Adding page #{page_name}"
-    hrefs_for_name[page_name] = [page_href]
+  def add_file(element)
+    file_href = element.attributes['href']
+    file_href.sub!(%r[^./], '')
+    file_name = 'ruby:' + file_href.sub(/\.html$/, '')
+    puts "Adding file #{file_name}"
+    hrefs_for_name[file_name] = [file_href]
   end
 
   def add_classes(element)
