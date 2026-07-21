@@ -263,7 +263,7 @@ class WebRI
     end
   end
 
-  # Show web page for selected name.
+  # Show web page for selected file or class name.
   def show_web_page_for_file_or_class(partial_name, href_for_name, type)
     # Find names that start with partial name (which may in fact be the full name).
     selected_names = href_for_name.keys.select do |name|
@@ -309,12 +309,60 @@ class WebRI
     show_web_page_for_file_or_class(partial_name, href_for_file_name, 'file')
   end
 
-  # Show singleton method.
+  # Show web page for selected method name.
+  def show_web_page_for_method(partial_name, href_for_name, type)
+    # Find names that start with partial name (which may in fact be the full name).
+    selected_names = href_for_name.keys.select do |name|
+      name.start_with?(partial_name)
+    end
+    count = selected_names.size
+    selected_name =
+      case count
+      when 0
+        puts "Found no #{type} name starting with '#{partial_name}'."
+        message = "Show #{href_for_name.size} #{type} names?"
+        return unless get_boolean_answer(message)
+        selected_name = get_choice(href_for_name.keys)
+        return if selected_name.nil?
+        selected_name
+      when 1
+        full_name = selected_names.first
+        puts "Found one #{type} name starting with '#{partial_name}': #{full_name}"
+        if partial_name != full_name
+          message = "Open web page #{full_name}?"
+          return unless get_boolean_answer(message)
+        end
+        full_name
+      else
+        puts "Found #{count} #{type} names starting with '#{partial_name}'."
+        message = "Show #{selected_names.size} #{type} names?'"
+        return unless get_boolean_answer(message)
+        selected_name = get_choice(selected_names)
+        return if selected_name.nil?
+        selected_name
+      end
+    qualified_names = []
+    @data['classes_for_method'][selected_name].each do |class_name|
+      qualified_names << "#{class_name}#{selected_name}"
+    end
+    count = qualified_names.size
+    puts "Found #{count} classes that have method '#{selected_name}'."
+    message = "Show #{count} names?'"
+    return unless get_boolean_answer(message)
+    qualified_name = get_choice(qualified_names)
+    return if qualified_name.nil?
+    method_href = href_for_name[selected_name]
+    class_name = qualified_name.sub(selected_name, '')
+    href = "#{class_name}.html#{method_href}"
+    show_web_page(selected_name, href)
+  end
+
+  # Show web page for singleton method.
   def show_singleton_method(partial_name)
     show_web_page_for_method(partial_name, href_for_singleton_method_name, 'singleton method')
   end
 
-  # Show instance method.
+  # Show web page for instance method.
   def show_instance_method(partial_name)
     show_web_page_for_method(partial_name, href_for_instance_method_name, 'instance method')
   end
