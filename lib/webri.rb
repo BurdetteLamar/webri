@@ -346,11 +346,16 @@ class WebRI
       qualified_names << "#{class_name}#{selected_name}"
     end
     count = qualified_names.size
-    puts "Found #{count} classes that have method '#{selected_name}'."
-    message = "Show #{count} names?'"
-    return unless get_boolean_answer(message)
-    qualified_name = get_choice(qualified_names)
-    return if qualified_name.nil?
+    if count == 1
+      puts "Found 1 class that has method '#{selected_name}'."
+      qualified_name = qualified_names.first
+    else
+      puts "Found #{count} classes that have method '#{selected_name}'."
+      message = "Show #{count} names?'"
+      return unless get_boolean_answer(message)
+      qualified_name = get_choice(qualified_names)
+      return if qualified_name.nil?
+    end
     method_href = href_for_name[selected_name]
     class_name = qualified_name.sub(selected_name, '')
     href = "#{class_name}.html#{method_href}"
@@ -422,6 +427,7 @@ class WebRI
 
   # Open URL in browser.
   def show_web_page(name, href)
+    href.gsub!('::', '/')
     uri = URI.parse(File.join(DOC_SITE, @doc_release, href))
     open_uri(name, uri)
   end
