@@ -7,6 +7,8 @@ require 'json/add/core'
 require 'uri'
 require 'open3'
 
+require_relative 'scraper'
+
 # TODO: Make it work on Aliki.
 # TODO: Use reline.
 #
@@ -31,7 +33,7 @@ class WebRI
 
   # Site of the official documentation.
   DOC_SITE = 'https://docs.ruby-lang.org/en/'
-  
+
   attr_accessor :href_for_class_name,
                 :href_for_file_name,
                 :href_for_singleton_method_name,
@@ -128,11 +130,11 @@ class WebRI
       @doc_release
     end
     # If the doc release is not available, let them choose.
-    releases = Dir.new('data').children.map {|dir| dir.sub('.json', '') }
-    unless releases.include?(@doc_release)
+    release_names = Scraper.release_names
+    unless release_names.include?(@doc_release)
       puts "Found no documentation release #{@doc_release}."
       puts "Index of releases:"
-      @doc_release = get_choice(releases, required: true)
+      @doc_release = get_choice(release_names, required: true)
     end
   end
 
@@ -486,6 +488,15 @@ class WebRI
     message = "Current working directory must be in a webri project, not #{Dir.pwd}."
     puts message
     exit
+  end
+
+  def self.check_release_name(release_name)
+    release_names = Scraper.release_names
+    unless release_names.include?(release_name)
+      message = "Release must be one of #{release_names.inspect}, not #{release_name.inspect}."
+      puts message
+      exit 1
+    end
   end
 
 end

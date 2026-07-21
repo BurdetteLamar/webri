@@ -46,6 +46,28 @@ class Scraper
     self.classes_for_method = {}
   end
 
+  def self.scrapers
+    {
+      '3.4' => Scraper34,
+      '4.0' => Scraper40,
+    }
+  end
+
+  def self.release_names
+    self.scrapers.keys
+  end
+
+  def get_home_page(release_name)
+    url = File.join(BASE_URL, release_name, '') # Must end with '/', else HTTP code 301.
+    uri = URI(url)
+    response = Net::HTTP.get_response(uri)
+    unless response.code == '200'
+      message = "Page #{url} for release #{url} not found; code #{response.code}."
+      raise RuntimeError.new(message)
+    end
+    response.body
+  end
+
 end
 
 class Scraper40 < Scraper
@@ -53,18 +75,10 @@ class Scraper40 < Scraper
   RELEASE_NAME = '4.0'
 
   def scrape
-    # Get the main web page for the release.
-    url = File.join(BASE_URL, RELEASE_NAME, '') # Must end with '/', else HTTP code 301.
-    uri = URI(url)
-    response = Net::HTTP.get_response(uri)
-    unless response.code == '200'
-      message = "Page #{url} for release #{url} not found; code #{response.code}."
-      raise RuntimeError.new(message)
-    end
-    # Find the links for each file, class, module, and method.
-    response.body.lines.each do |line|
-      next unless line.match(%r[<a href="])
+    home_page = get_home_page(RELEASE_NAME)
+    home_page.lines.each do |line|
       line.chomp!
+      next unless line.match(%r[<a href="])
       line += '</a>' unless line.match(%r[</a>]) # Add end-tag if needed.
       # Parse the line as XML.
       doc = REXML::Document.new(line)
@@ -147,3 +161,18 @@ class Scraper40 < Scraper
     end
   end
 end
+
+class Scraper34 < Scraper
+
+  RELEASE_NAME = '3.4'
+
+  def scrape
+    home_page = get_home_page(RELEASE_NAME)
+    home_page.lines.each do |line|
+      line.chomp!
+      puts line
+    end
+  end
+
+end
+
