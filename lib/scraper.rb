@@ -139,6 +139,7 @@ class Scraper
   def write_json(release_name)
     # This JSON is bulky, but readable by humans.
     data = {
+      :timestamp => Time.now,
       :hrefs_for_name => hrefs_for_name.sort.to_h,
       :classes_for_method => classes_for_method.sort.to_h,
     }

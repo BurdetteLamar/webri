@@ -141,9 +141,10 @@ class WebRI
   end
 
   def print_info
-    puts "Ruby documentation release:  #{release_name}"
-    puts "Ruby documentation site:     #{DOC_SITE}"
-    puts "Executable to open web page: #{opener_name}"
+    puts "Ruby documentation release:   #{release_name}"
+    puts "Ruby documentation site:      #{DOC_SITE}"
+    puts "Doc snapshot taken at:        #{@data['timestamp']}"
+    puts "Executable to open web page:  #{opener_name}"
     puts "Names:"
     puts format("  %5d %s", href_for_file_name.size, 'Files')
     puts format("  %5d %s", href_for_class_name.size, 'Classes and modules')

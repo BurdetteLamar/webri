@@ -33891,5 +33891,10 @@
     "ruby:yjit/yjit_md": [
       "yjit/yjit_md.html"
     ]
+  },
+  "timestamp": {
+    "json_class": "Time",
+    "s": 1784679913,
+    "n": 954388422
   }
 }

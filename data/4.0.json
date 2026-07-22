@@ -28524,5 +28524,10 @@
     "ruby:syntax_rdoc": [
       "syntax_rdoc.html"
     ]
+  },
+  "timestamp": {
+    "json_class": "Time",
+    "s": 1784679903,
+    "n": 276797490
   }
 }
