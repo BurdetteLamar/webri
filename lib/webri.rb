@@ -281,8 +281,8 @@ class WebRI
     end
   end
 
-  def get_choice(found_statement, choices, type)
-    puts found_statement
+  def get_choice(situation, choices, type)
+    puts situation
     count = choices.size
     if count > 20
       message = "Show #{count} #{type} names?"
@@ -301,8 +301,8 @@ class WebRI
     selected_name =
       case count
       when 0
-        found_statement = "Found no #{type} name starting with '#{partial_name}'."
-        selected_name = get_choice(found_statement, href_for_name.keys, type)
+        situation = "Found no #{type} name starting with '#{partial_name}'."
+        selected_name = get_choice(situation, href_for_name.keys, type)
         return if selected_name.nil?
         selected_name
       when 1
@@ -314,8 +314,8 @@ class WebRI
         end
         full_name
       else
-        found_statement =  "Found #{count} #{type} names starting with '#{partial_name}'."
-        selected_name = get_choice(found_statement, selected_names, type)
+        situation =  "Found #{count} #{type} names starting with '#{partial_name}'."
+        selected_name = get_choice(situation, selected_names, type)
         return if selected_name.nil?
         selected_name
       end
@@ -343,8 +343,8 @@ class WebRI
     selected_name =
       case count
       when 0
-        found_statement = "Found no #{type} name starting with '#{partial_name}'."
-        selected_name = get_choice(found_statement, href_for_name, type)
+        situation = "Found no #{type} name starting with '#{partial_name}'."
+        selected_name = get_choice(situation, href_for_name, type)
         return if selected_name.nil?
         selected_name
       when 1
@@ -356,8 +356,8 @@ class WebRI
         end
         full_name
       else
-        found_statement = "Found #{count} #{type} names starting with '#{partial_name}'."
-        selected_name = get_choice(found_statement, selected_names, type)
+        situation = "Found #{count} #{type} names starting with '#{partial_name}'."
+        selected_name = get_choice(situation, selected_names, type)
         return if selected_name.nil?
         selected_name
       end
@@ -370,8 +370,8 @@ class WebRI
       puts "Found 1 class that has method '#{selected_name}'."
       qualified_name = qualified_names.first
     else
-      found_statement = "Found #{count} classes that have method '#{selected_name}'."
-      qualified_name = get_choice(found_statement, qualified_names, type)
+      situation = "Found #{count} classes that have method '#{selected_name}'."
+      qualified_name = get_choice(situation, qualified_names, type)
       return if qualified_name.nil?
     end
     method_href = href_for_name[selected_name]
