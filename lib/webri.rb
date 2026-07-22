@@ -281,6 +281,16 @@ class WebRI
     end
   end
 
+  def get_choice(found_statement, choices, type)
+    puts found_statement
+    count = choices.size
+    if count > 20
+      message = "Show #{count} #{type} names?"
+      return nil unless get_boolean_answer(message)
+    end
+    get_choice_(choices)
+  end
+
   # Show web page for selected file or class name.
   def show_web_page_for_file_or_class(partial_name, href_for_name, type)
     # Find names that start with partial name (which may in fact be the full name).
@@ -291,10 +301,8 @@ class WebRI
     selected_name =
       case count
       when 0
-        puts "Found no #{type} name starting with '#{partial_name}'."
-        message = "Show #{href_for_name.size} #{type} names?"
-        return unless get_boolean_answer(message)
-        selected_name = get_choice(href_for_name.keys)
+        found_statement = "Found no #{type} name starting with '#{partial_name}'."
+        selected_name = get_choice(found_statement, href_for_name.keys, type)
         return if selected_name.nil?
         selected_name
       when 1
@@ -306,10 +314,8 @@ class WebRI
         end
         full_name
       else
-        puts "Found #{count} #{type} names starting with '#{partial_name}'."
-        message = "Show #{selected_names.size} #{type} names?'"
-        return unless get_boolean_answer(message)
-        selected_name = get_choice(selected_names)
+        found_statement =  "Found #{count} #{type} names starting with '#{partial_name}'."
+        selected_name = get_choice(found_statement, selected_names, type)
         return if selected_name.nil?
         selected_name
       end
@@ -337,10 +343,8 @@ class WebRI
     selected_name =
       case count
       when 0
-        puts "Found no #{type} name starting with '#{partial_name}'."
-        message = "Show #{href_for_name.size} #{type} names?"
-        return unless get_boolean_answer(message)
-        selected_name = get_choice(href_for_name.keys)
+        found_statement = "Found no #{type} name starting with '#{partial_name}'."
+        selected_name = get_choice(found_statement, href_for_name, type)
         return if selected_name.nil?
         selected_name
       when 1
@@ -352,10 +356,8 @@ class WebRI
         end
         full_name
       else
-        puts "Found #{count} #{type} names starting with '#{partial_name}'."
-        message = "Show #{selected_names.size} #{type} names?'"
-        return unless get_boolean_answer(message)
-        selected_name = get_choice(selected_names)
+        found_statement = "Found #{count} #{type} names starting with '#{partial_name}'."
+        selected_name = get_choice(found_statement, selected_names, type)
         return if selected_name.nil?
         selected_name
       end
@@ -368,10 +370,8 @@ class WebRI
       puts "Found 1 class that has method '#{selected_name}'."
       qualified_name = qualified_names.first
     else
-      puts "Found #{count} classes that have method '#{selected_name}'."
-      message = "Show #{count} names?'"
-      return unless get_boolean_answer(message)
-      qualified_name = get_choice(qualified_names)
+      found_statement = "Found #{count} classes that have method '#{selected_name}'."
+      qualified_name = get_choice(found_statement, qualified_names, type)
       return if qualified_name.nil?
     end
     method_href = href_for_name[selected_name]
@@ -400,7 +400,7 @@ class WebRI
   end
 
   # Present choices; return choice.
-  def get_choice(choices, required: false)
+  def get_choice_(choices, required: false)
     index = nil
     range = (0..choices.size - 1)
     until range.include?(index)
