@@ -25,9 +25,6 @@ parser.separator('Options:')
 parser.on('-i', '--info', 'Prints information about webri.') do
   options[:info] = true
 end
-parser.on('-r=RELEASE', '--release=RELEASE', 'Sets the Ruby release to document.') do |value|
-  options[:release] = value
-end
 parser.on('--noreline', 'Does not use Reline (helps testing).') do |value|
   options[:noreline] = true
 end
@@ -45,11 +42,7 @@ end
 
 parser.parse!
 
-unless ARGV.empty?
-  $stderr.puts "Argument error: No arguments allowed."
-  $stderr.puts ''
-  $stdout.puts parser.help
-  exit
+Dir.chdir(WebRI.get_webri_root_dir) do
+  release_name = ARGV[0]
+  WebRI.new(release_name, options)
 end
-
-WebRI.new(options)

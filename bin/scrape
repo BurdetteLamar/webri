@@ -10,4 +10,3 @@ Dir.chdir(WebRI.get_webri_root_dir) do
   scraper = Scraper.scrapers[release_name].new
   scraper.scrape
 end
-

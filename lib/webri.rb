@@ -34,15 +34,17 @@ class WebRI
   # Site of the official documentation.
   DOC_SITE = 'https://docs.ruby-lang.org/en/'
 
-  attr_accessor :href_for_class_name,
+  attr_accessor :release_name,
+                :href_for_class_name,
                 :href_for_file_name,
                 :href_for_singleton_method_name,
                 :href_for_instance_method_name
 
-  def initialize(options = {})
+  def initialize(release_name = nil, options = {})
+    self.release_name = release_name
     capture_options(options)
-    set_doc_release
-    data_file_path = File.join('data', @doc_release + '.json')
+    set_doc_release(release_name)
+    data_file_path = File.join('data', self.release_name + '.json')
     json = open(data_file_path).read
     @data = JSON.parse(json, create_additions: true)
     make_groups
@@ -121,25 +123,25 @@ class WebRI
     puts
   end
 
-  def set_doc_release
+  def set_doc_release(release_name)
     # If doc release not specified, get it from the local Ruby version.
-    unless @doc_release
-      a = RUBY_VERSION.split('.')
-      @doc_release ||= a[0..1].join('.')
-      puts "Documentation release defaulting to #{@doc_release} (the Ruby version you're running)."
-      @doc_release
+    unless release_name
+      s = RUBY_VERSION.split('.')
+      release_name ||= s[0..1].join('.')
+      puts "Documentation release defaulting to #{release_name} (the Ruby version you're running)."
+      release_name
     end
     # If the doc release is not available, let them choose.
     release_names = Scraper.release_names
-    unless release_names.include?(@doc_release)
-      puts "Found no documentation release #{@doc_release}."
+    unless release_names.include?(release_name)
+      puts "Found no documentation release #{release_name}."
       puts "Index of releases:"
-      @doc_release = get_choice(release_names, required: true)
+      release_name = get_choice(release_names, required: true)
     end
   end
 
   def print_info
-    puts "Ruby documentation release:  #{@doc_release}"
+    puts "Ruby documentation release:  #{release_name}"
     puts "Ruby documentation site:     #{DOC_SITE}"
     puts "Executable to open web page: #{opener_name}"
     puts "Names:"
@@ -162,7 +164,6 @@ class WebRI
     @noop = options[:noop]
     @info = options[:info]
     @noreline = options[:noreline]
-    @doc_release = options[:release]
   end
 
   class Entry
