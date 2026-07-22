@@ -48,7 +48,8 @@ class Scraper
 
   def self.scrapers
     {
-      '3.4' => Scraper34,
+      '3.2' => Scraper34,
+      '3.4' => Scraper32,
       '4.0' => Scraper40,
     }
   end
@@ -156,7 +157,6 @@ class Scraper
 
 end
 
-
 class Scraper40 < Scraper
 
   RELEASE_NAME = '4.0'
@@ -205,6 +205,48 @@ end
 class Scraper34 < Scraper
 
   RELEASE_NAME = '3.4'
+
+  def add_method(element)
+    href = element.attributes['href']
+    m = href.match(%r[(#)])
+    class_name = m.pre_match.gsub('/', '::').sub(%r[\.html$], '')
+    new_href = m.post_match
+    element.attributes['href'] = new_href
+    super(element, class_name)
+  end
+
+  def scrape
+    home_page = get_home_page(RELEASE_NAME, 'table_of_contents.html')
+    enum = home_page.lines.to_enum
+    while true do
+      begin
+        line = enum.next
+        next unless line.match(%r[<li class="(\w+)">])
+        type = $1
+        next_line = enum.peek
+        element = REXML::Document.new(next_line).root
+        case type
+        when 'file'
+          add_file(element)
+        when 'class', 'module'
+          class_name, _ = add_class(element)
+        when 'method'
+          add_method(element)
+        else
+          raise type
+        end
+      rescue StopIteration
+        break
+      end
+    end
+    write_json(RELEASE_NAME)
+  end
+
+end
+
+class Scraper32 < Scraper
+
+  RELEASE_NAME = '3.2'
 
   def add_method(element)
     href = element.attributes['href']
