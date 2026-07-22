@@ -22,20 +22,20 @@ For more information, see https://github.com/BurdetteLamar/webri/blob/main/READM
 BANNER
 
 parser.separator('Options:')
-parser.on('-i', '--info', 'Prints information about webri.') do
+parser.on('-i', '--info', 'Print information about webri.') do
   options[:info] = true
 end
-parser.on('--noreline', 'Does not use Reline (helps testing).') do |value|
+parser.on('--noreline', 'Do not use Reline (useful for testing).') do |value|
   options[:noreline] = true
 end
-parser.on('-n', '--noop', 'Does not actually open web pages.') do |value|
+parser.on('-n', '--noop', 'Do not actually open web pages.') do |value|
   options[:noop] = true
 end
-parser.on('-h', '--help', 'Prints this help.') do
+parser.on('-h', '--help', 'Print this help.') do
   puts parser
   exit
 end
-parser.on('-v', '--version', 'Prints the version of webri.') do
+parser.on('-v', '--version', 'Print the version of webri.') do
   puts WebRI::VERSION
   exit
 end
