@@ -4,9 +4,6 @@ require 'rexml'
 require 'json'
 require 'json/add/core'
 
-
-require_relative 'webri'
-
 # Class to scrape Ruby info from the documentation site and store it as JSON.
 
 class Scraper
@@ -229,7 +226,7 @@ class Scraper34 < Scraper
         when 'file'
           add_file(element)
         when 'class', 'module'
-          class_name, _ = add_class(element)
+          add_class(element)
         when 'method'
           add_method(element)
         else
@@ -271,7 +268,7 @@ class Scraper32 < Scraper
         when 'file'
           add_file(element)
         when 'class', 'module'
-          class_name, _ = add_class(element)
+          add_class(element)
         when 'method'
           add_method(element)
         else

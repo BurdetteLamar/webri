@@ -55,9 +55,8 @@ class WebRI
                 :href_for_instance_method_name
 
   def initialize(release_name = nil, options = {})
-    self.release_name = release_name
+    self.release_name = set_doc_release(release_name)
     capture_options(options)
-    set_doc_release(release_name)
     data_file_path = File.join('data', self.release_name + '.json')
     json = open(data_file_path).read
     @data = JSON.parse(json, create_additions: true)
@@ -149,9 +148,10 @@ class WebRI
     release_names = Scraper.release_names
     unless release_names.include?(release_name)
       puts "Found no documentation release #{release_name}."
-      puts "Index of releases:"
-      release_name = get_choice(release_names, required: true)
+      puts "Releases:"
+      release_name = get_choice_(release_names, required: true)
     end
+    release_name
   end
 
   def print_info
