@@ -9,25 +9,39 @@ require 'open3'
 
 require_relative 'scraper'
 
-# TODO: Make it work on Aliki.
-# TODO: Use reline.
-#
-# TODO: Subroutinize.
-# TODO: Make initialization faster.
-
 # TODO: Choose dynamically the test names (rather than fixed)?
 # TODO: Test on Linux.
-# TODO: Test all releases(?).0
+# TODO: Test all releases(?).
 # TODO: Test all web pages(?).
 
-# TODO: Make it work for naked method ('parse') or dotted method ('.parse').
+# TODO: Make it work for:
+# - Array.new
+# - Array::new
+# - Array.sort
+# - Array#sort
+# - .new
+# - ::new
+# - .sort
+# - #sort
 
 # TODO: Support pager.
 
 # TODO: Support .webrirc.
 # TODO: Make it save options to .webrirc.
 # TODO: Make it show .webrirc.
+# TODO: Support ENV.
 
+# TODO: Support favorites.
+# TODO: Support recents.
+# TODO: Support direct in REPL; e.g., Array.sort.
+# TODO: Support direct from command-line.
+# TODO: Support partial on command-line, into REPL.
+#
+# TODO: Support alternate character for '\#' on command-line. ('3'?)
+#
+# TODO: Token begins with character, period, colon, or hashmark;
+#       anything else could signal a special op.
+#
 # A class to display Ruby online HTML documentation.
 class WebRI
 
@@ -432,7 +446,7 @@ class WebRI
   # Open URL in browser.
   def show_web_page(name, href)
     href.gsub!('::', '/')
-    uri = URI.parse(File.join(DOC_SITE, @doc_release, href))
+    uri = URI.parse(File.join(DOC_SITE, release_name, href))
     open_uri(name, uri)
   end
 
