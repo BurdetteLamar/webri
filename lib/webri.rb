@@ -48,6 +48,8 @@ class WebRI
   # Site of the official documentation.
   DOC_SITE = 'https://docs.ruby-lang.org/en/'
 
+  PROMPT = "('?' for help) webri> "
+
   attr_accessor :release_name,
                 :href_for_class_name,
                 :href_for_file_name,
@@ -90,7 +92,7 @@ class WebRI
 
   def repl_plain # Read-evaluate-print loop, without Reline.
     while true
-      $stdout.write('webri> ')
+        $stdout.write(PROMPT)
       $stdout.flush
       response = $stdin.gets.chomp
       exit if response == 'exit'
@@ -118,7 +120,7 @@ class WebRI
       Reline.completion_proc = proc { |word|
         completion_words
       }
-      while line = Reline.readline("webri> ", true)
+      while line = Reline.readline(PROMPT, true)
         case line.chomp
         when 'exit'
           exit 0
