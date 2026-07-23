@@ -45,7 +45,7 @@ class TestWebRI < Minitest::Test
         webri_session do |stdin, stdout, stderr|
           read_to_prompt(stdout)
           stdin.puts name
-          lines = read_to_prompt(stdout, ':  ')
+          lines = read_to_query(stdout)
           assert_found_no_name(lines, type, name)
         end
       end
@@ -94,23 +94,23 @@ class TestWebRI < Minitest::Test
     end
   end
 
-  def read_to_prompt(io, prompt = 'webri> ')
+  def read_to(io, pattern)
     output = +""
     loop do
       output << io.readpartial(1024)
-      break if output.end_with?(prompt)
+      break if output.match?(pattern)
     end
     output.split(/\R/).to_enum
   end
 
-  def read(io)
-    output = +""
-    loop do
-      output << io.readpartial(1024)
-      break if io.eof?
-    end
-    output.split(/\R/).to_enum
+  def read_to_query(io)
+    read_to(io, /:\s+$/)
   end
+
+  def read_to_prompt(io)
+    read_to(io, /webri>\s+$/)
+  end
+
 
   # def read(stdout)
   #   stdout.readpartial(4096)
