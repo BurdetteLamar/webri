@@ -367,10 +367,10 @@ class WebRI
     end
     count = qualified_names.size
     if count == 1
-      puts "Found 1 class that has method '#{selected_name}'."
+      puts "Found one class/module that has method '#{selected_name}'."
       qualified_name = qualified_names.first
     else
-      situation = "Found #{count} classes that have method '#{selected_name}'."
+      situation = "Found #{count} #{type} names that have method '#{selected_name}'."
       qualified_name = get_choice(situation, qualified_names, type)
       return if qualified_name.nil?
     end

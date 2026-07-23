@@ -11,27 +11,44 @@ class TestWebRI < Minitest::Test
     end
   end
 
-  CLASS_OR_MODULE = 'class/module'
+  CLASS = 'class/module'
+  SINGLETON = 'singleton method'
+  INSTANCE = 'instance method'
+  FILE = 'file'
 
-  def test_exact_class
-    %w[Array Enumerator::Lazy].each do |name|
-      type = CLASS_OR_MODULE
-      webri_session do |stdin, stdout, stderr|
-        read_to_prompt(stdout)
-        stdin.puts name
-        lines = read_to_prompt(stdout)
-        assert_found_one(lines, type, name)
+  def test_exact_name
+    {
+      CLASS => %w[Array Enumerator::Chain],
+      SINGLETON => %w[::URI],
+      INSTANCE => %w[#Array],
+      FILE => %w[ruby:README_md],
+    }.each_pair do |type, names|
+      names.each do |name|
+        webri_session do |stdin, stdout, stderr|
+          read_to_prompt(stdout)
+          stdin.puts name
+          lines = read_to_prompt(stdout)
+          assert_found_one_name(lines, type, name)
+        end
       end
     end
   end
 
   # Assertions
 
-  def assert_found_one(lines, type, name)
-    assert_match(/^Found one/, lines[0])
-    assert_match(CLASS_OR_MODULE, lines[0])
-    assert_match(name, lines[0])
-    assert_match('Opening', lines[1])
+  def assert_found_one_name(lines, type, name)
+    message = "#{type} #{name}."
+    enum = lines.to_enum
+    line = enum.next
+    assert_match(/^Found one/, line, message)
+    assert_match(type, line, message)
+    assert_match(name, line, message)
+    if [SINGLETON, INSTANCE].include?(type)
+      line = enum.next
+      assert_match("Found one #{CLASS}", line, message)
+    end
+    line = enum.next
+    assert_match('Opening', line, message)
   end
 
   # Infrastructure.
@@ -56,7 +73,7 @@ class TestWebRI < Minitest::Test
       output << io.readpartial(1024)
       break if output.end_with?(prompt)
     end
-    output.split("\n")
+    output.split(/\R/)
   end
 
   # def read(stdout)
