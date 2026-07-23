@@ -95,6 +95,10 @@ class WebRI
       response = $stdin.gets.chomp
       exit if response == 'exit'
       next if response.empty?
+      if response.start_with?('?')
+        help(response)
+        next
+      end
       if response.split(' ').size > 1
         puts "One name at a time, please."
         next
@@ -513,6 +517,33 @@ class WebRI
       puts message
       exit 1
     end
+  end
+
+  def help(response)
+    if response == '?'
+      puts <<HELP
+Type:
+  - 'exit' to exit webri.
+  - Class or module name (full or partial) to see classes or modules:
+      - 'Array' (full name).
+      - 'Ar' (partial name).
+  - Singleton method name (full or partial) to see singleton methods:
+      - '::tanh' (full name).
+      - '::ta' (partial name).
+  - Instance method name (full or partial) to see instance methods:
+      - '::rfc2822' (full name).
+      - '::rfc' (partial name).
+  - File name (full or partial) to see files:
+      - 'ruby:syntax_rdoc' (full name).
+      - 'ruby:syntax' (partial name).
+HELP
+    else
+      p response
+    end
+  end
+
+  def help_main
+
   end
 
 end
