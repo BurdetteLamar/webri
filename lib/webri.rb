@@ -524,17 +524,17 @@ class WebRI
       puts <<HELP
 Type:
   - 'exit' to exit webri.
-  - Class or module name (full or partial) to see classes or modules:
-      - 'Array' (full name).
+  - Class or module name (full or partial) to see classes and modules:
+      - 'Array' (full name, not the start of other names).
       - 'Ar' (partial name).
   - Singleton method name (full or partial) to see singleton methods:
-      - '::tanh' (full name).
+      - '::tanh' (full name, not the start of other names).
       - '::ta' (partial name).
   - Instance method name (full or partial) to see instance methods:
-      - '::rfc2822' (full name).
-      - '::rfc' (partial name).
+      - '#query=' (full name, not the start of other names).
+      - '#qu' (partial name).
   - File name (full or partial) to see files:
-      - 'ruby:syntax_rdoc' (full name).
+      - 'ruby:syntax_rdoc' (full name, not the start of other names).
       - 'ruby:syntax' (partial name).
 HELP
     else
