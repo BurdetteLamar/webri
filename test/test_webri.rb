@@ -5,16 +5,16 @@ require 'open3'
 
 class TestWebRI < Minitest::Test
 
+  CLASS = 'class/module'
+  SINGLETON = 'singleton method'
+  INSTANCE = 'instance method'
+  FILE = 'file'
+
   def test_option_version
     webri_session('--version') do |stdin, stdout, stderr, _|
       assert_equal(stdout.read.chomp, WebRI::VERSION, 'version')
     end
   end
-
-  CLASS = 'class/module'
-  SINGLETON = 'singleton method'
-  INSTANCE = 'instance method'
-  FILE = 'file'
 
   def test_exact_name
     {
@@ -29,6 +29,24 @@ class TestWebRI < Minitest::Test
           stdin.puts name
           lines = read_to_prompt(stdout)
           assert_found_one_name(lines, type, name)
+        end
+      end
+    end
+  end
+
+  def test_no_name
+    {
+      CLASS => %w[Nosuch Nosuch::Foo],
+      SINGLETON => %w[::Nosuch],
+      INSTANCE => %w[#Nosuch],
+      FILE => %w[ruby:nosuch],
+    }.each_pair do |type, names|
+      names.each do |name|
+        webri_session do |stdin, stdout, stderr|
+          read_to_prompt(stdout)
+          stdin.puts name
+          lines = read_to_prompt(stdout, ':  ')
+          assert_found_no_name(lines, type, name)
         end
       end
     end
@@ -50,6 +68,16 @@ class TestWebRI < Minitest::Test
     assert_match('Opening', line, message)
   end
 
+  def assert_found_no_name(lines, type, name)
+    message = "#{type} #{name}."
+    line = lines.next
+    assert_match(/^Found no/, line, message)
+    assert_match(type, line, message)
+    assert_match(name, line, message)
+    line = lines.next
+    assert_match('Show', line, message)
+  end
+
   # Infrastructure.
 
   # Open a webri session and yield its IO streams.
@@ -66,11 +94,20 @@ class TestWebRI < Minitest::Test
     end
   end
 
-  def read_to_prompt(io, prompt = "webri> ")
+  def read_to_prompt(io, prompt = 'webri> ')
     output = +""
     loop do
       output << io.readpartial(1024)
       break if output.end_with?(prompt)
+    end
+    output.split(/\R/).to_enum
+  end
+
+  def read(io)
+    output = +""
+    loop do
+      output << io.readpartial(1024)
+      break if io.eof?
     end
     output.split(/\R/).to_enum
   end
