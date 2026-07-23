@@ -50,6 +50,11 @@ class WebRI
 
   PROMPT = "('?' for help) webri> "
 
+  CLASS = 'class/module'
+  SINGLETON = 'singleton method'
+  INSTANCE = 'instance method'
+  FILE = 'file'
+
   attr_accessor :release_name,
                 :href_for_class_name,
                 :href_for_file_name,
@@ -329,14 +334,14 @@ class WebRI
     show_web_page(selected_name, href)
   end
 
-  # Show web page for selected class.
+  # Show web page for selected class name.
   def show_class(partial_name)
-    show_web_page_for_file_or_class(partial_name, href_for_class_name, 'class/module')
+    show_web_page_for_file_or_class(partial_name, href_for_class_name, CLASS)
   end
 
-  # Show web page for selected file.
+  # Show web page for selected file name.
   def show_file(partial_name)
-    show_web_page_for_file_or_class(partial_name, href_for_file_name, 'file')
+    show_web_page_for_file_or_class(partial_name, href_for_file_name, FILE)
   end
 
   # Show web page for selected method name.
@@ -373,7 +378,7 @@ class WebRI
     end
     count = qualified_names.size
     if count == 1
-      puts "Found one class/module that has method '#{selected_name}'."
+      puts "Found one #{CLASS} that has method '#{selected_name}'."
       qualified_name = qualified_names.first
     else
       situation = "Found #{count} #{type} names that have method '#{selected_name}'."
@@ -386,14 +391,14 @@ class WebRI
     show_web_page(selected_name, href)
   end
 
-  # Show web page for singleton method.
+  # Show web page for singleton method name.
   def show_singleton_method(partial_name)
-    show_web_page_for_method(partial_name, href_for_singleton_method_name, 'singleton method')
+    show_web_page_for_method(partial_name, href_for_singleton_method_name, SINGLETON)
   end
 
-  # Show web page for instance method.
+  # Show web page for instance method name.
   def show_instance_method(partial_name)
-    show_web_page_for_method(partial_name, href_for_instance_method_name, 'instance method')
+    show_web_page_for_method(partial_name, href_for_instance_method_name, INSTANCE)
   end
 
   def show_help
@@ -526,16 +531,16 @@ class WebRI
       puts <<HELP
 Type:
   - 'exit' to exit webri.
-  - Class or module name (full or partial) to see classes and modules:
+  - #{CLASS.capitalize} name (full or partial) to see #{CLASS} names:
       - 'Array' (full name, not the start of other names).
       - 'Ar' (partial name).
-  - Singleton method name (full or partial) to see singleton methods:
+  - #{SINGLETON.capitalize} name (full or partial) to see #{SINGLETON} names:
       - '::tanh' (full name, not the start of other names).
       - '::ta' (partial name).
-  - Instance method name (full or partial) to see instance methods:
+  - #{INSTANCE.capitalize} name (full or partial) to see #{INSTANCE} names:
       - '#query=' (full name, not the start of other names).
       - '#qu' (partial name).
-  - File name (full or partial) to see files:
+  - #{FILE.capitalize}name (full or partial) to see #{FILE} names:
       - 'ruby:syntax_rdoc' (full name, not the start of other names).
       - 'ruby:syntax' (partial name).
 HELP
