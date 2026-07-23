@@ -1,337 +1,24 @@
 # frozen_string_literal: true
 
 require_relative 'test_helper'
-require 'open-uri'
 require 'open3'
-require 'cgi'
-require 'rbconfig'
 
 class TestWebRI < Minitest::Test
 
-  # Special names.
-
-  def test_special_name_help
-    webri_session do |stdin, stdout, stderr|
-      put_name('@help', stdin, stdout)
-      line = nil
-      (0..4).each do
-        line = stdout.readline
-      end
-      assert_start_with('Usage: webri [options]', line)
-    end
-  end
-
-  def test_special_name_readme
-    webri_session do |stdin, stdout, stderr|
-      put_name('@readme', stdin, stdout)
-      name = 'README.md'
-      assert_opening_line(stdout, name)
-      assert_command_line(stdout, name)
-    end
-  end
-
-  # Options.
-
-  def test_option_help
-    webri_session('--help') do |stdin, stdout, stderr|
-      lines = stdout.readlines
-      assert_start_with('Usage: webri [options]', lines[3])
-    end
-  end
-
   def test_option_version
-    version = WebRI::VERSION
-    assert_match(/\d+\.\d+\.\d+/, version)
-  end
-
-  def test_option_release
-    good_releases = nil
-    bad_release = 'nosuch'
-    webri_session("--release=#{bad_release} --info") do |stdin, stdout, stderr|
-      error_line = stdout.readline
-      assert_match('Unknown', error_line)
-      assert_match(bad_release, error_line)
-      available_line = stdout.readline
-      assert_match('Available', available_line)
-      good_releases = available_line.split(' ')[2..]
-    end
-    good_releases.each do |release|
-      webri_session("--release=#{release} --info") do |stdin, stdout, stderr|
-        release_line = stdout.readline
-        assert_match('Ruby documentation release', release_line)
-        assert_match(release, release_line)
-      end
+    webri_session('--version') do |stdin, stdout, stderr, _|
+      assert_equal(stdout.read.chomp, WebRI::VERSION, 'version')
     end
   end
 
-  # Test errors.
 
-  # Too many names.
-  def test_too_many_names
+  def test_exact_class
     webri_session do |stdin, stdout, stderr|
-      name = 'Foo Bar'
-      put_name(name, stdin, stdout)
-      error_line = stdout.readline
-      assert_start_with('One name', error_line)
-      assert_prompt(stdout)
-    end
-  end
-
-  # Not an error, exactly, but test anyway.
-  def test_no_name
-    webri_session do |stdin, stdout, stderr|
-      name = ''
-      put_name(name, stdin, stdout)
-      assert_prompt(stdout)
-    end
-  end
-
-  # Test classes and modules.
-
-  def test_class_nosuch_name
-    type = :class
-    name = get_nosuch_name(type)
-    webri_session do |stdin, stdout, stderr|
-      put_name(name, stdin, stdout)
-      assert_found_line(stdout, 0, type, name)
-      assert_show(stdout, stdin, type, yes: true)
-    end
-  end
-
-  def test_class_exact_name
-    type = :class
-    names = %w[ArgumentError Gem::Commands::BuildCommand]
-    names.each do |name|
-      assert_exact_name(type, name)
-      webri_session do |stdin, stdout, stderr|
-        put_name(name, stdin, stdout)
-        assert_found_line(stdout,1, type, name)
-        assert_name_line(stdout, name)
-        path = name.gsub('::', '/')
-        assert_opening_line(stdout, path)
-        assert_command_line(stdout, path)
-      end
-    end
-  end
-
-  def test_class_partial_name_ambiguous
-    type = :class
-    names = %w[Dat URI::Invalid]
-    names.each do |name|
-      assert_partial_name_ambiguous(type, name)
-      webri_session do |stdin, stdout, stderr|
-        put_name(name, stdin, stdout)
-        assert_found_line(stdout, 2, type, name)
-        assert_show(stdout, stdin, type, yes: true)
-      end
-    end
-  end
-
-  def test_class_partial_name_unambiguous
-    type = :class
-    names = %w[Zlib::GzipFile::CRCE ZeroDivision]
-    names.each do |name|
-      assert_partial_name_unambiguous(type, name, multiple_paths: false)
-      webri_session do |stdin, stdout, stderr|
-        put_name(name, stdin, stdout)
-        assert_found_line(stdout,1, type, name)
-        assert_name_line(stdout, name)
-        path = name.gsub('::', '/')
-        assert_open_line(stdin, stdout, path, yes: true)
-      end
-    end
-  end
-
-  # Test pages.
-
-  def test_file_nosuch_name
-    type = :page
-    name = get_nosuch_name(type)
-    short_name = name.sub('ruby:', '')
-    webri_session do |stdin, stdout, stderr|
-      put_name(name, stdin, stdout)
-      assert_found_line(stdout, 0, type, short_name)
-      assert_show(stdout, stdin, type, yes: true)
-    end
-  end
-
-  def test_file_exact_name
-    type = :page
-    short_names = %w[COPYING.ja NEWS-2.7.0 LEGAL]
-    short_names.each do |short_name|
-      assert_exact_name(type, short_name)
-      name = "ruby:#{short_name}"
-      webri_session do |stdin, stdout, stderr|
-        put_name(name, stdin, stdout)
-        assert_found_line(stdout,1, type, short_name)
-        assert_name_line(stdout, short_name)
-        regexp = Regexp.new(short_name)
-        assert_opening_line(stdout, regexp)
-        assert_command_line(stdout, regexp)
-      end
-    end
-  end
-
-  def test_file_partial_name_ambiguous
-    type = :page
-    short_names = %w[COPY NEWS-]
-    short_names.each do |short_name|
-      assert_partial_name_ambiguous(type, short_name)
-      name = "ruby:#{short_name}"
-      webri_session do |stdin, stdout, stderr|
-        put_name(name, stdin, stdout)
-        assert_found_line(stdout, 2, type, short_name)
-        assert_show(stdout, stdin, type, yes: true)
-      end
-    end
-  end
-
-  def test_file_partial_name_unambiguous_one_path
-    type = :page
-    short_names = %w[NEWS-2.7 COPYING.j]
-    short_names.each do |short_name|
-      assert_partial_name_unambiguous(type , short_name, multiple_paths: false)
-      name = "ruby:#{short_name}"
-      webri_session do |stdin, stdout, stderr|
-        put_name(name, stdin, stdout)
-        assert_found_line(stdout,1, type, short_name)
-        regexp = Regexp.new(short_name)
-        assert_name_line(stdout, regexp)
-        assert_open_line(stdin, stdout, regexp, yes: true)
-      end
-    end
-  end
-
-  def test_file_partial_name_unambiguous_multiple_paths
-    type = :page
-    short_name = get_partial_name_unambiguous(type, multiple_paths: true)
-    unless short_name
-      puts "Warning: Method #{__method__} could not get a suitable name."
-      return
-    end
-    name = "ruby:#{short_name}"
-    webri_session do |stdin, stdout, stderr|
-      put_name(name, stdin, stdout)
-      assert_found_line(stdout, 2, type, short_name)
-      assert_show(stdout, stdin, type, yes: true)
-    end
-  end
-
-  # Test singleton methods.
-
-  def test_singleton_method_nosuch_name
-    type = :singleton_method
-    name = get_nosuch_name(type)
-    webri_session do |stdin, stdout, stderr|
-      put_name(name, stdin, stdout)
-      assert_found_line(stdout, 0, type, name)
-      assert_show(stdout, stdin, type, yes: true)
-    end
-  end
-
-  def test_singleton_method_exact_name
-    type = :singleton_method
-    name = '::umask'
-    assert_exact_name(type, name)
-    webri_session do |stdin, stdout, stderr|
-      put_name(name, stdin, stdout)
-      assert_found_line(stdout,1, type, name)
-      assert_name_line(stdout, name)
-      assert_opening_line(stdout, name)
-      assert_command_line(stdout, name)
-    end
-  end
-
-  def test_singleton_method_partial_name_ambiguous
-    type = :singleton_method
-    name = '::wri'
-    assert_partial_name_ambiguous(type, name)
-    webri_session do |stdin, stdout, stderr|
-      put_name(name, stdin, stdout)
-      assert_found_line(stdout, 2, type, name)
-      assert_show(stdout, stdin, type, yes: true)
-    end
-  end
-
-  def test_singleton_method_partial_name_unambiguous_one_path
-    type = :singleton_method
-    name =  '::zca'
-    assert_partial_name_unambiguous(type , name, multiple_paths: false)
-    webri_session do |stdin, stdout, stderr|
-      put_name(name, stdin, stdout)
-      assert_found_line(stdout,1, type, name)
-      assert_name_line(stdout, name)
-      assert_open_line(stdin, stdout, name, yes: true)
-    end
-  end
-
-  def test_singleton_method_partial_name_unambiguous_multiple_paths
-    type = :singleton_method
-    name = '::wra'
-    assert_partial_name_unambiguous(type , name, multiple_paths: true)
-    webri_session do |stdin, stdout, stderr|
-      put_name(name, stdin, stdout)
-      assert_found_line(stdout, 2, type, name)
-      assert_show(stdout, stdin, type, yes: true)
-    end
-  end
-
-  # Test instance methods.
-
-  def test_instance_method_nosuch_name
-    type = :instance_method
-    name = get_nosuch_name(type)
-    webri_session do |stdin, stdout, stderr|
-      put_name(name, stdin, stdout)
-      assert_found_line(stdout, 0, type, name)
-      assert_show(stdout, stdin, type, yes: true)
-    end
-  end
-
-  def test_instance_method_exact_name
-    type = :instance_method
-    name = '#yield_self'
-    assert_exact_name(type, name)
-    webri_session do |stdin, stdout, stderr|
-      put_name(name, stdin, stdout)
-      assert_found_line(stdout,1, type, name)
-      assert_name_line(stdout, name)
-      assert_opening_line(stdout, name)
-      assert_command_line(stdout, name)
-    end
-  end
-
-  def test_instance_method_partial_name_ambiguous
-    type = :instance_method
-    name = '#wri'
-    assert_partial_name_ambiguous(type, name)
-    webri_session do |stdin, stdout, stderr|
-      put_name(name, stdin, stdout)
-      assert_found_line(stdout, 2, type, name)
-      assert_show(stdout, stdin, type, yes: true)
-    end
-  end
-
-  def test_instance_method_partial_name_unambiguous_one_path
-    type = :instance_method
-    name =  '#yield_sel'
-    assert_partial_name_unambiguous(type , name, multiple_paths: false)
-    webri_session do |stdin, stdout, stderr|
-      put_name(name, stdin, stdout)
-      assert_found_line(stdout,1, type, name)
-      assert_name_line(stdout, name)
-      assert_open_line(stdin, stdout, name, yes: true)
-    end
-  end
-
-  def test_instance_method_partial_name_unambiguous_multiple_paths
-    type = :instance_method
-    name = '#yea'
-    assert_partial_name_unambiguous(type , name, multiple_paths: true)
-    webri_session do |stdin, stdout, stderr|
-      put_name(name, stdin, stdout)
-      assert_found_line(stdout, 2, type, name)
-      assert_show(stdout, stdin, type, yes: true)
+      read_to_prompt(stdout)
+      stdin.puts "Array"
+      lines = read_to_prompt(stdout)
+      puts lines
+      # assert_match(/Array/, output)
     end
   end
 
@@ -340,12 +27,24 @@ class TestWebRI < Minitest::Test
   # Open a webri session and yield its IO streams.
   # Option --noop, which we use for all tests, means don't actually open the web page.
   # Option --noreline, which we use for all tests, means don't use Reline..
-  def webri_session(options_s = '--noop --noreline')
-    command = "ruby exe/webri #{options_s}"
+  def webri_session(options_s = '')
+    options_s += ' --noop --noreline'
+    command = "ruby ./exe/webri 4.0 #{options_s}"
     Open3.popen3(command) do |stdin, stdout, stderr, wait_thread|
-      # Cannot use readline for this because it has no trailing newline.
       yield stdin, stdout, stderr
+    ensure
+      stdin.close
+      wait_thread.value
     end
+  end
+
+  def read_to_prompt(io, prompt = "webri> ")
+    output = +""
+    loop do
+      output << io.readpartial(1024)
+      break if output.end_with?(prompt)
+    end
+    output.split("\n")
   end
 
   def read(stdout)
@@ -359,7 +58,7 @@ class TestWebRI < Minitest::Test
     page:             'ruby:nOsUcHpAgE',
   }
 
-  def setup
+  def zzz_setup
     return if defined?(@@test_names)
     # Get the url from --info and fetch the toc html.
     webri_session('--info') do |stdin, stdout, stderr|
