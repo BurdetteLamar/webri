@@ -488,7 +488,7 @@ class WebRI
     puts message
     command = "#{opener_name} #{full_url}"
     if @noop
-      puts "Command: '#{command}'"
+      # puts "Command: '#{command}'"
     else
       # system(command)
       Open3.popen3(command) do |stdin, stdout, stderr, wait_thr|
