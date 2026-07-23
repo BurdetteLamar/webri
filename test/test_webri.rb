@@ -38,16 +38,15 @@ class TestWebRI < Minitest::Test
 
   def assert_found_one_name(lines, type, name)
     message = "#{type} #{name}."
-    enum = lines.to_enum
-    line = enum.next
+    line = lines.next
     assert_match(/^Found one/, line, message)
     assert_match(type, line, message)
     assert_match(name, line, message)
     if [SINGLETON, INSTANCE].include?(type)
-      line = enum.next
+      line = lines.next
       assert_match("Found one #{CLASS}", line, message)
     end
-    line = enum.next
+    line = lines.next
     assert_match('Opening', line, message)
   end
 
@@ -73,7 +72,7 @@ class TestWebRI < Minitest::Test
       output << io.readpartial(1024)
       break if output.end_with?(prompt)
     end
-    output.split(/\R/)
+    output.split(/\R/).to_enum
   end
 
   # def read(stdout)
