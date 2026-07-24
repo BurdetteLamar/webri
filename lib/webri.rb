@@ -427,7 +427,8 @@ class WebRI
     until range.include?(index)
       choices.each_with_index do |choice, i|
         s = "%6d" % i
-        puts "  #{s}:  #{choice}"
+        token = WebRI.token(choice)
+        puts "  #{s}:  #{token}"
       end
       while true
         message = if required
