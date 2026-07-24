@@ -64,7 +64,8 @@ class WebRI
   def initialize(release_name = nil, options = {})
     self.release_name = set_doc_release(release_name)
     capture_options(options)
-    data_file_path = File.join('data', self.release_name + '.json')
+    # data_file_path = File.join('data', self.release_name + '.json')
+    data_file_path = File.expand_path("../data/#{self.release_name}.json", __dir__)
     json = open(data_file_path).read
     @data = JSON.parse(json, create_additions: true)
     make_groups

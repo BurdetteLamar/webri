@@ -42,7 +42,5 @@ end
 
 parser.parse!
 
-Dir.chdir(WebRI.get_webri_root_dir) do
-  release_name = ARGV[0]
-  WebRI.new(release_name, options)
-end
+release_name = ARGV[0]
+WebRI.new(release_name, options)
