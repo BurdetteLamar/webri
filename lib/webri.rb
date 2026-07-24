@@ -61,20 +61,26 @@ class WebRI
                 :href_for_singleton_method_name,
                 :href_for_instance_method_name
 
-  def initialize(release_name = nil, options = {})
-    self.release_name = set_doc_release(release_name)
+  def initialize(name = nil, options = {})
     capture_options(options)
+    self.release_name = set_doc_release(@release_name)
     # data_file_path = File.join('data', self.release_name + '.json')
     data_file_path = File.expand_path("../data/#{self.release_name}.json", __dir__)
     json = open(data_file_path).read
     @data = JSON.parse(json, create_additions: true)
     make_groups
     print_info if @info
-    if os_type == :linux && !@noreline
+    if name
+      do_name(name)
+    elsif os_type == :linux && !@noreline
       repl_reline
     else
       repl_plain
     end
+  end
+
+  def do_name(name)
+    show(name)
   end
 
   def make_groups
@@ -98,7 +104,7 @@ class WebRI
 
   def repl_plain # Read-evaluate-print loop, without Reline.
     while true
-        $stdout.write(PROMPT)
+      $stdout.write(PROMPT)
       $stdout.flush
       response = $stdin.gets.chomp
       exit if response == 'exit'
@@ -191,6 +197,7 @@ class WebRI
     @noop = options[:noop]
     @info = options[:info]
     @noreline = options[:noreline]
+    @release_name = options[:release_name]
   end
 
   class Entry

@@ -5,7 +5,13 @@
 require 'optparse'
 require_relative '../lib/webri/version'
 require_relative '../lib/webri'
+require_relative '../lib/scraper'
 
+NAME = <<-EOT
+Name:
+
+
+EOT
 options = {}
 
 parser = OptionParser.new
@@ -15,13 +21,20 @@ parser.banner = <<-BANNER
 webri is a console application for displaying Ruby online HTML documentation.
 Documentation pages are opened in the default web browser.
 
-Usage: #{parser.program_name} [options]
-
-For more information, see https://github.com/BurdetteLamar/webri/blob/main/README.md.
+Usage: #{parser.program_name} [options] name
 
 BANNER
 
-parser.separator('Options:')
+RELEASES = Scraper.scrapers.keys.inspect
+
+parser.separator("Options:")
+release_description = <<-EOT
+
+EOT
+parser.on('-r', '--release RELEASE',
+          "Specify documentation release (one of #{RELEASES}).") do |value|
+  options[:release_name] = value
+end
 parser.on('-i', '--info', 'Print information about webri.') do
   options[:info] = true
 end
@@ -39,8 +52,9 @@ parser.on('-v', '--version', 'Print the version of webri.') do
   puts WebRI::VERSION
   exit
 end
+parser.separator(NAME)
 
 parser.parse!
 
-release_name = ARGV[0]
-WebRI.new(release_name, options)
+name = ARGV[0]
+WebRI.new(name, options)
