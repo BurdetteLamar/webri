@@ -43,62 +43,82 @@ class TestWebRI < Minitest::Test
     },
   }
 
-  def do_exact_name(name, type, stdin, stdout)
-    read_to_prompt(stdout)
-    stdin.puts name
-    stdin.flush
-    lines = read_to_prompt(stdout)
-    assert_found_one_name(lines, type, name)
+  # Helpers.
+
+  def do_exact_name(name, type)
+    webri_session do |stdin, stdout, stderr|
+      read_to_prompt(stdout)
+      stdin.puts name
+      stdin.flush
+      lines = read_to_prompt(stdout)
+      assert_found_one_name(lines, type, name)
+    end
   end
 
-  def do_partial_name_select(name, type, stdin, stdout)
-    read_to_prompt(stdout)
-    stdin.puts name
-    stdin.flush
-    lines = read_to_select(stdout)
-    assert_found_multiple_names(lines, type, name)
-    stdin.puts '0'
-    lines = read_to_prompt(stdout)
-    assert_match('Opening', lines.next)
+  # There are two cases for partials:
+  # - The selection is unique: page opened.
+  # - The selection is not unique: second selection required.
+
+  def do_partial_name_select(name, type)
+    webri_session do |stdin, stdout, stderr|
+      read_to_prompt(stdout)
+      stdin.puts name
+      stdin.flush
+      lines = read_to_select(stdout)
+      assert_found_multiple_names(lines, type, name)
+      stdin.puts '0'
+      lines = read_to_prompt(stdout)
+      assert_match('Opening', lines.next)
+    end
   end
+
+  # Tests.
 
   def test_exact_class_name
     NAMES[:class][:exact].each do |name|
-      webri_session do |stdin, stdout, stderr|
-        do_exact_name(name, CLASS, stdin, stdout)
-      end
+      do_exact_name(name, CLASS)
     end
   end
 
   def test_exact_singleton_name
     NAMES[:singleton][:exact].each do |name|
-      webri_session do |stdin, stdout, stderr|
-        do_exact_name(name, SINGLETON, stdin, stdout)
-      end
+      do_exact_name(name, SINGLETON)
     end
   end
 
   def test_exact_instance_name
     NAMES[:instance][:exact].each do |name|
-      webri_session do |stdin, stdout, stderr|
-        do_exact_name(name, INSTANCE, stdin, stdout)
-      end
+      do_exact_name(name, INSTANCE)
     end
   end
 
   def test_exact_file_name
     NAMES[:file][:exact].each do |name|
-      webri_session do |stdin, stdout, stderr|
-        do_exact_name(name, FILE, stdin, stdout)
-      end
+      do_exact_name(name, FILE)
     end
   end
 
   def test_partial_class_name_select
     NAMES[:class][:partial].each do |name|
-      webri_session do |stdin, stdout, stderr|
-        do_partial_name_select(name, CLASS, stdin, stdout)
-      end
+      do_partial_name_select(name, CLASS)
+    end
+  end
+
+  def ztest_partial_singleton_name_select
+    NAMES[:singleton][:partial].each do |name|
+      do_partial_name_select(name, SINGLETON)
+    end
+  end
+
+  def ztest_partial_instance_name_select
+    NAMES[:instance][:partial].each do |name|
+      do_partial_name_select(name, INSTANCE)
+    end
+  end
+
+  def ztest_partial_file_name_select
+    NAMES[:file][:partial].each do |name|
+      do_partial_name_select(name, FILE)
     end
   end
 
@@ -120,10 +140,12 @@ class TestWebRI < Minitest::Test
 
   def assert_found_multiple_names(lines, type, name)
     message = "#{type} #{name}."
+    p lines
     line = lines.next
     assert_match(/^Found \d+ #{type} names/, line, message)
-    assert_match(type, line, message)
-    assert_match(name, line, message)
+    line = lines.reduce { |_, value| value }
+    p line
+    assert_match(/^Type/, line, message)
   end
 
   def assert_found_no_name(lines, type, name)
