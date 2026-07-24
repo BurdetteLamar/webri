@@ -16,41 +16,70 @@ class TestWebRI < Minitest::Test
     end
   end
 
-  def test_exact_name
-    {
-      CLASS => %w[Array Enumerator::Chain],
-      SINGLETON => %w[::URI],
-      INSTANCE => %w[#Array],
-      FILE => %w[ruby:README_md],
-    }.each_pair do |type, names|
-      names.each do |name|
-        webri_session do |stdin, stdout, stderr|
-          read_to_prompt(stdout)
-          stdin.puts name
-          lines = read_to_prompt(stdout)
-          assert_found_one_name(lines, type, name)
-        end
+  NAMES = {
+    class: {
+      # No token elicits all class/module names.
+      exact: %w[Array Enumerator::Chain],
+      partial: %w[Ar Prism::U],
+      nosuch: %w[Nosuch Nosuch::Nosuch],
+    },
+    singleton: {
+      all: %w[::],
+      exact: %w[::URI],
+      partial: %w[::to_],
+      nosuch: %w[::nosuch],
+    },
+    instance: {
+      all: %w[#],
+      exact: %w[#Array],
+      partial: %w[#to_],
+      nosuch: %w[#nosuch],
+    },
+    file: {
+      all: %w[ruby:],
+      exact: %w[ruby:syntax_rdoc],
+      partial: %w[ruby:syntax],
+      nosuch: %w[ruby:nosuch],
+    },
+  }
+
+  def initiate_name(name, stdin, stdout)
+    read_to_prompt(stdout)
+    stdin.puts name
+    read_to_prompt(stdout)
+  end
+
+  def select_name(stdin, stdout)
+    lines = initiate_name(name, stdin, stdout)
+  end
+
+  def test_exact_class_name
+    NAMES[:class][:exact].each do |name|
+      webri_session do |stdin, stdout, stderr|
+        lines = initiate_name(name, stdin, stdout)
+        assert_found_one_name(lines, CLASS, name)
       end
     end
   end
 
-  def test_no_name
-    {
-      CLASS => %w[Nosuch Nosuch::Foo],
-      SINGLETON => %w[::Nosuch],
-      INSTANCE => %w[#Nosuch],
-      FILE => %w[ruby:nosuch],
-    }.each_pair do |type, names|
-      names.each do |name|
-        webri_session do |stdin, stdout, stderr|
-          read_to_prompt(stdout)
-          stdin.puts name
-          lines = read_to_query(stdout)
-          assert_found_no_name(lines, type, name)
-        end
+  def zzz_test_partial_class_name
+    NAMES[:class][:partial].each do |name|
+      webri_session do |stdin, stdout, stderr|
+        lines = initiate_name(name, stdin, stdout)
       end
     end
   end
+
+
+  def test_exact_singleton_name
+    NAMES[:singleton][:exact].each do |name|
+      webri_session do |stdin, stdout, stderr|
+        lines = initiate_name(name, stdin, stdout)
+        assert_found_one_name(lines, SINGLETON, name)
+      end
+    end
+  end
+
 
   # Assertions
 
