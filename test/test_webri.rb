@@ -51,6 +51,17 @@ class TestWebRI < Minitest::Test
     assert_found_one_name(lines, type, name)
   end
 
+  def do_partial_name_select(name, type, stdin, stdout)
+    read_to_prompt(stdout)
+    stdin.puts name
+    stdin.flush
+    lines = read_to_select(stdout)
+    assert_found_multiple_names(lines, type, name)
+    stdin.puts '0'
+    lines = read_to_prompt(stdout)
+    assert_match('Opening', lines.next)
+  end
+
   def test_exact_class_name
     NAMES[:class][:exact].each do |name|
       webri_session do |stdin, stdout, stderr|
@@ -83,11 +94,10 @@ class TestWebRI < Minitest::Test
     end
   end
 
-  def zzz_test_partial_class_name
+  def test_partial_class_name_select
     NAMES[:class][:partial].each do |name|
       webri_session do |stdin, stdout, stderr|
-        lines = initiate_partial_name(name, stdin, stdout)
-        # assert_found_multiple_names(lines, CLASS, name)
+        do_partial_name_select(name, CLASS, stdin, stdout)
       end
     end
   end
@@ -111,15 +121,9 @@ class TestWebRI < Minitest::Test
   def assert_found_multiple_names(lines, type, name)
     message = "#{type} #{name}."
     line = lines.next
-    assert_match(/^Found \d+ #{CLASS}/, line, message)
+    assert_match(/^Found \d+ #{type} names/, line, message)
     assert_match(type, line, message)
     assert_match(name, line, message)
-    # if [SINGLETON, INSTANCE].include?(type)
-    #   line = lines.next
-    #   assert_match("Found one #{CLASS}", line, message)
-    # end
-    # line = lines.next
-    # assert_match('Opening', line, message)
   end
 
   def assert_found_no_name(lines, type, name)
@@ -157,8 +161,8 @@ class TestWebRI < Minitest::Test
     output.split(/\R/).to_enum
   end
 
-  def read_to_query(io)
-    read_to(io, /:\s+$/)
+  def read_to_select(io)
+    read_to(io, /^Type a number/)
   end
 
   def read_to_prompt(io)
