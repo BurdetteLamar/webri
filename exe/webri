@@ -16,10 +16,10 @@ There are four types of #{WebRI.variable('name')}, as determined by prefixes:
 |------------------|----------------|--------------------|
 |       Type       |   Starts With  |      Example       |
 |------------------|----------------|--------------------|
-| Class/module     | Capital letter | #{WebRI.string('Array')}            |
-| Singleton method | #{WebRI.string('::')}           | #{WebRI.string('::new')}            |
-| Instance method  | #{WebRI.string('#')}            | #{WebRI.string('#inspect')}         |
-| Ruby file        | #{WebRI.string('ruby:')}        | #{WebRI.string('ruby:syntax_rdoc')} |
+| Class/module     | Capital letter | #{WebRI.tokenq('Array')}          |
+| Singleton method | #{WebRI.tokenq('::')}           | #{WebRI.tokenq('::new')}            |
+| Instance method  | #{WebRI.tokenq('#')}            | #{WebRI.tokenq('#inspect')}         |
+| Ruby file        | #{WebRI.tokenq('ruby:')}        | #{WebRI.tokenq('ruby:syntax_rdoc')} |
 |------------------|----------------|--------------------|
 
 Note: Singleton method prefix should be escaped as #{WebRI.string('\\#')} if your shell requires it.
@@ -27,15 +27,20 @@ Note: Singleton method prefix should be escaped as #{WebRI.string('\\#')} if you
 Name handling:
 
 - If #{WebRI.variable('name')} is exactly a name of its type (but not the beginning of other such names),
-  #{WebRI.webri} opens the page for that name; example #{WebRI.string('Array')}.
+  #{WebRI.webri} opens the page for that name.
+  Examples: #{WebRI.tokenq('Array')}, #{WebRI.tokenq('::trap')}, #{WebRI.tokenq('#xmlschema')}, #{WebRI.tokenq('ruby:syntax_rdoc')}. 
 - If #{WebRI.variable('name')} is the beginning of exactly one name of its type,
-  #{WebRI.webri} asks whether to open the page for that name; example #{WebRI.string('ARG')}.
+  #{WebRI.webri} asks whether to open the page for that name.
+  Examples: #{WebRI.tokenq('Arra')}, #{WebRI.tokenq('::tra')}, #{WebRI.tokenq('#xmlschem')}, #{WebRI.tokenq('ruby:syntax_')}.
 - If #{WebRI.variable('name')} is the beginning of multiple names of its type,
-  #{WebRI.webri} displays those names and lets you choose; example #{WebRI.string('Pro')}.
+  #{WebRI.webri} displays those names and lets you choose.
+  Examples: #{WebRI.tokenq('A')}, #{WebRI.tokenq('::t')}, #{WebRI.tokenq('#')}, #{WebRI.tokenq('ruby:s')}.
 - If #{WebRI.variable('name')} is not a valid name of its type,
-  #{WebRI.webri} asks whether show such names; example #{WebRI.string('Xyzzy')}.
+  #{WebRI.webri} asks whether show such names.
+  Examples: #{WebRI.tokenq('Xyzzy')}, #{WebRI.tokenq('::xyzzy')}, #{WebRI.tokenq('#xyzzy')}, #{WebRI.tokenq('ruby:xyzzy')}.
 - If #{WebRI.variable('name')} is not valid at all (i.e., does not start with any of the prefixes above),
-  #{WebRI.webri} prints an error message; example #{WebRI.string('nosuch')}.
+  #{WebRI.webri} prints an error message.
+  Examples: #{WebRI.tokenq('nosuch')}, #{WebRI.tokenq('$foo')}, #{WebRI.tokenq('%Bar')}.
 
 EOT
 options = {}
@@ -44,8 +49,8 @@ parser = OptionParser.new
 
 parser.version = WebRI::VERSION
 parser.banner = <<-BANNER
-#{WebRI.webri} is a console application for displaying Ruby online HTML documentation.
-Documentation pages are opened in the default web browser.
+Console application #{WebRI.webri} displays Ruby online HTML documentation
+in the default web browser.
 
 Usage: #{WebRI.webri} [options] #{WebRI.variable('name')}
 

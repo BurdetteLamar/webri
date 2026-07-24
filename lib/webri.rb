@@ -49,7 +49,7 @@ class WebRI
   DOC_SITE = 'https://docs.ruby-lang.org/en/'
 
   def self.prompt
-    "(Type #{WebRI.string('?')} for help, #{WebRI.string('exit')} to exit) #{self.webri}> "
+    "(Type #{WebRI.tokenq('?')} for help, #{WebRI.tokenq('exit')} to exit) #{self.webri}> "
   end
 
   CLASS = 'class/module'
@@ -540,19 +540,19 @@ class WebRI
     if response == '?'
       puts <<HELP
 Type:
-  - #{WebRI.string('exit')} to exit #{WebRI.webri}.
+  - #{WebRI.tokenq('exit')} to exit #{WebRI.webri}.
   - #{CLASS.capitalize} name (full or partial) to see #{CLASS} names:
-      - #{WebRI.string('Array')} (full name, not the start of other names).
-      - #{WebRI.string('Ar')} (partial name).
+      - #{WebRI.tokenq('Array')} (full name, not the start of other names).
+      - #{WebRI.tokenq('Ar')} (partial name).
   - #{SINGLETON.capitalize} name (full or partial) to see #{SINGLETON} names:
-      - #{WebRI.string('::tanh')} (full name, not the start of other names).
-      - #{WebRI.string('::ta')} (partial name).
+      - #{WebRI.tokenq('::tanh')} (full name, not the start of other names).
+      - #{WebRI.tokenq('::ta')} (partial name).
   - #{INSTANCE.capitalize} name (full or partial) to see #{INSTANCE} names:
-      - #{WebRI.string('#query=')} (full name, not the start of other names).
-      - #{WebRI.string('#qu')} (partial name).
+      - #{WebRI.tokenq('#query=')} (full name, not the start of other names).
+      - #{WebRI.tokenq('#qu')} (partial name).
   - #{FILE.capitalize}name (full or partial) to see #{FILE} names:
-      - #{WebRI.string('ruby:syntax_rdoc')} (full name, not the start of other names).
-      - #{WebRI.string('ruby:syntax')} (partial name).
+      - #{WebRI.tokenq('ruby:syntax_rdoc')} (full name, not the start of other names).
+      - #{WebRI.tokenq('ruby:syntax')} (partial name).
 HELP
     else
       p response
@@ -572,6 +572,14 @@ HELP
     magenta: 35,
     cyan: 36,
     white: 37,
+    bright_black: 90,
+    bright_red: 91,
+    bright_green: 92,
+    bright_yellow: 93,
+    bright_blue: 94,
+    bright_magenta: 95,
+    bright_cyan: 96,
+    bright_white: 97,
   }
 
   def self.ansi_color(s, color)
@@ -590,5 +598,42 @@ HELP
   def self.string(s)
     self.ansi_color("'#{s}'", :green)
   end
+
+  def self.token(s)
+    color = case s
+            when /^[A-Z]/
+              :bright_blue
+            when /^::/
+              :bright_yellow
+            when /^#/
+              :bright_green
+            when /^ruby:/
+              :bright_red
+            else
+              :bright_cyan
+            end
+    self.ansi_color("#{s}", color)
+  end
+
+  def WebRI.tokenq(s)
+    "'" + WebRI.token("#{s}") + "'"
+  end
+
+  def self.file_name(s)
+    self.ansi_color("#{s}", :red)
+  end
+
+  def self.singleton_method_name(s)
+    self.ansi_color("#{s}", :magenta)
+  end
+
+  def self.instance_method_name(s)
+    self.ansi_color("#{s}", :cyan)
+  end
+
+  def self.class_name(s)
+    self.ansi_color("#{s}", :bright_blue)
+  end
+
 
 end
