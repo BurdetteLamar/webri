@@ -7,9 +7,29 @@ require_relative '../lib/webri/version'
 require_relative '../lib/webri'
 require_relative '../lib/scraper'
 
-NAME = <<-EOT
+NAME = <<EOT
+
 Name:
 
+There are four types of names, as determined by prefixes:
+
+- Class or module: starts with a capital letter; e.g., 'Array'.
+- Singleton method: starts with '::'; e.g., '::new'.
+- Instance method: starts with '#' (escaped as '\\#', if your shell requires it);
+  e.g., '#inspect'.
+- Ruby file: starts with 'ruby:'; e.g., 'ruby:syntax_rdoc'.
+
+Name handling:
+
+- If name is a complete name of its type (and not also the start of other such names),
+  webri opens the page for that name.
+- If name is incomplete, but is the start of only one name of its type,
+  webri asks whether to open the page for that name.
+- If name is incomplete, but is the start of multiple names of its type,
+  webri displays those names and lets you choose.
+- If name is not a valid name of its type, webri asks whether show such names.
+- If name is not valid at all (i.e., does not start with any of the prefixes above),
+  webri prints an error message.
 
 EOT
 options = {}
