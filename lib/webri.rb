@@ -538,8 +538,9 @@ class WebRI
   end
 
   def help(response)
-    if response == '?'
-      puts <<HELP
+    puts WebRI::HELP
+    return
+    puts <<HELP
 Type:
   - #{WebRI.tokenq('exit')} to exit #{WebRI.webri}.
   - #{CLASS.capitalize} name (full or partial) to see #{CLASS} names:
@@ -555,9 +556,6 @@ Type:
       - #{WebRI.tokenq('ruby:syntax_rdoc')} (full name, not the start of other names).
       - #{WebRI.tokenq('ruby:syntax')} (partial name).
 HELP
-    else
-      p response
-    end
   end
 
   def help_main
@@ -635,6 +633,41 @@ HELP
   def self.class_name(s)
     self.ansi_color("#{s}", :bright_blue)
   end
+
+  HELP = <<EOT
+
+There are four types of #{WebRI.variable('name')}, as determined by prefixes:
+
+|------------------|----------------|--------------------|
+|       Type       |   Starts With  |      Example       |
+|------------------|----------------|--------------------|
+| Class/module     | Capital letter | #{WebRI.tokenq('Array')}          |
+| Singleton method | #{WebRI.tokenq('::')}           | #{WebRI.tokenq('::new')}            |
+| Instance method  | #{WebRI.tokenq('#')}            | #{WebRI.tokenq('#inspect')}         |
+| Ruby file        | #{WebRI.tokenq('ruby:')}        | #{WebRI.tokenq('ruby:syntax_rdoc')} |
+|------------------|----------------|--------------------|
+
+Note: On the command-line, the instance method prefix should be escaped as #{WebRI.string('\\#')} if your shell requires it.
+
+Name handling:
+
+- If #{WebRI.variable('name')} is exactly a name of its type (but not the beginning of other such names),
+  #{WebRI.webri} opens the page for that name.
+  Examples: #{WebRI.tokenq('Array')}, #{WebRI.tokenq('::trap')}, #{WebRI.tokenq('#xmlschema')}, #{WebRI.tokenq('ruby:syntax_rdoc')}. 
+- If #{WebRI.variable('name')} is the beginning of exactly one name of its type,
+  #{WebRI.webri} asks whether to open the page for that name.
+  Examples: #{WebRI.tokenq('Arra')}, #{WebRI.tokenq('::tra')}, #{WebRI.tokenq('#xmlschem')}, #{WebRI.tokenq('ruby:syntax_')}.
+- If #{WebRI.variable('name')} is the beginning of multiple names of its type,
+  #{WebRI.webri} displays those names and lets you choose.
+  Examples: #{WebRI.tokenq('A')}, #{WebRI.tokenq('::t')}, #{WebRI.tokenq('#')}, #{WebRI.tokenq('ruby:s')}.
+- If #{WebRI.variable('name')} is not a valid name of its type,
+  #{WebRI.webri} asks whether show such names.
+  Examples: #{WebRI.tokenq('Xyzzy')}, #{WebRI.tokenq('::xyzzy')}, #{WebRI.tokenq('#xyzzy')}, #{WebRI.tokenq('ruby:xyzzy')}.
+- If #{WebRI.variable('name')} is not valid at all (i.e., does not start with any of the prefixes above),
+  #{WebRI.webri} prints an error message.
+  Examples: #{WebRI.tokenq('nosuch')}, #{WebRI.tokenq('$foo')}, #{WebRI.tokenq('%Bar')}.
+
+EOT
 
 
 end
