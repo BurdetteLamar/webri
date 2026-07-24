@@ -11,25 +11,31 @@ NAME = <<EOT
 
 Name:
 
-There are four types of names, as determined by prefixes:
+There are four types of #{WebRI.variable('name')}, as determined by prefixes:
 
-- Class or module: starts with a capital letter; e.g., 'Array'.
-- Singleton method: starts with '::'; e.g., '::new'.
-- Instance method: starts with '#' (escaped as '\\#', if your shell requires it);
-  e.g., '#inspect'.
-- Ruby file: starts with 'ruby:'; e.g., 'ruby:syntax_rdoc'.
+|------------------|----------------|--------------------|
+|       Type       |   Starts With  |      Example       |
+|------------------|----------------|--------------------|
+| Class/module     | Capital letter | #{WebRI.string('Array')}            |
+| Singleton method | #{WebRI.string('::')}           | #{WebRI.string('::new')}            |
+| Instance method  | #{WebRI.string('#')}            | #{WebRI.string('#inspect')}         |
+| Ruby file        | #{WebRI.string('ruby:')}        | #{WebRI.string('ruby:syntax_rdoc')} |
+|------------------|----------------|--------------------|
+
+Note: Singleton method prefix should be escaped as #{WebRI.string('\\#')} if your shell requires it.
 
 Name handling:
 
-- If name is a complete name of its type (and not also the start of other such names),
-  webri opens the page for that name.
-- If name is incomplete, but is the start of only one name of its type,
-  webri asks whether to open the page for that name.
-- If name is incomplete, but is the start of multiple names of its type,
-  webri displays those names and lets you choose.
-- If name is not a valid name of its type, webri asks whether show such names.
-- If name is not valid at all (i.e., does not start with any of the prefixes above),
-  webri prints an error message.
+- If #{WebRI.variable('name')} is exactly a name of its type (but not the beginning of other such names),
+  #{WebRI.webri} opens the page for that name; example #{WebRI.string('Array')}.
+- If #{WebRI.variable('name')} is the beginning of exactly one name of its type,
+  #{WebRI.webri} asks whether to open the page for that name; example #{WebRI.string('ARG')}.
+- If #{WebRI.variable('name')} is the beginning of multiple names of its type,
+  #{WebRI.webri} displays those names and lets you choose; example #{WebRI.string('Pro')}.
+- If #{WebRI.variable('name')} is not a valid name of its type,
+  #{WebRI.webri} asks whether show such names; example #{WebRI.string('Xyzzy')}.
+- If #{WebRI.variable('name')} is not valid at all (i.e., does not start with any of the prefixes above),
+  #{WebRI.webri} prints an error message; example #{WebRI.string('nosuch')}.
 
 EOT
 options = {}
@@ -38,10 +44,10 @@ parser = OptionParser.new
 
 parser.version = WebRI::VERSION
 parser.banner = <<-BANNER
-webri is a console application for displaying Ruby online HTML documentation.
+#{WebRI.webri} is a console application for displaying Ruby online HTML documentation.
 Documentation pages are opened in the default web browser.
 
-Usage: #{parser.program_name} [options] name
+Usage: #{WebRI.webri} [options] #{WebRI.variable('name')}
 
 BANNER
 
@@ -55,7 +61,7 @@ parser.on('-r', '--release RELEASE',
           "Specify documentation release (one of #{RELEASES}).") do |value|
   options[:release_name] = value
 end
-parser.on('-i', '--info', 'Print information about webri.') do
+parser.on('-i', '--info', "Print information about #{WebRI.webri}.") do
   options[:info] = true
 end
 parser.on('--noreline', 'Do not use Reline (useful for testing).') do |value|
@@ -68,7 +74,7 @@ parser.on('-h', '--help', 'Print this help.') do
   puts parser
   exit
 end
-parser.on('-v', '--version', 'Print the version of webri.') do
+parser.on('-v', '--version', "Print the version of #{WebRI.webri}.") do
   puts WebRI::VERSION
   exit
 end

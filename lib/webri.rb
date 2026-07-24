@@ -48,7 +48,9 @@ class WebRI
   # Site of the official documentation.
   DOC_SITE = 'https://docs.ruby-lang.org/en/'
 
-  PROMPT = "('?' for help) webri> "
+  def self.prompt
+    "(Type #{WebRI.string('?')} for help, #{WebRI.string('exit')} to exit) #{self.webri}> "
+  end
 
   CLASS = 'class/module'
   SINGLETON = 'singleton method'
@@ -104,7 +106,7 @@ class WebRI
 
   def repl_plain # Read-evaluate-print loop, without Reline.
     while true
-      $stdout.write(PROMPT)
+      $stdout.write(WebRI.prompt)
       $stdout.flush
       response = $stdin.gets.chomp
       exit if response == 'exit'
@@ -132,7 +134,7 @@ class WebRI
       Reline.completion_proc = proc { |word|
         completion_words
       }
-      while line = Reline.readline(PROMPT, true)
+      while line = Reline.readline(WebRI.prompt, true)
         case line.chomp
         when 'exit'
           exit 0
@@ -538,19 +540,19 @@ class WebRI
     if response == '?'
       puts <<HELP
 Type:
-  - 'exit' to exit webri.
+  - #{WebRI.string('exit')} to exit #{WebRI.webri}.
   - #{CLASS.capitalize} name (full or partial) to see #{CLASS} names:
-      - 'Array' (full name, not the start of other names).
-      - 'Ar' (partial name).
+      - #{WebRI.string('Array')} (full name, not the start of other names).
+      - #{WebRI.string('Ar')} (partial name).
   - #{SINGLETON.capitalize} name (full or partial) to see #{SINGLETON} names:
-      - '::tanh' (full name, not the start of other names).
-      - '::ta' (partial name).
+      - #{WebRI.string('::tanh')} (full name, not the start of other names).
+      - #{WebRI.string('::ta')} (partial name).
   - #{INSTANCE.capitalize} name (full or partial) to see #{INSTANCE} names:
-      - '#query=' (full name, not the start of other names).
-      - '#qu' (partial name).
+      - #{WebRI.string('#query=')} (full name, not the start of other names).
+      - #{WebRI.string('#qu')} (partial name).
   - #{FILE.capitalize}name (full or partial) to see #{FILE} names:
-      - 'ruby:syntax_rdoc' (full name, not the start of other names).
-      - 'ruby:syntax' (partial name).
+      - #{WebRI.string('ruby:syntax_rdoc')} (full name, not the start of other names).
+      - #{WebRI.string('ruby:syntax')} (partial name).
 HELP
     else
       p response
@@ -559,6 +561,34 @@ HELP
 
   def help_main
 
+  end
+
+  ANSI_COLOR = {
+    black: 30,
+    red: 31,
+    green: 32,
+    yellow: 33,
+    blue: 34,
+    magenta: 35,
+    cyan: 36,
+    white: 37,
+  }
+
+  def self.ansi_color(s, color)
+    return s unless $stdout.tty?
+    "\e[#{ANSI_COLOR[color]}m#{s}\e[0m"
+  end
+
+  def self.webri
+    self.ansi_color('webri', :blue)
+  end
+
+  def self.variable(s)
+    self.ansi_color(s, :yellow)
+  end
+
+  def self.string(s)
+    self.ansi_color("'#{s}'", :green)
   end
 
 end
