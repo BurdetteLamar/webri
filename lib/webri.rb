@@ -452,7 +452,7 @@ class WebRI
           IO.popen(pager, "w") do |io|
             io.puts s
           rescue Errno::EPIPE
-            # User exited early.
+            puts message
           end
         end
         response = $stdin.gets
