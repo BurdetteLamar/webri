@@ -582,7 +582,7 @@ HELP
   }
 
   def self.ansi_color(s, color)
-    return s unless $stdout.tty?
+    # return s unless $stdout.tty?
     "\e[#{ANSI_COLOR[color]}m#{s}\e[0m"
   end
 
@@ -639,9 +639,9 @@ HELP
 There are four types of #{WebRI.variable('name')}, as determined by prefixes:
 
 |------------------|----------------|--------------------|
-|       Type       |   Starts With  |      Example       |
+|       Type       |     Prefix     |      Example       |
 |------------------|----------------|--------------------|
-| Class/module     | Capital letter | #{WebRI.tokenq('Array')}          |
+| Class/module     | Capital letter | #{WebRI.tokenq('Array')}            |
 | Singleton method | #{WebRI.tokenq('::')}           | #{WebRI.tokenq('::new')}            |
 | Instance method  | #{WebRI.tokenq('#')}            | #{WebRI.tokenq('#inspect')}         |
 | Ruby file        | #{WebRI.tokenq('ruby:')}        | #{WebRI.tokenq('ruby:syntax_rdoc')} |
