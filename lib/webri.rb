@@ -14,6 +14,8 @@ require_relative 'scraper'
 # TODO: Test all releases(?).
 # TODO: Test all web pages(?).
 
+# TODO: Put in special name to elicit all class/module names.
+#
 # TODO: Make it work for:
 # - Array.new
 # - Array::new
@@ -23,8 +25,6 @@ require_relative 'scraper'
 # - ::new
 # - .sort
 # - #sort
-
-# TODO: Support pager.
 
 # TODO: Support .webrirc.
 # TODO: Make it save options to .webrirc.
@@ -66,7 +66,6 @@ class WebRI
   def initialize(name = nil, options = {})
     capture_options(options)
     self.release_name = set_doc_release(@release_name)
-    # data_file_path = File.join('data', self.release_name + '.json')
     data_file_path = File.expand_path("../data/#{self.release_name}.json", __dir__)
     json = open(data_file_path).read
     @data = JSON.parse(json, create_additions: true)
@@ -556,23 +555,6 @@ class WebRI
 
   def help(response)
     puts WebRI::HELP
-    return
-    puts <<HELP
-Type:
-  - #{WebRI.tokenq('exit')} to exit #{WebRI.webri}.
-  - #{CLASS.capitalize} name (full or partial) to see #{CLASS} names:
-      - #{WebRI.tokenq('Array')} (full name, not the start of other names).
-      - #{WebRI.tokenq('Ar')} (partial name).
-  - #{SINGLETON.capitalize} name (full or partial) to see #{SINGLETON} names:
-      - #{WebRI.tokenq('::tanh')} (full name, not the start of other names).
-      - #{WebRI.tokenq('::ta')} (partial name).
-  - #{INSTANCE.capitalize} name (full or partial) to see #{INSTANCE} names:
-      - #{WebRI.tokenq('#query=')} (full name, not the start of other names).
-      - #{WebRI.tokenq('#qu')} (partial name).
-  - #{FILE.capitalize}name (full or partial) to see #{FILE} names:
-      - #{WebRI.tokenq('ruby:syntax_rdoc')} (full name, not the start of other names).
-      - #{WebRI.tokenq('ruby:syntax')} (partial name).
-HELP
   end
 
   def help_main
@@ -666,21 +648,21 @@ There are four types of #{WebRI.variable('name')}, as determined by prefixes:
 
 Note: On the command-line, the instance method prefix should be escaped as #{WebRI.string('\\#')} if your shell requires it.
 
-Name handling:
+When argument #{WebRI.variable('name')} is:
 
-- If #{WebRI.variable('name')} is exactly a name of its type (but not the beginning of other such names),
+- Exactly a name of its type (but not the beginning of other such names),
   #{WebRI.webri} opens the page for that name.
   Examples: #{WebRI.tokenq('Array')}, #{WebRI.tokenq('::trap')}, #{WebRI.tokenq('#xmlschema')}, #{WebRI.tokenq('ruby:syntax_rdoc')}. 
-- If #{WebRI.variable('name')} is the beginning of exactly one name of its type,
+- The beginning of exactly one name of its type,
   #{WebRI.webri} asks whether to open the page for that name.
   Examples: #{WebRI.tokenq('Arra')}, #{WebRI.tokenq('::tra')}, #{WebRI.tokenq('#xmlschem')}, #{WebRI.tokenq('ruby:syntax_')}.
-- If #{WebRI.variable('name')} is the beginning of multiple names of its type,
+- The beginning of multiple names of its type,
   #{WebRI.webri} displays those names and lets you choose.
   Examples: #{WebRI.tokenq('A')}, #{WebRI.tokenq('::t')}, #{WebRI.tokenq('#')}, #{WebRI.tokenq('ruby:s')}.
-- If #{WebRI.variable('name')} is not a valid name of its type,
+- Not a valid name of its type,
   #{WebRI.webri} asks whether show such names.
   Examples: #{WebRI.tokenq('Xyzzy')}, #{WebRI.tokenq('::xyzzy')}, #{WebRI.tokenq('#xyzzy')}, #{WebRI.tokenq('ruby:xyzzy')}.
-- If #{WebRI.variable('name')} is not valid at all (i.e., does not start with any of the prefixes above),
+- Not a valid name at all (i.e., does not start with any of the prefixes above),
   #{WebRI.webri} prints an error message.
   Examples: #{WebRI.tokenq('nosuch')}, #{WebRI.tokenq('$foo')}, #{WebRI.tokenq('%Bar')}.
 
