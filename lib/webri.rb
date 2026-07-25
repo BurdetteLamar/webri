@@ -422,13 +422,14 @@ class WebRI
 
   # Present choices; return choice.
   def get_choice_(choices, required: false)
+    lines = []
     index = nil
     range = (0..choices.size - 1)
     until range.include?(index)
       choices.each_with_index do |choice, i|
         s = "%6d" % i
         token = WebRI.token(choice)
-        puts "  #{s}:  #{token}"
+        lines << "  #{s}:  #{token}"
       end
       while true
         message = if required
@@ -436,8 +437,24 @@ class WebRI
                   else
                     'Type a number to choose, or Return to skip:  '
                   end
-        print message
-        $stdout.flush
+        lines << message
+        s = lines.join("\n")
+        require "mkmf"
+
+        pager =
+          ENV["PAGER"] ||
+          if find_executable("less")
+            'less -RFX'
+          else
+            'more'
+          end
+        begin
+          IO.popen(pager, "w") do |io|
+            io.puts s
+          rescue Errno::EPIPE
+            # User exited early.
+          end
+        end
         response = $stdin.gets
         case response
         when /(\d+)/
@@ -446,7 +463,7 @@ class WebRI
         when "\n"
           return nil unless required
         else
-
+          # Continue
         end
       end
     end
