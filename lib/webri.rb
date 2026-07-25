@@ -63,6 +63,8 @@ class WebRI
                 :href_for_singleton_method_name,
                 :href_for_instance_method_name
 
+  @@nocolor = false
+
   def initialize(name = nil, options = {})
     capture_options(options)
     self.release_name = set_doc_release(@release_name)
@@ -198,6 +200,7 @@ class WebRI
     @noop = options[:noop]
     @info = options[:info]
     @noreline = options[:noreline]
+    @@nocolor = options[:nocolor]
     @release_name = options[:release_name]
   end
 
@@ -557,10 +560,6 @@ class WebRI
     puts WebRI::HELP
   end
 
-  def help_main
-
-  end
-
   ANSI_COLOR = {
     black: 30,
     red: 31,
@@ -581,7 +580,7 @@ class WebRI
   }
 
   def self.ansi_color(s, color)
-    # return s unless $stdout.tty?
+    return s if @@nocolor
     "\e[#{ANSI_COLOR[color]}m#{s}\e[0m"
   end
 

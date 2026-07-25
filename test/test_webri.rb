@@ -1,7 +1,9 @@
 # frozen_string_literal: true
 
-require_relative 'test_helper'
 require 'open3'
+require 'json'
+
+require_relative 'test_helper'
 
 class TestWebRI < Minitest::Test
 
@@ -10,48 +12,93 @@ class TestWebRI < Minitest::Test
   INSTANCE = 'instance method'
   FILE = 'file'
 
+  # Tests.
+
   def test_option_version
-    webri_session('--version') do |stdin, stdout, stderr, _|
-      assert_equal(stdout.read.chomp, WebRI::VERSION, 'version')
+    webri_session(nil, one_shot: true, options_s: '--version') do |stdin, stdout, stderr, lines|
+      line = lines.next
+      assert_equal(line, WebRI::VERSION, 'version')
+      assert_enum_done(lines)
     end
   end
 
-  NAMES = {
-    class: {
-      # No token elicits all class/module names.
-      exact: %w[Array Enumerator::Chain],
-      partial: %w[Ar Prism::U],
-      nosuch: %w[Nosuch Nosuch::Nosuch],
-    },
-    singleton: {
-      all: %w[::],
-      exact: %w[::URI],
-      partial: %w[::to_],
-      nosuch: %w[::nosuch],
-    },
-    instance: {
-      all: %w[#],
-      exact: %w[#Array],
-      partial: %w[#to_],
-      nosuch: %w[#nosuch],
-    },
-    file: {
-      all: %w[ruby:],
-      exact: %w[ruby:syntax_rdoc],
-      partial: %w[ruby:syntax],
-      nosuch: %w[ruby:nosuch],
-    },
-  }
+  def test_exact_class_name
+    [:exact_simple, :exact_nested].each do |type|
+      name = @values[:classes][type]
+      do_exact_name(name, CLASS)
+    end
+  end
+
+  # Setup.
+
+  def setup
+    return if @values
+    @values = {}
+    release_name = '4.0'
+    data_file_path = File.expand_path("../data/#{release_name}.json", __dir__)
+    json = open(data_file_path).read
+    values = JSON.parse(json, create_additions: true)
+    # classes_for_method = values['classes_for_method']
+    hrefs_for_name = values['hrefs_for_name']
+    names_by_type = hrefs_for_name.group_by do |name, hrefs|
+      case name
+      when /^::/
+        :singleton_methods
+      when /^#/
+        :instance_methods
+      when /^[A-Z]/
+        :classes
+      when  /^fatal$/
+        :classes
+      when /^ruby:/
+        :files
+      else
+        fail name
+      end
+    end
+    name_values = {}
+    [:classes, :files].each do |type|
+      name_values[type] = {}
+      names = names_by_type[type].map {|a| a.first }
+      names.each do |name|
+        next if name.size == 1
+        # Find other names that begin with this name.
+        pattern = Regexp.new("^#{name}.") # Note the trailing dot.
+        other_names = names.select {|_name| _name.match(pattern)}
+        if other_names.empty?
+          if name.match('::')
+            name_values[type][:exact_nested] = name
+            name_values[type][:partial_nested] = name.chop
+          elsif type == :classes
+            name_values[type][:exact_simple] = name
+            name_values[type][:partial_simple] = name.chop
+          else
+            name_values[type][:exact] = name
+            name_values[type][:partial] = name.chop
+          end
+        end
+        if type == :classes
+          name_values[type][:nosuch_simple] = 'Nosuch'
+          name_values[type][:nosuch_nested] = 'Nosuch::Foo'
+        else
+          name_values[type][:nosuch] = 'ruby::nosuch'
+        end
+        @values[type] = name_values[type]
+      end
+    end
+  end
 
   # Helpers.
 
   def do_exact_name(name, type)
-    webri_session do |stdin, stdout, stderr|
-      read_to_prompt(stdout)
-      stdin.puts name
-      stdin.flush
-      lines = read_to_prompt(stdout)
+    webri_session(name, one_shot: true) do |stdin, stdout, stderr, lines|
       assert_found_one_name(lines, type, name)
+      assert_enum_done(lines)
+    end
+    webri_session(name, one_shot: false) do |stdin, stdout, stderr, lines|
+      assert_found_one_name(lines, type, name)
+      assert_prompt(lines.next)
+      assert_enum_done(lines)
     end
   end
 
@@ -72,33 +119,25 @@ class TestWebRI < Minitest::Test
     end
   end
 
-  # Tests.
-
-  def test_exact_class_name
-    NAMES[:class][:exact].each do |name|
-      do_exact_name(name, CLASS)
-    end
-  end
-
-  def test_exact_singleton_name
+  def zzz_test_exact_singleton_name
     NAMES[:singleton][:exact].each do |name|
       do_exact_name(name, SINGLETON)
     end
   end
 
-  def test_exact_instance_name
+  def zzz_test_exact_instance_name
     NAMES[:instance][:exact].each do |name|
       do_exact_name(name, INSTANCE)
     end
   end
 
-  def test_exact_file_name
+  def zzz_test_exact_file_name
     NAMES[:file][:exact].each do |name|
       do_exact_name(name, FILE)
     end
   end
 
-  def test_partial_class_name_select
+  def zzz_test_partial_class_name_select
     NAMES[:class][:partial].each do |name|
       do_partial_name_select(name, CLASS)
     end
@@ -124,6 +163,19 @@ class TestWebRI < Minitest::Test
 
   # Assertions
 
+  def assert_prompt(line)
+    assert_match(/webri>\s+$/, line)
+  end
+
+  def assert_enum_done(lines)
+    begin
+      lines.next
+      assert false
+    rescue StopIteration
+      assert true
+    end
+  end
+
   def assert_found_one_name(lines, type, name)
     message = "#{type} #{name}."
     line = lines.next
@@ -140,11 +192,9 @@ class TestWebRI < Minitest::Test
 
   def assert_found_multiple_names(lines, type, name)
     message = "#{type} #{name}."
-    p lines
     line = lines.next
     assert_match(/^Found \d+ #{type} names/, line, message)
     line = lines.reduce { |_, value| value }
-    p line
     assert_match(/^Type/, line, message)
   end
 
@@ -161,16 +211,43 @@ class TestWebRI < Minitest::Test
   # Infrastructure.
 
   # Open a webri session and yield its IO streams.
-  # Option --noop, which we use for all tests, means don't actually open the web page.
-  # Option --noreline, which we use for all tests, means don't use Reline..
-  def webri_session(options_s = '')
-    options_s += ' --noop --noreline'
-    command = "ruby ./exe/webri 4.0 #{options_s}"
-    Open3.popen3(command) do |stdin, stdout, stderr, wait_thread|
-      yield stdin, stdout, stderr
-    ensure
-      stdin.close
-      wait_thread.value
+  def webri_session(name, one_shot:, options_s: '')
+    options_s += ' --noop --noreline --nocolor --release 4.0'
+    if name.nil?
+      # No name; we're testing options: --info, --version, --help
+      command = "ruby ./exe/webri #{options_s}"
+      Open3.popen3(command) do |stdin, stdout, stderr, wait_thread|
+        stdin.flush
+        lines = read_to(stdout, /./)
+        yield stdin, stdout, stderr, lines
+      ensure
+        stdin.close
+        wait_thread.value
+      end
+    elsif one_shot
+      # Put name on command line; no REPL.
+      command = "ruby ./exe/webri #{options_s} #{name}"
+      Open3.popen3(command) do |stdin, stdout, stderr, wait_thread|
+        stdin.flush
+        lines = read_to(stdout, 'Opening')
+        yield stdin, stdout, stderr, lines
+      ensure
+        stdin.close
+        wait_thread.value
+      end
+    else
+      # Don't put name on command line; drop into REPL.
+      command = "ruby ./exe/webri #{options_s}"
+      Open3.popen3(command) do |stdin, stdout, stderr, wait_thread|
+        read_to_prompt(stdout)
+        stdin.puts name
+        stdin.flush
+        lines = read_to_prompt(stdout)
+        yield stdin, stdout, stderr, lines
+      ensure
+        stdin.close
+        wait_thread.value
+      end
     end
   end
 

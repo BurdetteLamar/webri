@@ -31,10 +31,13 @@ end
 parser.on('-i', '--info', "Print information about #{WebRI.webri}.") do
   options[:info] = true
 end
-parser.on('--noreline', 'Do not use Reline (useful for testing).') do |value|
+parser.on('--noreline', 'Do not use Reline.') do |value|
   options[:noreline] = true
 end
-parser.on('-n', '--noop', 'Do not actually open web pages.') do |value|
+parser.on('--nocolor', 'Do not colorize output.') do |value|
+  options[:nocolor] = true
+end
+parser.on('--noop', 'Do not actually open web pages.') do |value|
   options[:noop] = true
 end
 parser.on('-h', '--help', 'Print this help.') do
