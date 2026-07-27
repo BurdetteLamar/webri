@@ -16,29 +16,20 @@ parser.banner = <<-BANNER
 Console application #{WebRI.webri} displays Ruby online HTML documentation
 in the default web browser.
 
-Usage: #{WebRI.webri} [options] #{WebRI.variable('name')}
+Usage: #{WebRI.webri} [options] [#{WebRI.variable('name')}]
 
 BANNER
 
 RELEASES = Scraper.scrapers.keys.inspect
 
 parser.separator("Options:")
-
+parser.separator('')
 parser.on('-r', '--release RELEASE',
           "Specify documentation release (one of #{RELEASES}).") do |value|
   options[:release_name] = value
 end
 parser.on('-i', '--info', "Print information about #{WebRI.webri}.") do
   options[:info] = true
-end
-parser.on('--noreline', 'Do not use Reline.') do |value|
-  options[:noreline] = true
-end
-parser.on('--nocolor', 'Do not colorize output.') do |value|
-  options[:nocolor] = true
-end
-parser.on('--noop', 'Do not actually open web pages.') do |value|
-  options[:noop] = true
 end
 parser.on('-h', '--help', 'Print this help.') do
   puts parser
@@ -48,6 +39,20 @@ parser.on('-v', '--version', "Print the version of #{WebRI.webri}.") do
   puts WebRI::VERSION
   exit
 end
+
+parser.separator('')
+parser.separator('Options useful for testing webri:')
+parser.separator('')
+parser.on('--noreline', 'Do not use Reline.') do |value|
+  options[:noreline] = true
+end
+parser.on('--nocolor', 'Do not colorize output.') do |value|
+  options[:nocolor] = true
+end
+parser.on('--noop', 'Do not actually open web pages.') do |value|
+  options[:noop] = true
+end
+
 parser.separator(WebRI::HELP)
 
 parser.parse!
