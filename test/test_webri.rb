@@ -212,7 +212,7 @@ class TestWebRI < Minitest::Test
 
   # Open a webri session and yield its IO streams.
   def webri_session(name, one_shot:, options_s: '')
-    options_s += ' --noop --noreline --nocolor --release 4.0'
+    options_s += ' --noop --noreline --noansi --release 4.0'
     if name.nil?
       # No name; we're testing options: --info, --version, --help
       command = "ruby ./exe/webri #{options_s}"

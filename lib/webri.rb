@@ -63,7 +63,7 @@ class WebRI
                 :href_for_singleton_method_name,
                 :href_for_instance_method_name
 
-  @@nocolor = false
+  @@noansi = false
 
   def initialize(name = nil, options = {})
     capture_options(options)
@@ -200,81 +200,81 @@ class WebRI
     @noop = options[:noop]
     @info = options[:info]
     @noreline = options[:noreline]
-    @@nocolor = options[:nocolor]
+    @@noansi = options[:noansi]
     @release_name = options[:release_name]
   end
 
-  class Entry
-
-    attr_accessor :full_name, :paths
-
-    def initialize(full_name)
-      self.full_name = full_name
-      self.paths = []
-    end
-
-    # Return hash of choice strings for entries.
-    def self.choices(entries)
-      choices = {}
-      entries.each_pair do |name, entry|
-        entry.paths.each do |path|
-          choice = self.choice(name, path)
-          choices[choice] = path
-        end
-      end
-      Hash[choices.sort]
-    end
-
-    def self.uri(path)
-      URI.parse(path)
-    end
-
-    # Return the full name from a choice string.
-    def self.full_name_for_choice(choice)
-      choice.split(' ').first.sub(/:$/, '')
-    end
-
-  end
-
-  class ClassEntry < Entry
-
-    # Return a choice for a path.
-    def self.choice(name, path)
-      "#{name} (#{path})"
-    end
-
-  end
-
-  class FileEntry < Entry
-
-    # Return a choice for a path.
-    def self.choice(name, path)
-      "#{name} (#{path})"
-    end
-
-  end
-
-  class SingletonMethodEntry < Entry
-
-    # Return a choice string for a path.
-    def self.choice(full_name, path)
-      class_name, _ = path.split('.html#method-c-')
-      class_name.gsub!('/', '::')
-      "#{full_name} (in #{class_name})"
-    end
-
-  end
-
-  class InstanceMethodEntry < Entry
-
-    # Return a choice string for a path.
-    def self.choice(full_name, path)
-      class_name, _ = path.split('.html#method-i-')
-      class_name.gsub!('/', '::')
-      "#{full_name} (in #{class_name})"
-    end
-
-  end
+  # class Entry
+  #
+  #   attr_accessor :full_name, :paths
+  #
+  #   def initialize(full_name)
+  #     self.full_name = full_name
+  #     self.paths = []
+  #   end
+  #
+  #   # Return hash of choice strings for entries.
+  #   def self.choices(entries)
+  #     choices = {}
+  #     entries.each_pair do |name, entry|
+  #       entry.paths.each do |path|
+  #         choice = self.choice(name, path)
+  #         choices[choice] = path
+  #       end
+  #     end
+  #     Hash[choices.sort]
+  #   end
+  #
+  #   def self.uri(path)
+  #     URI.parse(path)
+  #   end
+  #
+  #   # Return the full name from a choice string.
+  #   def self.full_name_for_choice(choice)
+  #     choice.split(' ').first.sub(/:$/, '')
+  #   end
+  #
+  # end
+  #
+  # class ClassEntry < Entry
+  #
+  #   # Return a choice for a path.
+  #   def self.choice(name, path)
+  #     "#{name} (#{path})"
+  #   end
+  #
+  # end
+  #
+  # class FileEntry < Entry
+  #
+  #   # Return a choice for a path.
+  #   def self.choice(name, path)
+  #     "#{name} (#{path})"
+  #   end
+  #
+  # end
+  #
+  # class SingletonMethodEntry < Entry
+  #
+  #   # Return a choice string for a path.
+  #   def self.choice(full_name, path)
+  #     class_name, _ = path.split('.html#method-c-')
+  #     class_name.gsub!('/', '::')
+  #     "#{full_name} (in #{class_name})"
+  #   end
+  #
+  # end
+  #
+  # class InstanceMethodEntry < Entry
+  #
+  #   # Return a choice string for a path.
+  #   def self.choice(full_name, path)
+  #     class_name, _ = path.split('.html#method-i-')
+  #     class_name.gsub!('/', '::')
+  #     "#{full_name} (in #{class_name})"
+  #   end
+  #
+  # end
 
   # Show a page of Ruby documentation.
   def show(name)
@@ -580,12 +580,12 @@ class WebRI
   }
 
   def self.ansi_color(s, color)
-    return s if @@nocolor
+    return s if @@noansi
     "\e[#{ANSI_COLOR[color]}m#{s}\e[0m"
   end
 
   def self.webri
-    self.ansi_color('webri', :blue)
+    self.ansi_color('webri', :cyan)
   end
 
   def self.variable(s)
@@ -632,9 +632,26 @@ class WebRI
     self.ansi_color("#{s}", :bright_blue)
   end
 
+  def self.bold(s)
+    "\033[1m#{s}\033[0m"
+  end
+
+  def self.bold_italic(s)
+    "\033[1;3m#{s}\033[0m"
+  end
+
   HELP = <<EOT
 
-There are four types of #{WebRI.variable('name')}, as determined by prefixes:
+If argument #{WebRI.variable('name')} is given, #{WebRI.webri} operates in its immediate mode,
+which means that it processes that one #{WebRI.variable('name')} (possibly with some minor interaction),
+then exits.
+
+If argument #{WebRI.variable('name')} is not given, #{WebRI.webri} operates in its interactive mode,
+which means that enter a read-evaluate-print loop (REPL).
+
+#{WebRI.bold_italic('Names')}
+
+Argument #{WebRI.variable('name')} is one of four types, as determined by its prefix:
 
 |------------------|----------------|--------------------|
 |       Type       |     Prefix     |      Example       |
@@ -645,25 +662,95 @@ There are four types of #{WebRI.variable('name')}, as determined by prefixes:
 | Ruby file        | #{WebRI.tokenq('ruby:')}        | #{WebRI.tokenq('ruby:syntax_rdoc')} |
 |------------------|----------------|--------------------|
 
-Note: On the command-line, the instance method prefix should be escaped as #{WebRI.string('\\#')} if your shell requires it.
+Note: On the command-line, your shell may require you to escape the instance method prefix:
 
-When argument #{WebRI.variable('name')} is:
+    #{WebRI.string('\\#size')} (instead of just #{WebRI.string('#size')})
 
-- Exactly a name of its type (but not the beginning of other such names),
-  #{WebRI.webri} opens the page for that name.
-  Examples: #{WebRI.tokenq('Array')}, #{WebRI.tokenq('::trap')}, #{WebRI.tokenq('#xmlschema')}, #{WebRI.tokenq('ruby:syntax_rdoc')}. 
-- The beginning of exactly one name of its type,
-  #{WebRI.webri} asks whether to open the page for that name.
-  Examples: #{WebRI.tokenq('Arra')}, #{WebRI.tokenq('::tra')}, #{WebRI.tokenq('#xmlschem')}, #{WebRI.tokenq('ruby:syntax_')}.
-- The beginning of multiple names of its type,
+#{WebRI.bold_italic('Classes and Modules')}
+
+To get the web page for a class or module,
+type a #{WebRI.variable('name')} starting with a capital letter.
+
+When the #{WebRI.variable('name')} is:
+
+- The exact name of a class/module (but not the beginning of other such names):
+  #{WebRI.webri} opens the page for that class/module.
+  Examples: #{WebRI.tokenq('Array')}, #{WebRI.tokenq('Hash')}, #{WebRI.tokenq('Struct')}, #{WebRI.tokenq('Integer')}, #{WebRI.tokenq('Symbol')}.
+
+- The abbreviated name of exactly one class/module:
+  #{WebRI.webri} asks whether to open the page for that class/module.
+  Examples:
+
+  - #{WebRI.tokenq('Cov')}          (for #{WebRI.tokenq('Coverage')}).
+  - #{WebRI.tokenq('Eng')}          (for #{WebRI.tokenq('English')}).
+  - #{WebRI.tokenq('Ker')}          (for #{WebRI.tokenq('Kernel')}).
+  - #{WebRI.tokenq('Net::HTTP::D')} (for #{WebRI.tokenq('Net::HTTP::Delete')}).}
+
+- The abbreviated name of multiple classes/modules:
+  #{WebRI.webri} asks whether to open the page for that class/module;
+  if Yes, #{WebRI.webri} displays those names and lets you choose.
+  Examples: #{WebRI.tokenq('String')}, #{WebRI.tokenq('Float')}, #{WebRI.tokenq('Regexp')}, #{WebRI.tokenq('Net::HTTP')}.
+
+- Not the abbreviated name of any class/module:
+  #{WebRI.webri} asks whether show all class/module names.
+  Examples: #{WebRI.tokenq('Xyzzy')}, #{WebRI.tokenq('Nosuch')}.
+
+#{WebRI.bold_italic('Files')}
+
+To get the web page for a Ruby file,
+type a #{WebRI.variable('name')} starting with #{WebRI.tokenq('ruby:')}.
+
+When the #{WebRI.variable('name')} is:
+
+- The exact name of a Ruby file (but not the beginning of other such names):
+  #{WebRI.webri} opens the page for that file.
+  Examples: #{WebRI.tokenq('ruby:README_md')}, #{WebRI.tokenq('ruby:LEGAL')}, #{WebRI.tokenq('ruby:NEWS_md')}, #{WebRI.tokenq('ruby:syntax_rdoc')}.
+
+- The partial name of exactly one file:
+  #{WebRI.webri} asks whether to open the page for that file.
+  Examples: 
+ 
+  - #{WebRI.tokenq('ruby:maint')}              (for #{WebRI.tokenq('ruby:maintainers_md')})
+  - #{WebRI.tokenq('ruby:syntax/assign')}      (for #{WebRI.tokenq('ruby:syntax/assignment_rdoc')})
+  - #{WebRI.tokenq('ruby:language/pack')}      (for #{WebRI.tokenq('ruby:language/packed_data_rdoc')})
+  - #{WebRI.tokenq('ruby:contributing/build')} (for #{WebRI.tokenq('ruby:contributing/building_ruby_md')})
+  - #{WebRI.tokenq('ruby:optparse/arg')}       (for #{WebRI.tokenq('ruby:optparse/argument_converters_rdoc')}).
+
+- The partial name of multiple files:
   #{WebRI.webri} displays those names and lets you choose.
-  Examples: #{WebRI.tokenq('A')}, #{WebRI.tokenq('::t')}, #{WebRI.tokenq('#')}, #{WebRI.tokenq('ruby:s')}.
-- Not a valid name of its type,
-  #{WebRI.webri} asks whether show such names.
-  Examples: #{WebRI.tokenq('Xyzzy')}, #{WebRI.tokenq('::xyzzy')}, #{WebRI.tokenq('#xyzzy')}, #{WebRI.tokenq('ruby:xyzzy')}.
-- Not a valid name at all (i.e., does not start with any of the prefixes above),
-  #{WebRI.webri} prints an error message.
-  Examples: #{WebRI.tokenq('nosuch')}, #{WebRI.tokenq('$foo')}, #{WebRI.tokenq('%Bar')}.
+  Examples: #{WebRI.tokenq('ruby:syntax')}, #{WebRI.tokenq('ruby:contrib')}, #{WebRI.tokenq('ruby:lang')}, #{WebRI.tokenq('ruby:jit')}.
+
+- Not the partial name of any file:
+  #{WebRI.webri} asks whether show all file names.
+  Examples: #{WebRI.tokenq('ruby:xyzzy')}, #{WebRI.tokenq('ruby:nosuch')}.
+
+#{WebRI.bold_italic('Instance Methods')}
+
+To get the web page for an instance method (and scroll to that method),
+type a #{WebRI.variable('name')} starting with #{WebRI.tokenq('#')}.
+
+When the #{WebRI.variable('name')} is:
+
+- The exact name of an instance method (but not the beginning of other such names):
+
+  - If that method appears in only one class/module,
+    #{WebRI.webri} opens the page for that class-module and scrolls to the method.
+    Examples: #{WebRI.tokenq('#abbreviate')}, #{WebRI.tokenq('#mountpoint?')}, #{WebRI.tokenq('#xmlschema')}.
+
+  - If the method appears in multiple classes/modules,
+    #{WebRI.webri} shows them and lets you choose; for your choice,
+    #{WebRI.webri} opens the page for that class-module and scrolls to the method.
+    Examples: #{WebRI.tokenq('#birthtime')}, #{WebRI.tokenq('#frozen?')}, #{WebRI.tokenq('#owner')}.
+ 
+- The partial name of multiple instance methods:
+  #{WebRI.webri} asks whether to show those names;
+  if Yes, shows them and lets you choose; for your choice,
+  #{WebRI.webri} opens the page for that class-module and scrolls to the method.
+  Examples: #{WebRI.tokenq('#alias')}, #{WebRI.tokenq('#line')}, #{WebRI.tokenq('#rm')}.
+
+- Not the partial name of any instance method:
+  #{WebRI.webri} asks whether show all instance method names.
+  Examples: #{WebRI.tokenq('#xyzzy')}, #{WebRI.tokenq('#nosuch')}.
 
 EOT
 
