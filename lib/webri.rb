@@ -14,13 +14,19 @@ require_relative 'scraper'
 # TODO: Test all releases(?).
 # TODO: Test all web pages(?).
 
-# TODO: Put in special name to elicit all class/module names.
+# TODO: Directives: name begins with capital letter, 'ruby:', period, colon, or hashmark;
+# #     directive would begin with something else.
+# - Show all class/module names.
+#
 #
 # TODO: Make it work for:
 # - Array.new
 # - Array::new
 # - Array.sort
 # - Array#sort
+# - Array.[]
+# - Array::[]
+# - Arrya#[]
 # - .new
 # - ::new
 # - .sort
@@ -38,9 +44,6 @@ require_relative 'scraper'
 # TODO: Support partial on command-line, into REPL.
 #
 # TODO: Support alternate character for '\#' on command-line. ('3'?)
-#
-# TODO: Token begins with character, period, colon, or hashmark;
-#       anything else could signal a special op.
 #
 # A class to display Ruby online HTML documentation.
 class WebRI

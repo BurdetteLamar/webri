@@ -77,20 +77,24 @@ EOT
     <<EOT
 #{bold_italic('Names')}
 
-Argument #{variable('name')} is one of four types, as determined by its prefix:
+In #{webri}, a #{variable('name')} is a string of one of four types, as determined by its prefix:
 
-|------------------|----------------|--------------------|
-|       Type       |     Prefix     |      Example       |
-|------------------|----------------|--------------------|
-| Class/module     | Capital letter | #{tokenq('Array')}            |
-| Singleton method | #{tokenq('::')}           | #{tokenq('::new')}            |
-| Instance method  | #{tokenq('#')}            | #{tokenq('#inspect')}         |
-| Ruby file        | #{tokenq('ruby:')}        | #{tokenq('ruby:syntax_rdoc')} |
-|------------------|----------------|--------------------|
+|------------------|----------------------|--------------------|
+|    Name Type     |       Prefix         |      Example       |
+|------------------|----------------------|--------------------|
+| Class/module     | Capital letter       | #{tokenq('Array')}            |
+| Singleton method | Double-colon (#{tokenq('::')})  | #{tokenq('::new')}            |
+| Instance method  | Hash character (#{tokenq('#')}) | #{tokenq('#inspect')}         |
+| Ruby file        | String #{tokenq('ruby:')}       | #{tokenq('ruby:syntax_rdoc')} |
+|------------------|----------------------|--------------------|
 
-Note: On command-line, your shell may require you to escape instance method prefix:
+Exception: there is one core class whose name begins with a lowercase letter: #{tokenq('fatal')}.
 
-    #{string('\\#size')} (instead of just #{string('#size')})
+Note: On command-line, your shell may require you to escape certain characters:
+
+    #{command('webri \\#size')}
+    #{command('webri "Array.[]"')}
+    #{command('webri compact#\\!')}
 
 EOT
   end
