@@ -103,32 +103,29 @@ EOT
     <<EOT
 #{bold_italic('Files')}
 
-To get web page for a Ruby file,
-type a #{variable('name')} starting with #{tokenq('ruby:')}.
+To open the web page for a Ruby file, type a #{variable('name')} starting with #{tokenq('ruby:')}.
 
-When #{variable('name')} is:
+When #{variable('name')} is the exact name of a Ruby file (but not the abbreviation of other file names),
+#{webri} opens page for that file.
+Examples: #{tokenq('ruby:README_md')}, #{tokenq('ruby:LEGAL')}, #{tokenq('ruby:NEWS_md')}, #{tokenq('ruby:syntax_rdoc')}.
 
-- The exact name of a Ruby file (but not beginning of other such names):
-  #{webri} opens page for that file.
-  Examples: #{tokenq('ruby:README_md')}, #{tokenq('ruby:LEGAL')}, #{tokenq('ruby:NEWS_md')}, #{tokenq('ruby:syntax_rdoc')}.
-
-- The abbreviated name of exactly one file:
-  #{webri} asks whether to open page for that file.
-  Examples: 
+When #{variable('name')} is the abbreviated name of exactly one file,
+#{webri} asks whether to open page for that file.
+Examples: 
  
-    #{tokenq('ruby:maint')}              (for #{tokenq('ruby:maintainers_md')})
-    #{tokenq('ruby:syntax/assign')}      (for #{tokenq('ruby:syntax/assignment_rdoc')})
-    #{tokenq('ruby:language/pack')}      (for #{tokenq('ruby:language/packed_data_rdoc')})
-    #{tokenq('ruby:contributing/build')} (for #{tokenq('ruby:contributing/building_ruby_md')})
-    #{tokenq('ruby:optparse/arg')}       (for #{tokenq('ruby:optparse/argument_converters_rdoc')}).
+  #{tokenq('ruby:maint')}              (for #{tokenq('ruby:maintainers_md')})
+  #{tokenq('ruby:syntax/assign')}      (for #{tokenq('ruby:syntax/assignment_rdoc')})
+  #{tokenq('ruby:language/pack')}      (for #{tokenq('ruby:language/packed_data_rdoc')})
+  #{tokenq('ruby:contributing/build')} (for #{tokenq('ruby:contributing/building_ruby_md')})
+  #{tokenq('ruby:optparse/arg')}       (for #{tokenq('ruby:optparse/argument_converters_rdoc')}).
 
-- The abbreviated name of multiple files:
-  #{webri} displays those names and lets you choose.
-  Examples: #{tokenq('ruby:syntax')}, #{tokenq('ruby:contrib')}, #{tokenq('ruby:lang')}, #{tokenq('ruby:jit')}.
+When #{variable('name')} is the abbreviated name of multiple files,
+#{webri} displays those names and lets you choose.
+Examples: #{tokenq('ruby:syntax')}, #{tokenq('ruby:contrib')}, #{tokenq('ruby:lang')}, #{tokenq('ruby:jit')}.
 
-- Not abbreviated name of any file:
-  #{webri} asks whether show all file names.
-  Examples: #{tokenq('ruby:xyzzy')}, #{tokenq('ruby:nosuch')}.
+When #{variable('name')} is not the abbreviated name of any file:
+#{webri} asks whether show all file names.
+Examples: #{tokenq('ruby:xyzzy')}, #{tokenq('ruby:nosuch')}.
 
 EOT
   end
