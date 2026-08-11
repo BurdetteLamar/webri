@@ -1,0 +1,29 @@
+[1;3mClasses and Modules[0m
+
+To open web page for a class or module,
+type a [33mname[0m starting with a capital letter.
+
+When [33mname[0m is:
+
+- The exact name of a class/module (but not beginning of other such names):
+  [36mwebri[0m opens page for that class/module.
+  Examples: '[94mArray[0m', '[94mHash[0m', '[94mStruct[0m', '[94mInteger[0m', '[94mSymbol[0m'.
+
+- The abbreviated name of exactly one class/module:
+  [36mwebri[0m asks whether to open page for that class/module.
+  Examples:
+
+    '[94mCov[0m'          (for '[94mCoverage[0m').
+    '[94mEng[0m'          (for '[94mEnglish[0m').
+    '[94mKer[0m'          (for '[94mKernel[0m').
+    '[94mNet::HTTP::D[0m' (for '[94mNet::HTTP::Delete[0m').}
+
+- The abbreviated name of multiple classes/modules:
+  [36mwebri[0m asks whether to show names if matching class/module names;
+  if Yes, [36mwebri[0m displays those names and lets you choose.
+  Examples: '[94mString[0m', '[94mFloat[0m', '[94mRegexp[0m', '[94mNet::HTTP[0m'.
+
+- Not abbreviated name of any class/module:
+  [36mwebri[0m asks whether show all class/module names.
+  Examples: '[94mXyzzy[0m', '[94mNosuch[0m'.
+

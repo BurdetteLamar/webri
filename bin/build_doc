@@ -1,0 +1,10 @@
+#!/usr/bin/env ruby
+
+require_relative('../lib/webri')
+require_relative('../lib/doc_maker')
+
+# Build the webri docs.
+Dir.chdir(WebRI.get_webri_root_dir) do
+  doc_maker = DocMaker.new
+  doc_maker.make_docs
+end

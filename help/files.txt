@@ -1,0 +1,26 @@
+[1;3mFiles[0m
+
+To open the web page for a Ruby file, type a [33mname[0m starting with '[91mruby:[0m'.
+
+When [33mname[0m is the exact name of a Ruby file (but not the abbreviation of other file names),
+[36mwebri[0m opens page for that file.
+Examples: '[91mruby:README_md[0m', '[91mruby:LEGAL[0m', '[91mruby:NEWS_md[0m', '[91mruby:syntax_rdoc[0m'.
+
+When [33mname[0m is the abbreviated name of exactly one file,
+[36mwebri[0m asks whether to open page for that file.
+Examples: 
+ 
+  '[91mruby:maint[0m'              (for '[91mruby:maintainers_md[0m')
+  '[91mruby:syntax/assign[0m'      (for '[91mruby:syntax/assignment_rdoc[0m')
+  '[91mruby:language/pack[0m'      (for '[91mruby:language/packed_data_rdoc[0m')
+  '[91mruby:contributing/build[0m' (for '[91mruby:contributing/building_ruby_md[0m')
+  '[91mruby:optparse/arg[0m'       (for '[91mruby:optparse/argument_converters_rdoc[0m').
+
+When [33mname[0m is the abbreviated name of multiple files,
+[36mwebri[0m displays those names and lets you choose.
+Examples: '[91mruby:syntax[0m', '[91mruby:contrib[0m', '[91mruby:lang[0m', '[91mruby:jit[0m'.
+
+When [33mname[0m is not the abbreviated name of any file:
+[36mwebri[0m asks whether show all file names.
+Examples: '[91mruby:xyzzy[0m', '[91mruby:nosuch[0m'.
+

@@ -1,0 +1,40 @@
+[1;3mIntroduction[0m
+
+Use console application [36mwebri[0m to open a Ruby documentation page in your web browser.
+
+Example commands:
+
+  [1m$ webri Array[0m           Open page for class [94mArray[0m.
+  [1m$ webri Enumerable[0m      Open page for module [94mEnumerable[0m.
+  [1m$ webri Array::new[0m      Open page for class [94mArray[0m; scroll to method [93m::new[0m.
+  [1m$ webri Array#size[0m      Open page for class [94mArray[0m; scroll to method [92m#size[0m.
+  [1m$ webri ruby:README_md[0m  Open page for file [91mruby::README_md[0m.
+
+If you're not sure of exact name, [36mwebri[0m can still help:
+
+- Class/module:
+
+  [1m$ webri Ar[0m              Show names of all classes/modules whose names begin with [32m'Ar'[0m.
+  [1m$ webri Enum[0m            Show names of all classes/modules whose names begin with [32m'Enum'[0m.
+
+- Instance method:
+
+  [1m$ webri Array#[0m          Show names of all instance methods in class [94mArray[0m.
+  [1m$ webri Array#co[0m        Show names of instance methods in class [94mArray[0m whose names begin with [32m'co'[0m.
+  [1m$ webri Enumerable#[0m     Show names of all instance methods in module [94mEnumerable[0m.
+  [1m$ webri Enumerable#ch[0m   Show names of instance methods in module [94mEnumerable[0m whose names begin with [32m'ch'[0m.
+  [1m$ webri #[0m               Show names of all instance methods.
+
+- Singleton method:
+
+  [1m$ webri File::[0m          Show names of all singleton methods in class [94mFile[0m.
+  [1m$ webri File::ch[0m        Show names of singleton methods in class [94mFile[0m whose names begin with [32m'ch'[0m.
+  [1m$ webri FileUtils::[0m     Show names of all singleton methods in class [94mFileUtils[0m.
+  [1m$ webri FileUtils::ch[0m   Show names of singleton methods in class [94mFileUtils[0m whose names begin with [32m'ch'[0m.
+  [1m$ webri ::[0m              Show names of all singleton methods.
+
+- File:
+
+  [1m$ webri ruby:[0m           Show names of all files.
+  [1m$ webri ruby:CO[0m         Show names of files whose names begin with [32m'CO'[0m. 
+

@@ -15,8 +15,18 @@ require_relative 'scraper'
 # TODO: Test all web pages(?).
 
 # TODO: Directives: name begins with capital letter, 'ruby:', period, colon, or hashmark;
-# #     directive would begin with something else.
-# - Show all class/module names.
+#       directive would begin with something else.
+# - @readme: Open README.
+# - @classes: Open
+# - ?help: Print help.
+# - ?classes: Print help for classes/modules.
+# - ?instance_methods: Print help for instance methods.
+# - ?singleton_methods: Print help for singleton methods.
+# - ?files: Print help for files.
+# - !classes: Print all class/module names.
+# - !instance_methods: Print all instance method names.
+# - !singleton_methods: Print all singleton method names.
+# - !files: Print all file names.
 #
 #
 # TODO: Make it work for:

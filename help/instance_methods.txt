@@ -1,0 +1,53 @@
+[1;3mInstance Methods[0m
+
+For an instance method, use [36mwebri[0m to open the web page for its class/module,
+then automatically scroll to that method.
+
+[1mExact Full Name[0m
+
+If you know exact names of both the class/module and the instance method,
+type both names, separated by a hash character ('[92m#[0m').
+
+If the method name is not the abbreviation of other method names in that class/module,
+[36mwebri[0m opens page for that class/module and scrolls to the method.
+Examples: '[94mSet#add?[0m', '[94mURI::Generic#absolute[0m'.
+
+If the method name is the abbreviation of other method names in that class/module,
+[36mwebri[0m lets you choose among those names.
+Examples: '[94mIO#close[0m', '[94mIO#each[0m'.
+
+[1mExact Class/Module Name[0m
+
+If you know exact name of class/module,
+but not exact name of instance method,
+type the name of the class/module followed by ('[92m#[0m')
+and abbreviated name of method.
+Examples: '[94mPathname#ch[0m', '[94mPathname#get[0m'.
+
+To see names of all instance methods in a class/module,
+type name of class/module followed by ('[92m#[0m').
+Examples: '[94mPathname#[0m', '[94mIO#[0m'.
+
+[1mExact Instance Method Name[0m
+
+If you know the exact name of the instance method you want,
+but are not sure which class/module has the method,
+type ('[92m#[0m') followed by the exact method name.
+
+If that instance method is defined in only one class/module,
+[36mwebri[0m opens page for that class/module and scrolls to the method.
+Examples: '[94mFile::Stat#uid[0m', '[94mFileUtils#uptodate?[0m'.
+
+If the instance method is defined in multiple classes/modules,
+[36mwebri[0m lets you choose among those names.
+ 
+- The abbreviated name of multiple instance methods:
+  [36mwebri[0m asks whether to show those names;
+  if Yes, shows them and lets you choose; for your choice,
+  [36mwebri[0m opens page for that class-module and scrolls to method.
+  Examples: '[92m#alias[0m', '[92m#line[0m', '[92m#rm[0m'.
+
+- Not abbreviated name of any instance method:
+  [36mwebri[0m asks whether show all instance method names.
+  Examples: '[92m#xyzzy[0m', '[92m#nosuch[0m'.
+

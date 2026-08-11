@@ -134,7 +134,7 @@ EOT
     <<EOT
 #{bold_italic('Classes and Modules')}
 
-To get web page for a class or module,
+To open web page for a class or module,
 type a #{variable('name')} starting with a capital letter.
 
 When #{variable('name')} is:
@@ -168,41 +168,46 @@ EOT
     <<EOT
 #{bold_italic('Instance Methods')}
 
-You can open web page for an instance method (and scroll to that method).
+For an instance method, use #{webri} to open the web page for its class/module,
+then automatically scroll to that method.
 
-#{bold('With Class/Module Name')}
+#{bold('Exact Full Name')}
 
-If you know exact names of class/module and instance method,
-type two, separated by a hash character (#{tokenq('#')}):
+If you know exact names of both the class/module and the instance method,
+type both names, separated by a hash character (#{tokenq('#')}).
+
+If the method name is not the abbreviation of other method names in that class/module,
+#{webri} opens page for that class/module and scrolls to the method.
+Examples: #{tokenq('Set#add?')}, #{tokenq('URI::Generic#absolute')}.
+
+If the method name is the abbreviation of other method names in that class/module,
+#{webri} lets you choose among those names.
+Examples: #{tokenq('IO#close')}, #{tokenq('IO#each')}.
+
+#{bold('Exact Class/Module Name')}
 
 If you know exact name of class/module,
 but not exact name of instance method,
-type name of class/module followed by (#{tokenq('#')})
-and abbreviated name of method:
+type the name of the class/module followed by (#{tokenq('#')})
+and abbreviated name of method.
+Examples: #{tokenq('Pathname#ch')}, #{tokenq('Pathname#get')}.
 
 To see names of all instance methods in a class/module,
-type name of class/module followed by (#{tokenq('#')}):
+type name of class/module followed by (#{tokenq('#')}).
+Examples: #{tokenq('Pathname#')}, #{tokenq('IO#')}.
 
-#{bold('Without Class/Module Name')}
+#{bold('Exact Instance Method Name')}
 
-If you're not sure of class/module that has instance method,
-type (#{tokenq('#')}) followed by exact or method name:
+If you know the exact name of the instance method you want,
+but are not sure which class/module has the method,
+type (#{tokenq('#')}) followed by the exact method name.
 
-To get web page for an instance method (and scroll to that method),
-type a #{variable('name')} starting with #{tokenq('#')}.
+If that instance method is defined in only one class/module,
+#{webri} opens page for that class/module and scrolls to the method.
+Examples: #{tokenq('File::Stat#uid')}, #{tokenq('FileUtils#uptodate?')}.
 
-When #{variable('name')} is:
-
-- The exact name of an instance method (but not beginning of other such names):
-
-  - If that method appears in only one class/module,
-    #{webri} opens page for that class-module and scrolls to method.
-    Examples: #{tokenq('#abbreviate')}, #{tokenq('#mountpoint?')}, #{tokenq('#xmlschema')}.
-
-  - If method appears in multiple classes/modules,
-    #{webri} shows them and lets you choose; for your choice,
-    #{webri} opens page for that class-module and scrolls to method.
-    Examples: #{tokenq('#birthtime')}, #{tokenq('#frozen?')}, #{tokenq('#owner')}.
+If the instance method is defined in multiple classes/modules,
+#{webri} lets you choose among those names.
  
 - The abbreviated name of multiple instance methods:
   #{webri} asks whether to show those names;

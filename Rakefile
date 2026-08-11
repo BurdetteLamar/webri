@@ -7,8 +7,10 @@ Minitest::TestTask.create
 
 desc "Generate documentation"
 task :doc do
-  # ruby "-Ilib lib/my_app.rb"
-  puts 'Generating documentation.'
+  `ruby bin/build_doc`
+  Dir.chdir('doc/markdown') do
+    `rdoc --op ../html .`
+  end
 end
 
 task default: :test

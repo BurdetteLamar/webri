@@ -1,0 +1,21 @@
+[1;3mNames[0m
+
+In [36mwebri[0m, a [33mname[0m is a string of one of four types, as determined by its prefix:
+
+|------------------|----------------------|--------------------|
+|    Name Type     |       Prefix         |      Example       |
+|------------------|----------------------|--------------------|
+| Class/module     | Capital letter       | '[94mArray[0m'            |
+| Singleton method | Double-colon ('[93m::[0m')  | '[93m::new[0m'            |
+| Instance method  | Hash character ('[92m#[0m') | '[92m#inspect[0m'         |
+| Ruby file        | String '[91mruby:[0m'       | '[91mruby:syntax_rdoc[0m' |
+|------------------|----------------------|--------------------|
+
+Exception: there is one core class whose name begins with a lowercase letter: '[96mfatal[0m'.
+
+Note: On command-line, your shell may require you to escape certain characters:
+
+    [1m$ webri \#size[0m
+    [1m$ webri "Array.[]"[0m
+    [1m$ webri compact#\![0m
+

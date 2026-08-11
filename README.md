@@ -1,100 +1,64 @@
-# WebRI - Quick Access to Ruby Online Documentation
+# `webri` - Command-Line Access to Ruby Online Documentation
 
-WebRI has a command-line utility, `webri`, for displaying Ruby online documentation.
+`webri` is a console application for displaying Ruby online documentation
+in your web browser.
 
-It is in some ways similar to [Ruby's RI utility](https://ruby.github.io/rdoc/RI_md.html),
+You type a name specifying what documentation to display,
+and `webri` opens the desired page in your web browser.
+
+`webri` is in some ways similar to [Ruby's `ri` utility][ri],
 but differs mainly in that:
 
-- **RI:** displays text-only documentation the the user's command window.
-- **WebRI:** opens documentation web pages
-  from [Ruby official on-line documentation](https://docs.ruby-lang.org/en)
-  in the user's default web browser.
+- `ri` displays text-only documentation your command window.
+- `webri` opens web pages from [Ruby official on-line documentation][ruby documentation].
+  in your web browser.
 
-WebRI displays documentation for:
+For:
 
-- A **class** or **module**: opens its web page.
-- A **method**: opens the web page for its class/module _scrolled to the method's documentation_.
-- A Ruby **page**: opens a free-standing web page.
+- A class or module: `webri` opens its web page.
+- A method: `webri` opens the web page for its class/module and scrolls to the method.
+- A Ruby file: `webri` opens a free-standing Ruby file.
 
 ## Usage
 
 ```
-webri [options]
+webri [options] [name]
 ```
 
-`webri` is an interactive program;
-when invoked, it prints its prompt:
+`webri` has two modes:
 
-```
-$ webri
-webri>
-```
+- Immediate mode (name given on command line);
+  processes just the one name (possibly with minor interaction).
+- Interactive mode (no name given on command line);
+  enters loop: accept name, process name, repeat.
 
-To exit, type `exit`:
+A name may be:
 
-```bash
-$ webri
-webri> exit
-$
-```
-
-At the prompt, you can type:
-
-- The name of a [class or module][1].
-- The name of a [singleton method][2].
-- The name of an [instance method][3].
-- The name of a [Ruby page][4].
+- The name of a [class or module][classes and modules].
+- The name of a [singleton method][singleton methods].
+- The name of an [instance method][instance methods].
+- The name of a [Ruby file][files].
 - An abbreviation of any of the above.
-- One of the [special names][5] `@help` or `@readme`.
 
-### Class or Module
+### Classes and Modules
 
-For a `name` beginning with a capital letter,
-WebRI finds the names of classes and modules beginning with that name.
+To open the page for a class or module,
+type its name (e.g., `'Array'`),
+which may be abbreviated to an initial substring (e.g., `'Ar'`).
 
-When exactly one such class/module name is found:
+`webri` finds the names of classes and modules beginning with that name.
 
-- If `name` is the exact name of a class/module, opens its page:
+When only one matching class or module name is found,
+`webri` opens its web page (if the full name),
+or asks whether to open it (if an abbreviation).
 
-```
-webri> Array
-Found one class/module name starting with 'Array'
-  Array (Array.html)
-Opening web page https://docs.ruby-lang.org/en/3.4/Array.html.
-```
+When multiple matching class and module names are found,
+`webri` lists them and lets you choose.
 
-- If `name` is the start of one class/module, offers to open its page:
+When no matching class or module name is found,
+`webri` offers to list all class and module names and let you choose.
 
-```
-webri> Arr
-Found one class/module name starting with 'Arr'
-  Array (Array.html)
-Open page Array.html? (y or n):  y
-Opening web page https://docs.ruby-lang.org/en/3.4/Array.html.
-```
-
-When multiple such class/module names are found, offers to list the found names:
-
-```
-webri> Ar
-Found 2 class/module names starting with 'Ar'.
-Show 2 class/module names?' (y or n):  y
-       0:  ArgumentError (ArgumentError.html)
-       1:  Array (Array.html)
-Type a number to choose, or Return to skip:  0
-Opening web page https://docs.ruby-lang.org/en/3.4/ArgumentError.html.
-```
-
-
-When no such class/module name is found, offers to list all class/module names:
-
-```
-webri> Nosuch
-Found no class/module name starting with 'Nosuch'.
-Show 1364 class/module names? (y or n):  n
-```
-
-### Singleton Method
+### Singleton Methods
 
 For a `name` beginning with `::`,
 WebRI finds the names of singleton methods beginning
@@ -146,7 +110,7 @@ Found no singleton method name starting with '::nosuch'.
 Show names of all 2288 singleton methods? (y or n):  n
 ```
 
-### Instance Method
+### Instance Methods
 
 For a `name` beginning with `#`,
 WebRI finds the names of instance methods beginning
@@ -196,7 +160,7 @@ Found no instance method name starting with '#nosuch'.
 Show names of all 10370 instance methods? (y or n):  n
 ```
 
-### Ruby Page
+### Files
 
 For a name beginning with `ruby:`,
 finds the names of ruby pages beginning
@@ -363,7 +327,7 @@ Opening web page https://github.com/BurdetteLamar/webri/blob/main/README.md.
 
 ### Reline
 
-`webri` uses [Reline](https://ruby.github.io/reline/Reline.html)
+`webri` uses [Reline][Reline]
 (on Linux, but not on other OS platforms).
 
 Reline enables editing of text at the `webri` prompt (use left- and right-arrows),
@@ -432,7 +396,7 @@ Opening web page https://docs.ruby-lang.org/en/3.4/Array.html.
 Command: 'start https://docs.ruby-lang.org/en/3.4/Array.html'
 ```
 
-Option `--noreline` blocks Reline behavior; see [Reline][6].
+Option `--noreline` blocks Reline behavior; see [Reline][reline].
 
 Option `--help` prints the WebRI help text.
 
@@ -448,22 +412,30 @@ $ gem install webri
 
 ## Bugs and Issues
 
-Bug reports and comments are welcome at https://github.com/BurdetteLamar/webri/issues.
+Bug reports and comments are welcome at [issues][issues].
 
 ## License
 
 The gem is available as open source under the terms
-of the [MIT License](https://opensource.org/licenses/MIT).
+of the [MIT License][mit license].
 
 ## Code of Conduct
 
 Everyone interacting in the Webri project's codebases,
 issue trackers, chat rooms and mailing lists is expected
-to follow the [code of conduct](https://github.com/BurdetteLamar/webri/blob/master/CODE_OF_CONDUCT.md).
+to follow the [code of conduct][code of conduct]
 
-[1]: rdoc-ref:README.md@Class+or+Module
-[2]: rdoc-ref:README.md@Singleton+Method
-[3]: rdoc-ref:README.md@Instance+Method
-[4]: rdoc-ref:README.md@Ruby+Page
-[5]: rdoc-ref:README.md@Special+Names
-[6]: rdoc-ref:README.md@Reline
+[classes and modules]: #classes-and-modules
+[singleton methods]:   #singleton-methods
+[instance methods]:    #instance-methods
+[files]:               #files
+[special names]:       #special-names
+[reline]:              #reline
+
+[code of conduct]: https://github.com/BurdetteLamar/webri/blob/main/CODE_OF_CONDUCT.md
+[issues]:          https://github.com/BurdetteLamar/webri/issues
+
+[Reline]:             https://ruby.github.io/reline/Reline.html
+[ri]:                 https://ruby.github.io/rdoc/RI_md.html)
+[ruby documentation]: https://docs.ruby-lang.org/en
+[mit license]:        https://opensource.org/licenses/MIT
