@@ -1,6 +1,4 @@
-# `webri` - Command-Line Access to Ruby Online Documentation
-
-## Caveat Lector (13-Aug-2026)
+# Caveat Lector (13-Aug-2026)
 
 The earlier [webri gem](https://rubygems.org/gems/webri) remains available:
 
@@ -13,6 +11,8 @@ so that I can verify that the in-development `webri` can open it properly.
 
 I expect to have everything completed, up, and running by the next Ruby release (4.1)
 at Christmas.  Also, will then add docs data for that release.
+
+# `webri` - Command-Line Access to Ruby Online Documentation
 
 `webri` is a console application for displaying Ruby online documentation
 in your web browser.
