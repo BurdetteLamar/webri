@@ -1,6 +1,6 @@
 ---
 layout: default
-title: Modules
+title: Classes and Modules
 ---
 
-# Modules
+# Classes and Modules
