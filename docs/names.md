@@ -4,6 +4,8 @@ title: Names
 ---
 
 # Names
+# Names
+# Names
 
 - [Classes and Modules](#classes-and-modules)
 - [Methods](#methods)
