@@ -1,7 +1,6 @@
 ---
 layout: default
-title: Usage
+title: Modules
 ---
 
-# Usage
-    
+# Modules
