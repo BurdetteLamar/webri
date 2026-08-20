@@ -3,7 +3,7 @@ layout: default
 title: webri
 ---
 
-# webri
+# `webri`
 
 Console application `webri` lets you open web pages
 for Ruby documentation from the command line:
@@ -29,3 +29,4 @@ If the name specifies a Ruby method,
 - `'File::open'` opens the page for class File and scrolls to
   method [`::open`](https://docs.ruby-lang.org/en/master/File.html#method-c-open).
 
+`webri` is a Ruby gem; see [Installation](installation.html).
