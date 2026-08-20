@@ -5,8 +5,8 @@ title: webri
 
 # webri
 
-Console application `webri` lets you access the web pages
-from Ruby documentation in your web browser:
+Console application `webri` lets you open web pages
+for Ruby documentation from the command line:
 
 - You enter the name (full or partial) of a Ruby class/module, method, or file.
 - `webri` opens the corresponding page of the Ruby documentation in your browser.
