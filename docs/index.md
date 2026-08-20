@@ -19,7 +19,13 @@ If the name specifies a Ruby class/module or file,
 - `'Enumerable'` opens the
   [page for module Enumerable](https://docs.ruby-lang.org/en/master/Enumerable.html).
 - `'ruby:dig_methods_rdoc'` opens the
-  [page for file dig_methods_rdoc](https://docs.ruby-lang.org/en/master/language/dig_methods_rdoc.html).
+  [page for file dig_methods](https://docs.ruby-lang.org/en/master/language/dig_methods_rdoc.html).
 
 If the name specifies a Ruby method,
 `webri` opens the page for its class/module and scrolls to the method's documentation.
+
+- `'Array#sort'` opens the page for class Array
+  and scrolls to [that method](https://docs.ruby-lang.org/en/master/Array.html#sort).
+- `'File::new'` opens the page for class File
+  and scrolls to [that method](https://docs.ruby-lang.org/en/master/File.html.new).
+
